@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiamondIQ — Log In</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">⚾ DiamondIQ</a>
+</header>
+<main id="login">
+  <h1>Log In</h1>
+  <form method="post" action="/api/auth/login">
+    <label for="login-user">Username or email</label>
+    <input type="text" id="login-user" name="identifier" required>
+    <label for="login-pass">Password</label>
+    <input type="password" id="login-pass" name="password" required minlength="8">
+    <button type="submit">Log In</button>
+    <p id="login-error" role="alert"></p>
+  </form>
+  <p>New to DiamondIQ? <a href="register.html">Create an account</a></p>
+</main>
+<footer><p>DiamondIQ — Five Experts. One Pitch.</p></footer>
+</body>
+</html>
