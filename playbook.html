@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiamondIQ — My Playbook</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">⚾ DiamondIQ</a>
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Home</a>
+    <a href="scenarios.html">Scenarios</a>
+    <a href="compare.html">Compare</a>
+    <a href="playbook.html" aria-current="page">My Playbook</a>
+    <a href="login.html">Log In</a>
+  </nav>
+</header>
+<main id="playbook">
+  <h1>My Playbook</h1>
+  <p id="playbook-login-note">🔒 Log in to save plays and notes to your personal playbook. <a href="login.html">Log in or register</a></p>
+  <section aria-labelledby="add-heading">
+    <h2 id="add-heading">Add a Play Note</h2>
+    <form id="playbook-form">
+      <label for="note-title">Play name</label>
+      <input type="text" id="note-title" name="title" required>
+      <label for="note-body">My strategy notes</label>
+      <textarea id="note-body" name="body" rows="4" required></textarea>
+      <label for="note-rating">Difficulty rating</label>
+      <select id="note-rating" name="rating">
+        <option value="1">1 — Easy</option><option value="2">2</option><option value="3" selected>3 — Average</option><option value="4">4</option><option value="5">5 — Hard</option>
+      </select>
+      <button type="submit">Add to Playbook</button>
+      <p id="playbook-feedback" role="status"></p>
+    </form>
+  </section>
+  <section aria-labelledby="entries-heading">
+    <h2 id="entries-heading">Saved Entries</h2>
+    <ul id="playbook-entries" class="card-list"></ul>
+    <p id="playbook-empty">Your playbook is empty — add your first play note above!</p>
+  </section>
+</main>
+<footer>
+  <p>DiamondIQ — Five Experts. One Pitch.</p>
+</footer>
+</body>
+</html>
