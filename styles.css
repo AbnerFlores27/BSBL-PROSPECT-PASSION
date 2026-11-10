@@ -1,0 +1,17 @@
+/* DiamondIQ — placeholder styles (Phase 1 skeleton).
+   Phase 2 replaces this file with the full grey + powder blue light theme
+   and the navy dark theme, WCAG contrast-tested. */
+:root {
+  --color-bg: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-accent: #a9c6e3;      /* powder blue placeholder */
+  --color-accent-dark: #4a739c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: var(--color-bg); color: var(--color-text); }
+main { max-width: 1000px; margin: 0 auto; padding: 1rem; }
+.site-header { padding: 1rem; background: var(--color-surface); }
+.site-nav a { margin-right: 1rem; }
+.card { background: var(--color-surface); border: 1px solid #d7dde3; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; }
+.banner { background: var(--color-accent); padding: 0.75rem; border-radius: 8px; }
