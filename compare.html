@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiamondIQ — Compare Plays</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">⚾ DiamondIQ</a>
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Home</a>
+    <a href="scenarios.html">Scenarios</a>
+    <a href="compare.html" aria-current="page">Compare</a>
+    <a href="playbook.html">My Playbook</a>
+    <a href="login.html">Log In</a>
+  </nav>
+</header>
+<main id="compare">
+  <h1>Play &amp; Stat Comparison</h1>
+  <form class="controls" onsubmit="return false;">
+    <label for="play-a">Play A</label>
+    <select id="play-a"><option>Force Out vs. Tag Out</option><option>Infield Fly Rule Basics</option><option>Stealing Second Base Timing</option></select>
+    <label for="play-b">Play B</label>
+    <select id="play-b"><option>Tagging Up on Fly Balls</option><option>Catcher Framing Fundamentals</option><option>Executing a Relay Throw</option></select>
+  </form>
+  <table>
+    <caption>Side-by-side comparison</caption>
+    <thead><tr><th scope="col">Category</th><th scope="col">Play A</th><th scope="col">Play B</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Execution difficulty</th><td>—</td><td>—</td></tr>
+      <tr><th scope="row">Tactical risk</th><td>—</td><td>—</td></tr>
+      <tr><th scope="row">Statistical impact</th><td>—</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <p id="compare-verdict">Placeholder: which play is harder to master, and why.</p>
+</main>
+<footer>
+  <p>DiamondIQ — Five Experts. One Pitch.</p>
+</footer>
+</body>
+</html>
