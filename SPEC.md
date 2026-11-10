@@ -1,92 +1,75 @@
-# DiamondIQ — Official Specification (v4.3)
-
-> Spec-Driven Development: DiamondIQ Web Platform & AI Spec Review System
-> Official spec of record. Docs only — no website code changes yet.
+# DiamondIQ — Official Build Specification (v7.1)
 
 Project Title: DiamondIQ — Multi-Perspective Baseball Educational Hub
-
-Target Level: 9th Grade Web Development Student (HTML5, CSS3, Vanilla JavaScript)
-
+Target Level: High School Web Development (HTML5, CSS3, JavaScript, Node/Express, PostgreSQL)
 Methodology: Spec-Driven Development (SDD)
+Document Version: v7.1 (v7.0 structure preserved; decisions locked — see change list at bottom)
 
-Document Version: v4.3
+## 1. Purpose, Audience & Problem Statement
 
-## 1. Feature Name & Goal
+Fandom & Target Audience: Beginner baseball players, youth fans (ages 10+), and high school web development students.
+Core Purpose: An interactive, multi-view fan application that breaks down baseball plays and statistics across 5 expert AI perspectives.
+Problem Statement: Traditional baseball rulebooks and statistical guides are dry, overly technical, and difficult for beginners to digest. DiamondIQ solves this by providing visual scenario breakdowns, plain-English expert analysis, side-by-side play comparisons, and a persistent personal playbook.
 
-Feature Name: DiamondIQ Interactive Web Platform & 5-Expert Review Engine
+## 2. Panel of Experts (5-Expert Panel Matrix)
 
-Core Goal: Build a responsive, baseball-themed educational web application displaying game scenario analyses across 5 distinct expert perspectives. All component specifications must pass structured review by the 5-expert panel before front-end implementation begins.
-
-## 2. User Story & Workflow
-
-User Story: As a 9th-grade web design student and baseball fan, I want my website specs evaluated by 5 specialized experts (Youth Coach, Sabermetrician, Web Dev Mentor, UI/UX Designer, Rookie Player) so that I catch layout, logic, and content flaws on paper before writing code.
-
-Review Workflow:
-
-Draft Spec (v1, v2...) ⟶ 5-Expert Panel Review ⟶ Resolve Questions ⟶ Verdict Check (Pass/Needs Work) ⟶ Phase Build
-
-## 3. Visual & UI Requirements
-
-### Page Layout & Structure
-
-Header & Branding:
-- Logo: DiamondIQ with a baseball diamond icon.
-- Tagline: "Five Experts. One Pitch."
-- Navigation Bar: Links for Home, Scenarios, Expert Panel, About.
-
-Scenario Controls:
-- Scenario Selector: Dropdown menu ordered fundamentals-first (e.g., Force Out vs. Tag Out, Stealing Second, followed by analytics plays like Reading Launch Angle). Every option includes a one-line plain-English description.
-- View Toggle Buttons: Full Panel Grid View (all 5 cards) vs. Single Expert Focus View (1 card).
-
-Plain-English Summary Card:
-- Prominent top banner summarizing all expert perspectives in 2 simple sentences for beginners. In the desktop layout, it occupies the sixth grid cell.
-
-5-Expert Card Themes & Accent Colors:
-- Specific color hex values are deferred to Phase 2 (CSS Layout & Styling) to evaluate WCAG contrast compliance during visual styling.
-
-### Responsive Layout Rules
-
-- Desktop (>= 1024px): 3x2 CSS Grid layout containing the 5 expert cards plus the Plain-English Summary card in the sixth cell.
-- Tablet (768px - 1023px): 2-column Flexbox grid with automatic wrapping.
-- Mobile (< 768px): Single-column vertical stack using native HTML <details> and <summary> collapsible accordion elements.
-
-## 4. Technical Requirements & Architecture
-
-### Stack & Data Layer
-
-- HTML5: Semantic structural tags (<header>, <nav>, <main>, <section>, <article>, <details>, <summary>, <footer>).
-- CSS3: CSS Grid, Flexbox, custom CSS variables for expert colors (configured in Phase 2), media queries.
-- Vanilla JavaScript: DOM scripting for scenario filtering, panel view state toggling, and native accordion controls without external libraries.
-- Data Architecture (mockData.js): Local JavaScript file storing scenarios, expert answers, 3-tier visual meter values (Low/Med/High), summary text, and one-line scenario descriptions as structured JavaScript objects.
-
-### 5-Expert Persona & Evaluation Matrix
-
-| Persona | Target Domain | Required Evaluation Criteria |
+| Expert Persona | Domain Role | Evaluation Focus |
 |---|---|---|
-| Youth Baseball Coach | Baseball Fundamentals | Baseball terminology is accurate; fundamental rules are simplified clearly. |
-| Sabermetrics Analyst | Advanced Analytics | Statcast concepts use 3-tier visual meters (Low/Med/High) with optional tooltips. |
-| Web Dev Mentor | Front-End Buildability | Standard HTML/CSS/JS stack without backend API dependencies. |
-| UI/UX Designer | Responsive Design & Accessibility | Clear visual hierarchy; color contrast passes WCAG standards across device sizes. |
-| Rookie Player | Usability & Clarity | Content is in plain language; core takeaway is immediately obvious to a beginner. |
+| Youth Baseball Coach | Baseball Fundamentals | Rule accuracy, execution mechanics, simplifying concepts for beginners. |
+| Sabermetrics Analyst | Advanced Analytics | Statcast metrics (launch angle, exit velocity, xwOBA) and 3-tier visual gauges. |
+| Web Dev Mentor | Technical Lead & Architecture | HTML/CSS/JS standards, database schema, auth safety, CRUD. |
+| UI/UX Designer | Design & Accessibility | Responsive parity, global navigation, WCAG contrast, dark/light themes. |
+| Rookie Player | Target Audience & Usability | Plain-language clarity, engaging navigation, intuitive features. |
 
-## 5. Acceptance Criteria
+## 3. Database & User Authentication Architecture (LOCKED)
 
-- [ ] Spec doc contains all 5 required structural sections.
-- [ ] Front-end stays strictly within HTML5, CSS3, Vanilla JS, and local mockData.js.
-- [ ] Visual layout rules cover desktop 3x2 grid, tablet 2-column flexbox, and mobile native accordions.
-- [ ] Accent colors are deferred to Phase 2 for contrast testing prior to writing CSS variables.
-- [ ] Scenario dropdown presents fundamental rules first with one-line plain-English descriptions.
+- Stack: Node.js + Express serving static front-end + JSON API. PostgreSQL (Replit Postgres) via parameterized SQL. scrypt password hashing, session cookies. NO new platforms to learn.
+- Auth views (excluded from the 5-domain-view count): /register, /login, logout + profile bar.
+- Protected actions: only authenticated users create/edit/delete playbook entries and save favorites.
 
-## 6. 5-Phase Implementation Breakdown
+## 4. 5 Unique Domain Views & Global Navigation
 
-[Phase 1: HTML Skeleton] -> [Phase 2: CSS Grid & Themes] -> [Phase 3: Mock Data Architecture] -> [Phase 4: JS Interactivity] -> [Phase 5: Polish & Testing]
+Global nav on every page: Home · Scenarios · Compare · My Playbook · Log In (hamburger menu on mobile).
 
-- Phase 1: Semantic HTML Skeleton — Create index.html structure with semantic tags (<header>, <nav>, <main>, <section>, <article>, <details>, <summary>, <footer>).
-- Phase 2: CSS Layout & Accent Styling — Build CSS Grid/Flexbox layouts and define expert CSS variables in style.css.
-- Phase 3: Mock Data Architecture — Construct mockData.js storing scenarios, answers, stat gauges, and descriptions.
-- Phase 4: JavaScript Interactivity — Build DOM state scripts in script.js for dropdown scenario swapping and panel view toggles.
-- Phase 5: Accessibility & Final Testing — Audit color contrast, verify mobile responsiveness, and run final 5-expert review check.
+- View 1: Home / Dashboard (index.html) — featured play of the day, daily fun fact banner, Opening Day countdown (date = config constant), site statistics card.
+- View 2: Scenario Library (scenarios.html) — real-time search, category filter (Fundamentals/Analytics), sort options, list + empty state.
+- View 3: Scenario Deep-Dive & 5-Expert Analyzer (detail.html) — summary banner, 5 expert cards with <details>/<summary> accordions, 3-tier stat meters (Low/Med/High), trivia quiz widget with instant scoring.
+- View 4: Play & Stat Comparison Tool (compare.html) — side-by-side selectors comparing two plays on execution difficulty, tactical risk, statistical impact.
+- View 5: Custom Playbook Builder (playbook.html) — PROTECTED full CRUD: create strategy notes, read, update, delete; favorites.
 
----
+## 5. Seed Content (8 rich entries, fundamentals-first)
 
-Theme decision (Abner): grey + powder blue palette, WCAG contrast-tested in Phase 2.
+1. Force Out vs. Tag Out (Fundamental) 2. Infield Fly Rule Basics (Fundamental) 3. Stealing Second Base Timing (Fundamental) 4. Reading Launch Angle & Exit Velocity (Analytics) 5. Catcher Framing Fundamentals (Fundamental) 6. Executing a Relay Throw (Fundamental) 7. Understanding xwOBA Metrics (Analytics) 8. Tagging Up on Fly Balls (Fundamental).
+
+## 6. Custom Features — TIERED
+
+MVP-required (build in order): search bar, category filter, favorites button, comparison tool, trivia quiz, expandable accordions, dark/light mode.
+Stretch (only after MVP passes): sorting options, pagination, 5-star ratings, embedded YouTube tutorials, Opening Day countdown timer, user statistics card.
+
+## 7. Validation, Feedback & Responsive Rules
+
+- Client/server validation on all forms; success toasts; error banners for auth failures; empty states for zero results.
+- Desktop (>= 1024px): 3x2 grid for expert cards, side-by-side comparison, full dashboard. Tablet (768-1023px): 2-column flexbox, adaptive nav. Mobile (< 768px): single column, accordions, hamburger nav.
+- Theme (Abner): LIGHT = grey + powder blue. DARK = deep navy-grey surfaces with softened powder blue accents. All pairs WCAG-contrast-tested in Phase 2.
+
+## 8. Deployment & Acceptance
+
+Deploy via Replit Deployments (public URL). Checklist: purpose defined; 5-expert panel; persistent DB; auth; 5 domain views + global nav; CRUD playbook; 8+ seed items; search/filter/sort + MVP features; validation/toasts/empty states; responsive parity; live URL.
+
+## 9. 5-Phase Implementation Roadmap
+
+[Phase 1: Multi-View HTML & Nav] -> [Phase 2: CSS Layout & Themes] -> [Phase 3: DB & Auth Integration] -> [Phase 4: CRUD & Interactivity] -> [Phase 5: Polish & Public Deployment]
+
+- Phase 1: semantic HTML for all 7 pages (5 domain views + login + register), shared nav/footer, placeholder content, mockData.js as data stand-in.
+- Phase 2: style.css — grey + powder blue light theme, navy dark theme, WCAG contrast tested, CSS variables, breakpoints, hamburger nav.
+- Phase 3: Express server, Postgres schema (users, sessions, scenarios, playbook_entries), scrypt auth, protected routes, seed 8 scenarios.
+- Phase 4: playbook CRUD API + UI, favorites, search/filter wiring, trivia scoring, view toggles.
+- Phase 5: a11y audit, responsive QA, Replit deployment.
+
+## Change list v7.0 -> v7.1
+1. Database locked: Node.js + Express + PostgreSQL (Abner's proven quiz-app stack) — replaces "Supabase/Firebase/SQLite".
+2. Custom features tiered: 7 MVP-required, 6 stretch (MVP needs only ONE fan feature; tiering prevents scope creep).
+3. Dark mode defined: navy-grey variant of the grey + powder blue light theme.
+4. Countdown date = config constant (set when MLB announces the 2027 schedule).
+5. mockData.js stays as the stand-in data source until Phase 3 wires the real database.
+6. Auth pages (login.html, register.html) added to the file map; excluded from the 5-view count.
