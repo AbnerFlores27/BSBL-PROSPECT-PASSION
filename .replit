@@ -1,0 +1,6 @@
+run = "node server.js"
+entrypoint = "server.js"
+modules = ["nodejs-22"]
+
+[nix]
+channel = "stable-24_05"
