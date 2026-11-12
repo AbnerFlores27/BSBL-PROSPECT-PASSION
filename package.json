@@ -1,0 +1,12 @@
+{
+  "name": "diamondiq",
+  "version": "0.1.0",
+  "description": "DiamondIQ - Multi-Perspective Baseball Educational Hub",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
