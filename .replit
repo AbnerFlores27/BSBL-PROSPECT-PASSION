@@ -1,6 +1,6 @@
 run = "node server.js"
 entrypoint = "server.js"
-modules = ["web", "nodejs-20"]
+modules = ["web", "nodejs-20", "postgresql-16"]
 
 [nix]
 channel = "stable-25_05"

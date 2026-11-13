@@ -4,13 +4,13 @@
 
 - Stack: Node.js + Express (`express`, `pg`) serving the 7 HTML/CSS/JS pages and JSON REST API.
 - Use the **Start application** workflow (`npm start`) to execute `node server.js` on `0.0.0.0:${PORT || 5000}`.
-- Provision **Replit PostgreSQL** (sets `DATABASE_URL`) so `db.js` creates all tables (`users`, `sessions`, `scenarios`, `playbook_entries`, `favorites`, `trivia_mastered`, `scenario_ratings`) and seeds the 8 baseball scenarios automatically on boot.
-- When `DATABASE_URL` is omitted (for example, local quick preview), `db.js` automatically runs an in-memory store with identical API behavior.
+- Replit PostgreSQL is connected and provides `DATABASE_URL` to the app; do not commit the connection string.
+- Apply `database-schema.sql` to the development database before starting the app. Replit Publish manages the corresponding production database schema.
+- Account passwords are stored as scrypt hashes. Session tokens are stored as SHA-256 hashes in PostgreSQL; the browser receives an HTTP-only, SameSite=Lax cookie with a 14-day expiry.
+- The app fails to start if `DATABASE_URL` is unavailable; it does not switch to temporary in-memory account storage.
 
-## Implemented Phases (Phases 1–5)
+## Implemented Features
 
-1. **Phase 1**: 7 semantic HTML5 pages (`index.html`, `scenarios.html`, `detail.html`, `compare.html`, `playbook.html`, `login.html`, `register.html`) with shared global nav and footer.
-2. **Phase 2**: `styles.css` with `#f4f6f8` grey + `#a9c6e3` powder-blue light theme, deep navy-grey dark mode, WCAG AA contrast pairs, and desktop (`>=1024px`) / tablet (`768–1023px`) / mobile (`<768px`) responsive grids + hamburger nav.
-3. **Phase 3**: Express server, PostgreSQL schema + auto-seeding of 8 scenarios, `scrypt` password hashing, `httpOnly` session cookies, register/login/logout endpoints, and protected route enforcement.
-4. **Phase 4**: Protected Playbook CRUD, Favorites, 5-star scenario ratings, search/category/sort/pagination on Scenario Library, server-scored Trivia Quiz, side-by-side Comparison tool, and expandable 5-Expert accordions.
-5. **Phase 5**: Skip links, ARIA live status feedback, empty states, error banners, success toasts, and Replit deployment readiness.
+- Seven semantic HTML pages with shared navigation, responsive styles, and light/dark themes.
+- Account registration, username/email login, logout, password hashing, and persistent PostgreSQL-backed sessions.
+- Additional user-generated features such as saved favorites and playbook entries are not yet connected to account storage.

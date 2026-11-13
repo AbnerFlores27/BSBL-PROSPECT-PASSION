@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Register</title>
+<link rel="icon" href="data:,">
 <meta name="description" content="Create your DiamondIQ account.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
@@ -13,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
+<script src="auth.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#register">Skip to content</a>
@@ -55,15 +57,15 @@
     <form class="form-stack" method="post" action="/api/auth/register" onsubmit="return false;">
       <div class="field">
         <label for="reg-user">Username</label>
-        <input type="text" id="reg-user" name="username" placeholder="3–30 characters" required minlength="3" maxlength="30">
+        <input type="text" id="reg-user" name="username" placeholder="3–30 characters" autocomplete="username" required minlength="3" maxlength="30">
       </div>
       <div class="field">
         <label for="reg-email">Email</label>
-        <input type="email" id="reg-email" name="email" placeholder="you@example.com" required>
+        <input type="email" id="reg-email" name="email" placeholder="you@example.com" autocomplete="email" required>
       </div>
       <div class="field">
         <label for="reg-pass">Password (8+ characters)</label>
-        <input type="password" id="reg-pass" name="password" placeholder="At least 8 characters" required minlength="8">
+        <input type="password" id="reg-pass" name="password" placeholder="At least 8 characters" autocomplete="new-password" required minlength="8">
       </div>
       <button type="submit" class="btn btn-primary">Create Account</button>
       <p id="register-error" class="feedback-banner" role="alert"></p>
