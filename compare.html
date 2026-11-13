@@ -4,40 +4,104 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Compare Plays</title>
+<meta name="description" content="Compare any two baseball plays side by side on difficulty, risk, and statistical impact.">
+<script>
+(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#compare">Skip to content</a>
+
 <header class="site-header">
-  <a class="brand" href="index.html">⚾ DiamondIQ</a>
-  <nav class="site-nav" aria-label="Main">
-    <a href="index.html">Home</a>
-    <a href="scenarios.html">Scenarios</a>
-    <a href="compare.html" aria-current="page">Compare</a>
-    <a href="playbook.html">My Playbook</a>
-    <a href="login.html">Log In</a>
-  </nav>
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect x="14" y="2.5" width="16.2" height="16.2" rx="2.5" transform="rotate(45 14 2.5)" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="14" cy="14" r="3" fill="currentColor"/>
+      </svg>
+      <span>DiamondIQ</span>
+    </a>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="compare.html" aria-current="page">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html" id="nav-login-link">Log In</a>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+        <span>Dark Mode</span>
+      </button>
+      <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 </header>
-<main id="compare">
-  <h1>Play &amp; Stat Comparison</h1>
-  <form class="controls" onsubmit="return false;">
-    <label for="play-a">Play A</label>
-    <select id="play-a"><option>Force Out vs. Tag Out</option><option>Infield Fly Rule Basics</option><option>Stealing Second Base Timing</option></select>
-    <label for="play-b">Play B</label>
-    <select id="play-b"><option>Tagging Up on Fly Balls</option><option>Catcher Framing Fundamentals</option><option>Executing a Relay Throw</option></select>
+
+<main id="compare" class="container">
+  <div class="page-header">
+    <div>
+      <h1>Play &amp; Stat Comparison</h1>
+      <p class="page-lead">Pick any two plays to compare execution difficulty, tactical risk, and game impact side by side.</p>
+    </div>
+  </div>
+
+  <form class="card compare-controls" onsubmit="return false;" aria-label="Select plays to compare">
+    <div class="field">
+      <label for="play-a">Play A</label>
+      <select id="play-a" style="width:100%;"></select>
+    </div>
+    <button type="button" id="swap-plays-btn" class="btn btn-secondary">Swap Plays</button>
+    <div class="field">
+      <label for="play-b">Play B</label>
+      <select id="play-b" style="width:100%;"></select>
+    </div>
   </form>
-  <table>
-    <caption>Side-by-side comparison</caption>
-    <thead><tr><th scope="col">Category</th><th scope="col">Play A</th><th scope="col">Play B</th></tr></thead>
-    <tbody>
-      <tr><th scope="row">Execution difficulty</th><td>—</td><td>—</td></tr>
-      <tr><th scope="row">Tactical risk</th><td>—</td><td>—</td></tr>
-      <tr><th scope="row">Statistical impact</th><td>—</td><td>—</td></tr>
-    </tbody>
-  </table>
-  <p id="compare-verdict">Placeholder: which play is harder to master, and why.</p>
+
+  <div class="table-wrap">
+    <table class="compare-table">
+      <caption>Side-by-side comparison across all key DiamondIQ evaluation tiers</caption>
+      <thead>
+        <tr>
+          <th scope="col">Evaluation Category</th>
+          <th scope="col" id="compare-head-a">Play A</th>
+          <th scope="col" id="compare-head-b">Play B</th>
+        </tr>
+      </thead>
+      <tbody id="compare-tbody"></tbody>
+    </table>
+  </div>
+
+  <section class="section-block" aria-labelledby="verdict-heading">
+    <div class="surface-powder">
+      <h2 id="verdict-heading" style="font-size:1.15rem;margin-bottom:0.35rem;">Coach &amp; Analyst Verdict</h2>
+      <p id="compare-verdict" style="margin-bottom:0;"></p>
+    </div>
+  </section>
 </main>
-<footer>
-  <p>DiamondIQ — Five Experts. One Pitch.</p>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p style="margin:0;">DiamondIQ — Five Experts. One Pitch.</p>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+  </div>
 </footer>
 </body>
 </html>

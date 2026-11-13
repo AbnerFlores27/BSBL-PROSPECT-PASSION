@@ -4,55 +4,147 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — 5-Expert Deep-Dive</title>
+<meta name="description" content="5-expert breakdown, tactical diamond diagram, 3-tier stat meters, and trivia check.">
+<script>
+(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#deep-dive">Skip to content</a>
+
 <header class="site-header">
-  <a class="brand" href="index.html">⚾ DiamondIQ</a>
-  <nav class="site-nav" aria-label="Main">
-    <a href="index.html">Home</a>
-    <a href="scenarios.html" aria-current="page">Scenarios</a>
-    <a href="compare.html">Compare</a>
-    <a href="playbook.html">My Playbook</a>
-    <a href="login.html">Log In</a>
-  </nav>
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect x="14" y="2.5" width="16.2" height="16.2" rx="2.5" transform="rotate(45 14 2.5)" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="14" cy="14" r="3" fill="currentColor"/>
+      </svg>
+      <span>DiamondIQ</span>
+    </a>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html" aria-current="page">Scenarios</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html" id="nav-login-link">Log In</a>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+        <span>Dark Mode</span>
+      </button>
+      <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 </header>
-<main id="deep-dive">
-  <h1>Scenario Deep-Dive</h1>
-  <section class="summary-banner" aria-label="Plain-English summary">
-    <h2>Quick Summary</h2>
-    <p>Placeholder: two simple sentences that give the main takeaway instantly.</p>
+
+<main id="deep-dive" class="container">
+  <div class="page-header">
+    <div>
+      <div class="meta-line" id="detail-meta">Fundamental</div>
+      <h1 id="detail-title">Scenario Deep-Dive</h1>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">
+      <div class="control-pair">
+        <label for="scenario-switcher">Switch Play</label>
+        <select id="scenario-switcher"></select>
+      </div>
+      <button type="button" id="detail-fav-btn" class="btn btn-secondary btn-sm" aria-pressed="false">Save to Favorites</button>
+    </div>
+  </div>
+
+  <section class="detail-top-grid" aria-label="Play overview and diagram">
+    <div class="surface-powder" style="display:flex;flex-direction:column;justify-content:space-between;gap:1rem;">
+      <div>
+        <h2 style="margin-bottom:0.5rem;">Plain-English Summary</h2>
+        <p id="detail-summary" style="font-size:1.05rem;margin-bottom:0;"></p>
+      </div>
+
+      <div class="rating-box" aria-label="Scenario star rating">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5rem;">
+          <span style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">Rate this play:</span>
+          <span id="rating-summary" class="tabular-nums" style="font-size:0.84rem;color:var(--text-secondary);">No ratings yet</span>
+        </div>
+        <div id="star-buttons" class="star-group" role="group" aria-label="Choose 1 to 5 stars">
+          <button type="button" class="star-btn" data-stars="1" aria-label="Rate 1 out of 5 stars">&#9733;</button>
+          <button type="button" class="star-btn" data-stars="2" aria-label="Rate 2 out of 5 stars">&#9733;</button>
+          <button type="button" class="star-btn" data-stars="3" aria-label="Rate 3 out of 5 stars">&#9733;</button>
+          <button type="button" class="star-btn" data-stars="4" aria-label="Rate 4 out of 5 stars">&#9733;</button>
+          <button type="button" class="star-btn" data-stars="5" aria-label="Rate 5 out of 5 stars">&#9733;</button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:0.75rem;">
+        <a class="btn btn-primary btn-sm" href="#trivia-heading">Jump to Trivia Check</a>
+        <a class="btn btn-secondary btn-sm" href="scenarios.html">Back to Library</a>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div class="diamond-stage" id="detail-diagram"></div>
+      <p id="detail-diagram-caption" style="margin:0;font-size:0.875rem;color:var(--text-secondary);text-align:center;"></p>
+    </div>
   </section>
-  <section aria-labelledby="experts-heading" class="expert-grid">
-    <h2 id="experts-heading">The 5-Expert Breakdown</h2>
-    <article class="card expert-card"><h3>Youth Baseball Coach</h3><details><summary>Coach's Call</summary><p>Placeholder analysis.</p></details></article>
-    <article class="card expert-card"><h3>Sabermetrics Analyst</h3><details><summary>By the Numbers</summary><p>Placeholder analysis.</p></details></article>
-    <article class="card expert-card"><h3>Web Dev Mentor</h3><details><summary>How It's Built</summary><p>Placeholder analysis.</p></details></article>
-    <article class="card expert-card"><h3>UI/UX Designer</h3><details><summary>Design Notes</summary><p>Placeholder analysis.</p></details></article>
-    <article class="card expert-card"><h3>Rookie Player</h3><details><summary>Rookie Take</summary><p>Placeholder analysis.</p></details></article>
-    <article class="card summary-card"><h3>Quick Summary</h3><p>Placeholder takeaway.</p></article>
+
+  <section class="section-block" aria-labelledby="meters-heading">
+    <div class="section-head">
+      <div>
+        <h2 id="meters-heading">3-Tier Stat Meters</h2>
+        <p class="section-subtitle">How this play grades across execution difficulty, tactical risk, and game impact.</p>
+      </div>
+    </div>
+    <div id="meters-grid" class="meters-grid"></div>
   </section>
-  <section aria-labelledby="meters-heading">
-    <h2 id="meters-heading">Stat Meters</h2>
-    <p>Placeholder: 3-tier gauges (Low / Medium / High) render here.</p>
+
+  <section class="section-block" aria-labelledby="experts-heading">
+    <div class="section-head">
+      <div>
+        <h2 id="experts-heading">The 5-Expert Breakdown</h2>
+        <p class="section-subtitle">Expand or collapse any expert card below.</p>
+      </div>
+      <button type="button" id="toggle-accordions-btn" class="btn btn-secondary btn-sm">Collapse All</button>
+    </div>
+    <div id="experts-grid" class="expert-grid"></div>
   </section>
-  <section aria-labelledby="trivia-heading">
-    <h2 id="trivia-heading">Quick Trivia Check</h2>
-    <form id="trivia-form">
-      <fieldset>
-        <legend>Placeholder question: what's the right call?</legend>
-        <label><input type="radio" name="trivia" value="a"> Choice A</label>
-        <label><input type="radio" name="trivia" value="b"> Choice B</label>
-        <label><input type="radio" name="trivia" value="c"> Choice C</label>
-        <label><input type="radio" name="trivia" value="d"> Choice D</label>
-      </fieldset>
-      <button type="submit">Check My Answer</button>
-      <p id="trivia-feedback" role="status"></p>
-    </form>
+
+  <section class="section-block" aria-labelledby="trivia-heading">
+    <div class="card">
+      <h2 id="trivia-heading" style="margin-bottom:0.25rem;">Quick Trivia Check</h2>
+      <p style="color:var(--text-secondary);margin-bottom:1.15rem;">Test your understanding to mark this scenario as mastered on your Home dashboard.</p>
+      <form id="trivia-form">
+        <fieldset class="trivia-fieldset">
+          <legend class="trivia-legend" id="trivia-legend"></legend>
+          <div class="trivia-options" id="trivia-options"></div>
+        </fieldset>
+        <button type="submit" class="btn btn-primary">Check My Answer</button>
+        <p id="trivia-feedback" class="feedback-banner" role="status"></p>
+      </form>
+    </div>
   </section>
 </main>
-<footer>
-  <p>DiamondIQ — Five Experts. One Pitch.</p>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p style="margin:0;">DiamondIQ — Five Experts. One Pitch.</p>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+  </div>
 </footer>
 </body>
 </html>

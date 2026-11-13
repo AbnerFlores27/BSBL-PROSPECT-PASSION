@@ -4,24 +4,94 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Log In</title>
+<meta name="description" content="Sign in to DiamondIQ to personalize your playbook and track mastered plays.">
+<script>
+(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#login">Skip to content</a>
+
 <header class="site-header">
-  <a class="brand" href="index.html">⚾ DiamondIQ</a>
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect x="14" y="2.5" width="16.2" height="16.2" rx="2.5" transform="rotate(45 14 2.5)" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="14" cy="14" r="3" fill="currentColor"/>
+      </svg>
+      <span>DiamondIQ</span>
+    </a>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html" id="nav-login-link" aria-current="page">Log In</a>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+        <span>Dark Mode</span>
+      </button>
+      <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 </header>
-<main id="login">
-  <h1>Log In</h1>
-  <form method="post" action="/api/auth/login">
-    <label for="login-user">Username or email</label>
-    <input type="text" id="login-user" name="identifier" required>
-    <label for="login-pass">Password</label>
-    <input type="password" id="login-pass" name="password" required minlength="8">
-    <button type="submit">Log In</button>
-    <p id="login-error" role="alert"></p>
-  </form>
-  <p>New to DiamondIQ? <a href="register.html">Create an account</a></p>
+
+<main id="login" class="container">
+  <div class="auth-shell card">
+    <h1>Log In</h1>
+    <p style="color:var(--text-secondary);">Access your DiamondIQ player profile and personal playbook.</p>
+
+    <div id="signed-in-panel" class="feedback-banner is-success" hidden style="margin-bottom:1rem;">
+      Currently signed in as <strong id="signed-in-name"></strong>.
+      <div style="margin-top:0.6rem;display:flex;gap:0.5rem;">
+        <a class="btn btn-primary btn-sm" href="playbook.html">Go to My Playbook</a>
+        <button type="button" id="sign-out-btn" class="btn btn-secondary btn-sm">Sign Out</button>
+      </div>
+    </div>
+
+    <form id="login-form" class="form-stack" novalidate>
+      <div class="field">
+        <label for="login-user">Username or Email</label>
+        <input type="text" id="login-user" name="identifier" placeholder="e.g., abner" required>
+      </div>
+      <div class="field">
+        <label for="login-pass">Password</label>
+        <input type="password" id="login-pass" name="password" placeholder="At least 8 characters" required minlength="8">
+      </div>
+      <button type="submit" class="btn btn-primary">Log In</button>
+      <p id="login-error" class="feedback-banner" role="alert"></p>
+    </form>
+
+    <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">
+      New to DiamondIQ? <a href="register.html">Create an account</a>
+    </p>
+  </div>
 </main>
-<footer><p>DiamondIQ — Five Experts. One Pitch.</p></footer>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p style="margin:0;">DiamondIQ — Five Experts. One Pitch.</p>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+  </div>
+</footer>
 </body>
 </html>

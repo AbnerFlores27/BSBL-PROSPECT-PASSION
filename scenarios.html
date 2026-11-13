@@ -4,51 +4,121 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Scenario Library</title>
+<meta name="description" content="Search, filter, and sort 8 baseball rules and Statcast scenarios.">
+<script>
+(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#library">Skip to content</a>
+
 <header class="site-header">
-  <a class="brand" href="index.html">⚾ DiamondIQ</a>
-  <nav class="site-nav" aria-label="Main">
-    <a href="index.html">Home</a>
-    <a href="scenarios.html" aria-current="page">Scenarios</a>
-    <a href="compare.html">Compare</a>
-    <a href="playbook.html">My Playbook</a>
-    <a href="login.html">Log In</a>
-  </nav>
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect x="14" y="2.5" width="16.2" height="16.2" rx="2.5" transform="rotate(45 14 2.5)" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="14" cy="14" r="3" fill="currentColor"/>
+      </svg>
+      <span>DiamondIQ</span>
+    </a>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html" aria-current="page">Scenarios</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html" id="nav-login-link">Log In</a>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+        <span>Dark Mode</span>
+      </button>
+      <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 </header>
-<main id="library">
-  <h1>Scenario Library</h1>
-  <form class="controls" onsubmit="return false;">
-    <label for="search-box">Search</label>
-    <input type="search" id="search-box" placeholder="Search plays…">
-    <label for="category-filter">Category</label>
-    <select id="category-filter">
-      <option value="all">All</option>
-      <option value="fundamental">Fundamentals</option>
-      <option value="analytics">Analytics</option>
-    </select>
-    <label for="sort-by">Sort</label>
-    <select id="sort-by">
-      <option value="az">A–Z</option>
-      <option value="difficulty">Difficulty</option>
-      <option value="popularity">Popularity</option>
-    </select>
+
+<main id="library" class="container">
+  <div class="page-header">
+    <div>
+      <h1>Scenario Library</h1>
+      <p class="page-lead">Search rules, filter by Fundamentals or Analytics, and bookmark plays to your personal list.</p>
+    </div>
+    <p id="scenario-count" class="tabular-nums" style="margin:0;color:var(--text-muted);font-size:0.9rem;font-weight:600;">8 of 8 plays</p>
+  </div>
+
+  <form class="toolbar" onsubmit="return false;" aria-label="Filter and sort scenarios">
+    <div class="search-wrap">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--text-muted);flex-shrink:0;">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <label class="sr-only" for="search-box">Search plays</label>
+      <input type="search" id="search-box" placeholder="Search plays, rules, or Statcast metrics...">
+    </div>
+
+    <div class="segmented-group" role="group" aria-label="Category filter">
+      <button type="button" class="segmented-btn" data-category-btn="all" aria-pressed="true">All</button>
+      <button type="button" class="segmented-btn" data-category-btn="fundamental" aria-pressed="false">Fundamentals</button>
+      <button type="button" class="segmented-btn" data-category-btn="analytics" aria-pressed="false">Analytics</button>
+      <button type="button" class="segmented-btn" data-category-btn="saved" aria-pressed="false">Saved</button>
+    </div>
+
+    <div class="control-pair">
+      <label for="sort-by">Sort</label>
+      <select id="sort-by">
+        <option value="az">A–Z</option>
+        <option value="difficulty">Difficulty (Easiest first)</option>
+        <option value="popularity">Popularity</option>
+      </select>
+    </div>
+
+    <div class="control-pair">
+      <label for="page-size">Per page</label>
+      <select id="page-size">
+        <option value="6" selected>6</option>
+        <option value="4">4</option>
+        <option value="all">All</option>
+      </select>
+    </div>
   </form>
-  <ul id="scenario-list" class="card-list">
-    <li><article class="card"><h2><a href="detail.html">Force Out vs. Tag Out</a></h2><p>Two ways to get a runner out: touch the base, or tag the player.</p><p class="tag">Fundamental</p></article></li>
-    <li><article class="card"><h2><a href="detail.html">Infield Fly Rule Basics</a></h2><p>Protects runners when a fielder tries to drop an easy pop-up on purpose.</p><p class="tag">Fundamental</p></article></li>
-    <li><article class="card"><h2><a href="detail.html">Stealing Second Base Timing</a></h2><p>Reading the pitcher's motion, your lead-off, and the catcher's throw time.</p><p class="tag">Fundamental</p></article></li>
-    <li><article class="card"><h2><a href="detail.html">Reading Launch Angle &amp; Exit Velocity</a></h2><p>How high and how hard a ball is hit decides the outcome.</p><p class="tag">Analytics</p></article></li>
-    <li><article class="card"><h2><a href="detail.html">Catcher Framing Fundamentals</a></h2><p>Catching a pitch cleanly to help the umpire call a strike.</p><p class="tag">Fundamental</p></article></li>
-    <li><article class="card"><h2><a href="detail.html">Executing a Relay Throw</a></h2><p>The cutoff man aligns the long throw from the outfield to the infield.</p><p class="tag">Fundamental</p></article></li>
-    <li><article class="card"><h2><a href="detail.html">Understanding xwOBA Metrics</a></h2><p>Measuring how good the contact was, ignoring defensive luck.</p><p class="tag">Analytics</p></article></li>
-    <li><article class="card"><h2><a href="detail.html">Tagging Up on Fly Balls</a></h2><p>When a runner can leave the base after an outfield catch.</p><p class="tag">Fundamental</p></article></li>
-  </ul>
-  <p id="empty-state" hidden>No plays match your search. Try a different word!</p>
+
+  <ul id="scenario-list" class="card-grid"></ul>
+
+  <nav id="pagination-bar" class="pagination-bar" aria-label="Scenario pagination" hidden>
+    <button type="button" id="page-prev-btn" class="btn btn-secondary btn-sm">Previous</button>
+    <span id="page-status" class="tabular-nums" style="font-size:0.9rem;color:var(--text-secondary);font-weight:600;">Page 1 of 2</span>
+    <button type="button" id="page-next-btn" class="btn btn-secondary btn-sm">Next</button>
+  </nav>
+
+  <div id="empty-state" class="empty-state" hidden>
+    <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">No plays match your current search or filter.</p>
+    <p style="margin-bottom:1rem;">Try a different baseball keyword or clear your active filter.</p>
+    <button type="button" id="reset-filters-btn" class="btn btn-secondary btn-sm">Reset Filters</button>
+  </div>
 </main>
-<footer>
-  <p>DiamondIQ — Five Experts. One Pitch.</p>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p style="margin:0;">DiamondIQ — Five Experts. One Pitch.</p>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+  </div>
 </footer>
 </body>
 </html>
