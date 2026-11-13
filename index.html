@@ -3,17 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DiamondIQ — Baseball Rules &amp; Stats Explained</title>
-<meta name="description" content="Baseball rules and Statcast metrics explained in plain English by five expert perspectives.">
+<title>DiamondIQ — Home</title>
+<meta name="description" content="Baseball rules and stats explained in plain English by five experts for beginners.">
 <script>
-(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="data.js" defer></script>
-<script src="app.js" defer></script>
+<script src="ui.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#home">Skip to content</a>
@@ -33,7 +32,7 @@
       <a href="scenarios.html">Scenarios</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html">My Playbook</a>
-      <a href="login.html" id="nav-login-link">Log In</a>
+      <a href="login.html">Log In</a>
     </nav>
 
     <div class="header-actions">
@@ -54,25 +53,21 @@
     <div class="hero-copy-card">
       <div>
         <p class="hero-kicker">Five Experts · One Pitch</p>
-        <h1>Baseball rules &amp; Statcast, decoded in plain English.</h1>
-        <p class="hero-lead">Skip dry rulebooks. Explore real on-field plays with tactical diamond diagrams, five complementary expert perspectives, and quick check quizzes built for new fans and young players.</p>
+        <h1>Baseball rules &amp; stats, explained in plain English.</h1>
+        <p class="hero-lead">Baseball rulebooks can feel confusing and boring when you are just starting out. DiamondIQ breaks down real plays using simple language and five helpful viewpoints.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="scenarios.html">Explore Scenario Library</a>
+          <a class="btn btn-primary" href="scenarios.html">Browse All 8 Plays</a>
           <a class="btn btn-secondary" href="compare.html">Compare Two Plays</a>
         </div>
       </div>
 
-      <div class="hero-media" id="hero-media-frame">
+      <div class="hero-media">
         <img
           src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg"
-          alt="Symmetrical view from behind home plate across a manicured baseball infield at dusk"
+          alt="View from behind home plate across a manicured baseball infield at dusk"
           referrerpolicy="no-referrer"
-          onerror="this.style.display='none';document.getElementById('hero-media-fallback').hidden=false;"
         >
-        <div id="hero-media-fallback" hidden style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--powder-soft);color:var(--accent);font-weight:600;">
-          DiamondIQ Interactive Baseball Hub
-        </div>
-        <div class="hero-media-caption">8 interactive plays covering fundamentals and modern Statcast metrics</div>
+        <div class="hero-media-caption">Learn the game one play at a time — made for beginners and new fans</div>
       </div>
     </div>
 
@@ -84,113 +79,73 @@
           <span>Fundamental</span>
         </div>
         <h2 id="featured-heading">Force Out vs. Tag Out</h2>
-        <p style="color:var(--text-secondary);margin-bottom:0;">Know immediately when a fielder only needs to touch the base versus when they must tag the runner.</p>
+        <p style="color:var(--text-secondary);">Two ways to get a runner out: step on the base with the ball, or tag the runner directly.</p>
       </div>
-
-      <div class="diamond-stage" id="featured-diagram"></div>
-
-      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem;">
-        <a class="btn btn-primary" href="detail.html?id=force-vs-tag">See the 5-Expert Breakdown</a>
-        <a href="detail.html?id=infield-fly" style="font-size:0.9rem;font-weight:600;">Or jump to Infield Fly Rule</a>
+      <div class="surface-powder">
+        <p style="margin-bottom:0;font-weight:500;">Quick rule: if a runner behind you is forcing you to run to the next base, the defense only needs to touch the bag. If nobody is pushing you forward, they have to tag you.</p>
       </div>
+      <a class="btn btn-primary" href="detail.html">See the 5-Expert Breakdown</a>
     </article>
   </section>
 
-  <section class="kpi-strip" aria-label="DiamondIQ Quick Stats">
+  <section class="kpi-strip" aria-label="DiamondIQ Quick Facts">
     <div class="kpi-card">
-      <div class="kpi-label">Opening Day Countdown</div>
-      <div class="kpi-value" id="countdown">—</div>
-      <p class="kpi-note">Days until 2027 first pitch</p>
+      <div class="kpi-label">Baseball Plays</div>
+      <div class="kpi-value">8</div>
+      <p class="kpi-note">Rules &amp; Statcast lessons</p>
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">Scenarios Mastered</div>
-      <div class="kpi-value" id="stat-mastered">0/8</div>
-      <p class="kpi-note">Trivia checks passed</p>
+      <div class="kpi-label">Expert Voices</div>
+      <div class="kpi-value">5</div>
+      <p class="kpi-note">Coach, Analyst, Dev, Designer, Rookie</p>
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">Saved Favorites</div>
-      <div class="kpi-value" id="stat-favorites">0</div>
-      <p class="kpi-note">Bookmarked plays</p>
+      <div class="kpi-label">Opening Day</div>
+      <div class="kpi-value">Mar 25</div>
+      <p class="kpi-note">2027 MLB season opener</p>
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">My Playbook Notes</div>
-      <div class="kpi-value" id="stat-playbook">0</div>
-      <p class="kpi-note">Personal strategy entries</p>
+      <div class="kpi-label">Built For</div>
+      <div class="kpi-value">10+</div>
+      <p class="kpi-note">New fans &amp; youth players</p>
     </div>
   </section>
 
   <section class="section-block" aria-labelledby="fact-heading">
     <div class="fact-bar">
       <div class="fact-copy">
-        <div class="fact-label" id="fact-heading">Daily Baseball Fact</div>
-        <p class="fact-text" id="daily-fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
+        <div class="fact-label" id="fact-heading">Baseball Fun Fact</div>
+        <p class="fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
       </div>
-      <button type="button" id="next-fact-btn" class="btn btn-secondary btn-sm">Next Fact</button>
-    </div>
-  </section>
-
-  <section class="section-block" aria-labelledby="panel-heading">
-    <div class="section-head">
-      <div>
-        <h2 id="panel-heading">Meet the 5-Expert Panel</h2>
-        <p class="section-subtitle">Every play in DiamondIQ is broken down from five distinct perspectives so nothing gets lost in jargon.</p>
-      </div>
-    </div>
-    <div class="panel-overview-grid">
-      <article class="card">
-        <div class="meta-line">01 · Fundamentals</div>
-        <h3>Youth Coach</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Footwork, situational awareness, and exact rulebook calls.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">02 · Statcast</div>
-        <h3>Sabermetrics Analyst</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Exit velocity, launch angle, pop time, and win probability.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">03 · Architecture</div>
-        <h3>Web Dev Mentor</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">How baseball logic maps cleanly to structured data and code.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">04 · Clarity</div>
-        <h3>UI/UX Designer</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Visual hierarchy, contrast, and diagram readability.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">05 · Plain English</div>
-        <h3>Rookie Player</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Memorable, zero-jargon takeaways for first-time fans.</p>
-      </article>
     </div>
   </section>
 
   <section class="section-block" aria-labelledby="explore-heading">
     <div class="section-head">
-      <h2 id="explore-heading">Where to Start</h2>
+      <h2 id="explore-heading">Start Exploring</h2>
     </div>
     <div class="explore-grid">
       <article class="card explore-card">
         <div>
-          <div class="meta-line">Library</div>
-          <h3>Browse All 8 Scenarios</h3>
-          <p style="color:var(--text-secondary);margin-bottom:0;">Search by keyword, filter Fundamentals vs. Analytics, and sort by difficulty or popularity.</p>
+          <div class="meta-line">Learn the Rules</div>
+          <h3>Scenario Library</h3>
+          <p style="color:var(--text-secondary);margin-bottom:0;">Explore 8 common plays from force outs and stealing bases to exit velocity.</p>
         </div>
         <a class="btn btn-secondary btn-sm" href="scenarios.html" style="align-self:flex-start;">Open Library</a>
       </article>
       <article class="card explore-card">
         <div>
-          <div class="meta-line">Head-to-Head</div>
+          <div class="meta-line">Side by Side</div>
           <h3>Compare Two Plays</h3>
-          <p style="color:var(--text-secondary);margin-bottom:0;">Line up any two plays side by side to compare execution difficulty, tactical risk, and impact.</p>
+          <p style="color:var(--text-secondary);margin-bottom:0;">See which play is harder to pull off, riskier on defense, or bigger for the scoreboard.</p>
         </div>
         <a class="btn btn-secondary btn-sm" href="compare.html" style="align-self:flex-start;">Compare Plays</a>
       </article>
       <article class="card explore-card">
         <div>
-          <div class="meta-line">Personal Notes</div>
-          <h3>Build My Playbook</h3>
-          <p style="color:var(--text-secondary);margin-bottom:0;">Write, edit, and organize your own baseball strategy notes alongside your bookmarked plays.</p>
+          <div class="meta-line">Your Notes</div>
+          <h3>My Playbook</h3>
+          <p style="color:var(--text-secondary);margin-bottom:0;">Keep track of your favorite plays and write down tips you want to remember.</p>
         </div>
         <a class="btn btn-secondary btn-sm" href="playbook.html" style="align-self:flex-start;">Open Playbook</a>
       </article>

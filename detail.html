@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — 5-Expert Deep-Dive</title>
-<meta name="description" content="5-expert breakdown, tactical diamond diagram, 3-tier stat meters, and trivia check.">
+<meta name="description" content="5-expert breakdown, stat meters, and trivia check for Force Out vs. Tag Out.">
 <script>
-(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="data.js" defer></script>
-<script src="app.js" defer></script>
+<script src="ui.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#deep-dive">Skip to content</a>
@@ -33,7 +32,7 @@
       <a href="scenarios.html" aria-current="page">Scenarios</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html">My Playbook</a>
-      <a href="login.html" id="nav-login-link">Log In</a>
+      <a href="login.html">Log In</a>
     </nav>
 
     <div class="header-actions">
@@ -52,80 +51,118 @@
 <main id="deep-dive" class="container">
   <div class="page-header">
     <div>
-      <div class="meta-line" id="detail-meta">Fundamental</div>
-      <h1 id="detail-title">Scenario Deep-Dive</h1>
+      <div class="meta-line">Fundamental · Scenario Deep-Dive</div>
+      <h1>Force Out vs. Tag Out</h1>
     </div>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">
-      <div class="control-pair">
-        <label for="scenario-switcher">Switch Play</label>
-        <select id="scenario-switcher"></select>
-      </div>
-      <button type="button" id="detail-fav-btn" class="btn btn-secondary btn-sm" aria-pressed="false">Save to Favorites</button>
-    </div>
+    <a class="btn btn-secondary btn-sm" href="scenarios.html">Back to Scenarios</a>
   </div>
 
-  <section class="detail-top-grid" aria-label="Play overview and diagram">
-    <div class="surface-powder" style="display:flex;flex-direction:column;justify-content:space-between;gap:1rem;">
-      <div>
-        <h2 style="margin-bottom:0.5rem;">Plain-English Summary</h2>
-        <p id="detail-summary" style="font-size:1.05rem;margin-bottom:0;"></p>
-      </div>
-
-      <div class="rating-box" aria-label="Scenario star rating">
-        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5rem;">
-          <span style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">Rate this play:</span>
-          <span id="rating-summary" class="tabular-nums" style="font-size:0.84rem;color:var(--text-secondary);">No ratings yet</span>
-        </div>
-        <div id="star-buttons" class="star-group" role="group" aria-label="Choose 1 to 5 stars">
-          <button type="button" class="star-btn" data-stars="1" aria-label="Rate 1 out of 5 stars">&#9733;</button>
-          <button type="button" class="star-btn" data-stars="2" aria-label="Rate 2 out of 5 stars">&#9733;</button>
-          <button type="button" class="star-btn" data-stars="3" aria-label="Rate 3 out of 5 stars">&#9733;</button>
-          <button type="button" class="star-btn" data-stars="4" aria-label="Rate 4 out of 5 stars">&#9733;</button>
-          <button type="button" class="star-btn" data-stars="5" aria-label="Rate 5 out of 5 stars">&#9733;</button>
-        </div>
-      </div>
-
-      <div style="display:flex;flex-wrap:wrap;gap:0.75rem;">
-        <a class="btn btn-primary btn-sm" href="#trivia-heading">Jump to Trivia Check</a>
-        <a class="btn btn-secondary btn-sm" href="scenarios.html">Back to Library</a>
-      </div>
-    </div>
-
-    <div class="card" style="display:flex;flex-direction:column;gap:0.75rem;">
-      <div class="diamond-stage" id="detail-diagram"></div>
-      <p id="detail-diagram-caption" style="margin:0;font-size:0.875rem;color:var(--text-secondary);text-align:center;"></p>
-    </div>
+  <section class="surface-powder" aria-label="Plain-English summary">
+    <h2>Quick Summary</h2>
+    <p style="margin-bottom:0;">When a runner has to run to the next base because the batter hit the ball, touching the base with the ball gets them out. Once that runner is safe to stay put (or nobody is behind them), fielders must tag the runner directly.</p>
   </section>
 
   <section class="section-block" aria-labelledby="meters-heading">
     <div class="section-head">
       <div>
-        <h2 id="meters-heading">3-Tier Stat Meters</h2>
-        <p class="section-subtitle">How this play grades across execution difficulty, tactical risk, and game impact.</p>
+        <h2 id="meters-heading">Stat Meters</h2>
+        <p class="section-subtitle">How this play grades from Low to High.</p>
       </div>
     </div>
-    <div id="meters-grid" class="meters-grid"></div>
+    <div class="meters-grid">
+      <div class="meter-card">
+        <div class="meter-head">
+          <span class="meter-name">Execution Difficulty</span>
+          <span class="meter-tier">Low (1/3)</span>
+        </div>
+        <div class="meter-track" role="img" aria-label="Execution Difficulty: Low">
+          <span class="meter-seg is-active"></span>
+          <span class="meter-seg"></span>
+          <span class="meter-seg"></span>
+        </div>
+        <p class="meter-caption">Easy once you check if the base behind is occupied.</p>
+      </div>
+      <div class="meter-card">
+        <div class="meter-head">
+          <span class="meter-name">Tactical Risk</span>
+          <span class="meter-tier">Low (1/3)</span>
+        </div>
+        <div class="meter-track" role="img" aria-label="Tactical Risk: Low">
+          <span class="meter-seg is-active"></span>
+          <span class="meter-seg"></span>
+          <span class="meter-seg"></span>
+        </div>
+        <p class="meter-caption">Stepping on the bag is the safest, quickest out.</p>
+      </div>
+      <div class="meter-card">
+        <div class="meter-head">
+          <span class="meter-name">Game Impact</span>
+          <span class="meter-tier">High (3/3)</span>
+        </div>
+        <div class="meter-track" role="img" aria-label="Game Impact: High">
+          <span class="meter-seg is-active"></span>
+          <span class="meter-seg is-active"></span>
+          <span class="meter-seg is-active"></span>
+        </div>
+        <p class="meter-caption">Helps teams turn double plays and stop big innings.</p>
+      </div>
+    </div>
   </section>
 
   <section class="section-block" aria-labelledby="experts-heading">
     <div class="section-head">
       <div>
         <h2 id="experts-heading">The 5-Expert Breakdown</h2>
-        <p class="section-subtitle">Expand or collapse any expert card below.</p>
+        <p class="section-subtitle">Tap any card to open or close that expert's note.</p>
       </div>
-      <button type="button" id="toggle-accordions-btn" class="btn btn-secondary btn-sm">Collapse All</button>
     </div>
-    <div id="experts-grid" class="expert-grid"></div>
+    <div class="expert-grid">
+      <article class="card expert-card">
+        <p class="expert-role">Baseball Fundamentals</p>
+        <h3>Youth Baseball Coach</h3>
+        <details open><summary>Coach's Call</summary><p>Before every pitch, look at the bases behind the runners. With a runner on 1st, a ground ball forces them to run to 2nd — just catch and touch 2nd base! If 1st base is empty, a runner on 2nd is not forced, so you have to tag them.</p></details>
+      </article>
+      <article class="card expert-card">
+        <p class="expert-role">Baseball Stats</p>
+        <h3>Sabermetrics Analyst</h3>
+        <details open><summary>By the Numbers</summary><p>Taking the sure force out at 2nd base instead of chasing a tricky tag protects your team from throwing errors and cuts the offense's chance of scoring in that inning almost in half.</p></details>
+      </article>
+      <article class="card expert-card">
+        <p class="expert-role">How It Works</p>
+        <h3>Web Dev Mentor</h3>
+        <details open><summary>Behind the Page</summary><p>We organize each play with clear headings, labels, and expandable &lt;details&gt; boxes so beginners can read one expert at a time without feeling overwhelmed.</p></details>
+      </article>
+      <article class="card expert-card">
+        <p class="expert-role">Design &amp; Clarity</p>
+        <h3>UI/UX Designer</h3>
+        <details open><summary>Design Notes</summary><p>On desktop, all 5 experts and the quick rule card sit in a clean 3×2 grid. On phones, they stack into one column with collapsible accordions so scrolling stays short.</p></details>
+      </article>
+      <article class="card expert-card">
+        <p class="expert-role">Beginner Take</p>
+        <h3>Rookie Player</h3>
+        <details open><summary>Rookie Take</summary><p>My easy rule to remember: if a teammate behind you is pushing you off your base, the fielder only needs to touch the bag. If nobody is pushing you, they have to tag you!</p></details>
+      </article>
+      <article class="card summary-card">
+        <p class="expert-role">Key Rule</p>
+        <h3>Official Takeaway</h3>
+        <p>MLB Rule 5.09(b)(6): A force play ends as soon as the trailing runner is put out.</p>
+        <p style="margin-top:0.75rem;margin-bottom:0;"><a href="compare.html">Compare this play with another</a></p>
+      </article>
+    </div>
   </section>
 
   <section class="section-block" aria-labelledby="trivia-heading">
     <div class="card">
-      <h2 id="trivia-heading" style="margin-bottom:0.25rem;">Quick Trivia Check</h2>
-      <p style="color:var(--text-secondary);margin-bottom:1.15rem;">Test your understanding to mark this scenario as mastered on your Home dashboard.</p>
-      <form id="trivia-form">
+      <h2 id="trivia-heading">Quick Trivia Check</h2>
+      <form id="trivia-form" onsubmit="return false;">
         <fieldset class="trivia-fieldset">
-          <legend class="trivia-legend" id="trivia-legend"></legend>
-          <div class="trivia-options" id="trivia-options"></div>
+          <legend class="trivia-legend">Runners are on 1st and 3rd with one out. The batter hits a grounder to the shortstop. Which bases have a force play?</legend>
+          <div class="trivia-options">
+            <label class="trivia-option"><input type="radio" name="trivia" value="a"><span>1st base and 2nd base only</span></label>
+            <label class="trivia-option"><input type="radio" name="trivia" value="b"><span>Home plate and 3rd base</span></label>
+            <label class="trivia-option"><input type="radio" name="trivia" value="c"><span>All four bases</span></label>
+            <label class="trivia-option"><input type="radio" name="trivia" value="d"><span>Only 1st base</span></label>
+          </div>
         </fieldset>
         <button type="submit" class="btn btn-primary">Check My Answer</button>
         <p id="trivia-feedback" class="feedback-banner" role="status"></p>

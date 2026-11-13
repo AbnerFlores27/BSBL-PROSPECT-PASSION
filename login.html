@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Log In</title>
-<meta name="description" content="Sign in to DiamondIQ to personalize your playbook and track mastered plays.">
+<meta name="description" content="Log in to your DiamondIQ account.">
 <script>
-(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="data.js" defer></script>
-<script src="app.js" defer></script>
+<script src="ui.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#login">Skip to content</a>
@@ -33,7 +32,7 @@
       <a href="scenarios.html">Scenarios</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html">My Playbook</a>
-      <a href="login.html" id="nav-login-link" aria-current="page">Log In</a>
+      <a href="login.html" aria-current="page">Log In</a>
     </nav>
 
     <div class="header-actions">
@@ -52,20 +51,11 @@
 <main id="login" class="container">
   <div class="auth-shell card">
     <h1>Log In</h1>
-    <p style="color:var(--text-secondary);">Access your DiamondIQ player profile and personal playbook.</p>
-
-    <div id="signed-in-panel" class="feedback-banner is-success" hidden style="margin-bottom:1rem;">
-      Currently signed in as <strong id="signed-in-name"></strong>.
-      <div style="margin-top:0.6rem;display:flex;gap:0.5rem;">
-        <a class="btn btn-primary btn-sm" href="playbook.html">Go to My Playbook</a>
-        <button type="button" id="sign-out-btn" class="btn btn-secondary btn-sm">Sign Out</button>
-      </div>
-    </div>
-
-    <form id="login-form" class="form-stack" novalidate>
+    <p style="color:var(--text-secondary);">Sign in to access your saved favorites and personal playbook.</p>
+    <form class="form-stack" method="post" action="/api/auth/login" onsubmit="return false;">
       <div class="field">
-        <label for="login-user">Username or Email</label>
-        <input type="text" id="login-user" name="identifier" placeholder="e.g., abner" required>
+        <label for="login-user">Username or email</label>
+        <input type="text" id="login-user" name="identifier" placeholder="Enter username or email" required>
       </div>
       <div class="field">
         <label for="login-pass">Password</label>
@@ -74,7 +64,6 @@
       <button type="submit" class="btn btn-primary">Log In</button>
       <p id="login-error" class="feedback-banner" role="alert"></p>
     </form>
-
     <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">
       New to DiamondIQ? <a href="register.html">Create an account</a>
     </p>

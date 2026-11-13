@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Scenario Library</title>
-<meta name="description" content="Search, filter, and sort 8 baseball rules and Statcast scenarios.">
+<meta name="description" content="Browse all 8 baseball rules and Statcast scenarios.">
 <script>
-(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="data.js" defer></script>
-<script src="app.js" defer></script>
+<script src="ui.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#library">Skip to content</a>
@@ -33,7 +32,7 @@
       <a href="scenarios.html" aria-current="page">Scenarios</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html">My Playbook</a>
-      <a href="login.html" id="nav-login-link">Log In</a>
+      <a href="login.html">Log In</a>
     </nav>
 
     <div class="header-actions">
@@ -53,9 +52,9 @@
   <div class="page-header">
     <div>
       <h1>Scenario Library</h1>
-      <p class="page-lead">Search rules, filter by Fundamentals or Analytics, and bookmark plays to your personal list.</p>
+      <p class="page-lead">Pick any play below to read its simple rule breakdown from five baseball viewpoints.</p>
     </div>
-    <p id="scenario-count" class="tabular-nums" style="margin:0;color:var(--text-muted);font-size:0.9rem;font-weight:600;">8 of 8 plays</p>
+    <p class="tabular-nums" style="margin:0;color:var(--text-muted);font-size:0.9rem;font-weight:600;">8 plays</p>
   </div>
 
   <form class="toolbar" onsubmit="return false;" aria-label="Filter and sort scenarios">
@@ -64,48 +63,40 @@
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
       </svg>
       <label class="sr-only" for="search-box">Search plays</label>
-      <input type="search" id="search-box" placeholder="Search plays, rules, or Statcast metrics...">
+      <input type="search" id="search-box" placeholder="Search plays by keyword...">
     </div>
 
-    <div class="segmented-group" role="group" aria-label="Category filter">
-      <button type="button" class="segmented-btn" data-category-btn="all" aria-pressed="true">All</button>
-      <button type="button" class="segmented-btn" data-category-btn="fundamental" aria-pressed="false">Fundamentals</button>
-      <button type="button" class="segmented-btn" data-category-btn="analytics" aria-pressed="false">Analytics</button>
-      <button type="button" class="segmented-btn" data-category-btn="saved" aria-pressed="false">Saved</button>
+    <div class="control-pair">
+      <label for="category-filter">Category</label>
+      <select id="category-filter">
+        <option value="all">All</option>
+        <option value="fundamental">Fundamentals</option>
+        <option value="analytics">Analytics</option>
+      </select>
     </div>
 
     <div class="control-pair">
       <label for="sort-by">Sort</label>
       <select id="sort-by">
         <option value="az">A–Z</option>
-        <option value="difficulty">Difficulty (Easiest first)</option>
+        <option value="difficulty">Difficulty</option>
         <option value="popularity">Popularity</option>
-      </select>
-    </div>
-
-    <div class="control-pair">
-      <label for="page-size">Per page</label>
-      <select id="page-size">
-        <option value="6" selected>6</option>
-        <option value="4">4</option>
-        <option value="all">All</option>
       </select>
     </div>
   </form>
 
-  <ul id="scenario-list" class="card-grid"></ul>
+  <ul id="scenario-list" class="card-grid">
+    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Force Out vs. Tag Out</a></h2><p class="scenario-desc">Two ways to get a runner out: step on the base, or tag the runner.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Infield Fly Rule Basics</a></h2><p class="scenario-desc">Protects runners so a fielder cannot drop an easy pop-up on purpose.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Stealing Second Base Timing</a></h2><p class="scenario-desc">How a runner reads the pitcher and beats the catcher's throw to 2nd.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Analytics</div><h2><a href="detail.html">Reading Launch Angle &amp; Exit Velocity</a></h2><p class="scenario-desc">How hard and how high the ball is hit decides if it becomes a hit.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Catcher Framing Fundamentals</a></h2><p class="scenario-desc">Catching a borderline pitch cleanly so the umpire clearly sees a strike.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Executing a Relay Throw</a></h2><p class="scenario-desc">How the infielder lines up to relay a deep outfield throw back home.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Analytics</div><h2><a href="detail.html">Understanding xwOBA Metrics</a></h2><p class="scenario-desc">Measuring how good a hitter's swing contact was, without fielding luck.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Tagging Up on Fly Balls</a></h2><p class="scenario-desc">When a runner can safely sprint to the next base after a fly ball catch.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+  </ul>
 
-  <nav id="pagination-bar" class="pagination-bar" aria-label="Scenario pagination" hidden>
-    <button type="button" id="page-prev-btn" class="btn btn-secondary btn-sm">Previous</button>
-    <span id="page-status" class="tabular-nums" style="font-size:0.9rem;color:var(--text-secondary);font-weight:600;">Page 1 of 2</span>
-    <button type="button" id="page-next-btn" class="btn btn-secondary btn-sm">Next</button>
-  </nav>
-
-  <div id="empty-state" class="empty-state" hidden>
-    <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">No plays match your current search or filter.</p>
-    <p style="margin-bottom:1rem;">Try a different baseball keyword or clear your active filter.</p>
-    <button type="button" id="reset-filters-btn" class="btn btn-secondary btn-sm">Reset Filters</button>
-  </div>
+  <p id="empty-state" class="empty-state" hidden>No plays match your search. Try a different word!</p>
 </main>
 
 <footer class="site-footer">

@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Compare Plays</title>
-<meta name="description" content="Compare any two baseball plays side by side on difficulty, risk, and statistical impact.">
+<meta name="description" content="Compare two baseball plays side by side on difficulty, risk, and impact.">
 <script>
-(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="data.js" defer></script>
-<script src="app.js" defer></script>
+<script src="ui.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#compare">Skip to content</a>
@@ -33,7 +32,7 @@
       <a href="scenarios.html">Scenarios</a>
       <a href="compare.html" aria-current="page">Compare</a>
       <a href="playbook.html">My Playbook</a>
-      <a href="login.html" id="nav-login-link">Log In</a>
+      <a href="login.html">Log In</a>
     </nav>
 
     <div class="header-actions">
@@ -53,40 +52,64 @@
   <div class="page-header">
     <div>
       <h1>Play &amp; Stat Comparison</h1>
-      <p class="page-lead">Pick any two plays to compare execution difficulty, tactical risk, and game impact side by side.</p>
+      <p class="page-lead">Compare two baseball plays side by side to see which one is tougher to pull off and why it matters.</p>
     </div>
   </div>
 
   <form class="card compare-controls" onsubmit="return false;" aria-label="Select plays to compare">
     <div class="field">
       <label for="play-a">Play A</label>
-      <select id="play-a" style="width:100%;"></select>
+      <select id="play-a" style="width:100%;">
+        <option>Force Out vs. Tag Out</option>
+        <option>Infield Fly Rule Basics</option>
+        <option>Stealing Second Base Timing</option>
+      </select>
     </div>
-    <button type="button" id="swap-plays-btn" class="btn btn-secondary">Swap Plays</button>
+    <div></div>
     <div class="field">
       <label for="play-b">Play B</label>
-      <select id="play-b" style="width:100%;"></select>
+      <select id="play-b" style="width:100%;">
+        <option>Tagging Up on Fly Balls</option>
+        <option>Catcher Framing Fundamentals</option>
+        <option>Executing a Relay Throw</option>
+      </select>
     </div>
   </form>
 
   <div class="table-wrap">
     <table class="compare-table">
-      <caption>Side-by-side comparison across all key DiamondIQ evaluation tiers</caption>
+      <caption>Side-by-side play comparison</caption>
       <thead>
         <tr>
-          <th scope="col">Evaluation Category</th>
-          <th scope="col" id="compare-head-a">Play A</th>
-          <th scope="col" id="compare-head-b">Play B</th>
+          <th scope="col">Category</th>
+          <th scope="col">Force Out vs. Tag Out</th>
+          <th scope="col">Tagging Up on Fly Balls</th>
         </tr>
       </thead>
-      <tbody id="compare-tbody"></tbody>
+      <tbody>
+        <tr>
+          <th scope="row">Execution difficulty</th>
+          <td><strong>Low</strong> — touch the forced base</td>
+          <td><strong>Low</strong> — wait for first glove touch</td>
+        </tr>
+        <tr>
+          <th scope="row">Tactical risk</th>
+          <td><strong>Low</strong> — safe, routine play</td>
+          <td><strong>Medium</strong> — leaving early causes an out</td>
+        </tr>
+        <tr>
+          <th scope="row">Game impact</th>
+          <td><strong>High</strong> — sets up double plays</td>
+          <td><strong>High</strong> — scores runs on sacrifice flies</td>
+        </tr>
+      </tbody>
     </table>
   </div>
 
-  <section class="section-block" aria-labelledby="verdict-heading">
+  <section class="section-block">
     <div class="surface-powder">
-      <h2 id="verdict-heading" style="font-size:1.15rem;margin-bottom:0.35rem;">Coach &amp; Analyst Verdict</h2>
-      <p id="compare-verdict" style="margin-bottom:0;"></p>
+      <h2 style="font-size:1.15rem;margin-bottom:0.35rem;">Quick Verdict</h2>
+      <p id="compare-verdict" style="margin-bottom:0;">Both plays are beginner-friendly fundamentals. Force outs happen on defense almost every inning, while tagging up helps runners score without needing a base hit.</p>
     </div>
   </section>
 </main>

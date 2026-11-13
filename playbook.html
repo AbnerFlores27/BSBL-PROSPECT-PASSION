@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — My Playbook</title>
-<meta name="description" content="Create, edit, and manage your personal baseball strategy notes and saved favorite plays.">
+<meta name="description" content="Save personal baseball strategy notes and favorite plays.">
 <script>
-(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="data.js" defer></script>
-<script src="app.js" defer></script>
+<script src="ui.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#playbook">Skip to content</a>
@@ -33,7 +32,7 @@
       <a href="scenarios.html">Scenarios</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html" aria-current="page">My Playbook</a>
-      <a href="login.html" id="nav-login-link">Log In</a>
+      <a href="login.html">Log In</a>
     </nav>
 
     <div class="header-actions">
@@ -53,62 +52,46 @@
   <div class="page-header">
     <div>
       <h1>My Playbook</h1>
-      <p class="page-lead">Save personal scouting notes, practice reminders, and bookmarked scenarios in one place.</p>
+      <p class="page-lead">Write down your own baseball notes, drills, and difficulty ratings.</p>
     </div>
   </div>
 
-  <p id="playbook-login-note" class="feedback-banner is-success" style="margin-top:0;margin-bottom:1.5rem;" hidden></p>
+  <p id="playbook-login-note" class="feedback-banner is-warning" style="margin-top:0;margin-bottom:1.5rem;">
+    Log in to save plays and notes to your personal playbook. <a href="login.html">Log in or register</a>
+  </p>
 
-  <section id="playbook-locked-notice" class="card" style="max-width:620px;" hidden aria-label="Sign in required">
-    <h2>Log in to build your Playbook</h2>
-    <p style="color:var(--text-secondary);">Only signed-in DiamondIQ members can create, edit, or delete playbook strategy notes and save favorite plays. Create a free account in seconds to get started.</p>
-    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1rem;">
-      <a class="btn btn-primary" href="login.html">Log In</a>
-      <a class="btn btn-secondary" href="register.html">Create an Account</a>
-    </div>
-  </section>
-
-  <div id="playbook-workspace" class="playbook-layout" hidden>
+  <div class="playbook-layout">
     <section class="card" aria-labelledby="add-heading">
       <h2 id="add-heading">Add a Play Note</h2>
-      <form id="playbook-form" class="form-stack" novalidate>
+      <form id="playbook-form" class="form-stack" onsubmit="return false;">
         <div class="field">
-          <label for="note-title">Play or Drill Name</label>
-          <input type="text" id="note-title" name="title" placeholder="e.g., First-and-Third Cutoff Signal" required>
+          <label for="note-title">Play name</label>
+          <input type="text" id="note-title" name="title" placeholder="e.g., Force out at 2nd base" required>
         </div>
         <div class="field">
-          <label for="note-body">My Strategy Notes</label>
-          <textarea id="note-body" name="body" rows="4" placeholder="Write the key rule, cue, or practice focus..." required></textarea>
+          <label for="note-body">My strategy notes</label>
+          <textarea id="note-body" name="body" rows="4" placeholder="Write what you want to remember during a game..." required></textarea>
         </div>
         <div class="field">
-          <label for="note-rating">Difficulty Rating</label>
+          <label for="note-rating">Difficulty rating</label>
           <select id="note-rating" name="rating">
             <option value="1">1 — Easy</option>
-            <option value="2">2 — Comfortable</option>
+            <option value="2">2</option>
             <option value="3" selected>3 — Average</option>
-            <option value="4">4 — Challenging</option>
+            <option value="4">4</option>
             <option value="5">5 — Hard</option>
           </select>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.6rem;">
-          <button type="submit" id="playbook-submit-btn" class="btn btn-primary">Add to Playbook</button>
-          <button type="button" id="playbook-cancel-edit" class="btn btn-ghost" hidden>Cancel Edit</button>
-        </div>
+        <button type="submit" class="btn btn-primary">Add to Playbook</button>
         <p id="playbook-feedback" class="feedback-banner" role="status"></p>
       </form>
-
-      <div style="margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-        <h3 style="margin-bottom:0.75rem;">Saved Favorite Plays</h3>
-        <div id="playbook-favorites" style="display:flex;flex-direction:column;gap:0.65rem;"></div>
-      </div>
     </section>
 
     <section aria-labelledby="entries-heading">
-      <h2 id="entries-heading" style="margin-bottom:1rem;">Saved Playbook Notes</h2>
+      <h2 id="entries-heading" style="margin-bottom:1rem;">Saved Entries</h2>
       <ul id="playbook-entries" class="playbook-list"></ul>
       <div id="playbook-empty" class="empty-state">
-        <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.35rem;">Your playbook is empty</p>
-        <p style="margin-bottom:0;">Add your first strategy note using the form on the left.</p>
+        <p style="margin-bottom:0;">Your playbook is empty — add your first play note on the left!</p>
       </div>
     </section>
   </div>

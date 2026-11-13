@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Register</title>
-<meta name="description" content="Create your DiamondIQ account to save favorite plays and build your playbook.">
+<meta name="description" content="Create your DiamondIQ account.">
 <script>
-(function(){try{var t=localStorage.getItem('diamondiq_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="data.js" defer></script>
-<script src="app.js" defer></script>
+<script src="ui.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#register">Skip to content</a>
@@ -33,7 +32,7 @@
       <a href="scenarios.html">Scenarios</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html">My Playbook</a>
-      <a href="login.html" id="nav-login-link">Log In</a>
+      <a href="login.html">Log In</a>
     </nav>
 
     <div class="header-actions">
@@ -52,9 +51,8 @@
 <main id="register" class="container">
   <div class="auth-shell card">
     <h1>Create Your Account</h1>
-    <p style="color:var(--text-secondary);">Set up a DiamondIQ profile to track your mastered scenarios and notes.</p>
-
-    <form id="register-form" class="form-stack" novalidate>
+    <p style="color:var(--text-secondary);">Make a free account to bookmark plays and build your own playbook.</p>
+    <form class="form-stack" method="post" action="/api/auth/register" onsubmit="return false;">
       <div class="field">
         <label for="reg-user">Username</label>
         <input type="text" id="reg-user" name="username" placeholder="3–30 characters" required minlength="3" maxlength="30">
@@ -70,7 +68,6 @@
       <button type="submit" class="btn btn-primary">Create Account</button>
       <p id="register-error" class="feedback-banner" role="alert"></p>
     </form>
-
     <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">
       Already have an account? <a href="login.html">Log in</a>
     </p>
