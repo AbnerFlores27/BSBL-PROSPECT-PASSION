@@ -5,7 +5,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -35,6 +35,6 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log('DiamondIQ running: http://localhost:' + PORT);
 });
