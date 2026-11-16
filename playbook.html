@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — My Playbook</title>
-<link rel="icon" href="data:,">
 <meta name="description" content="Save personal baseball strategy notes and favorite plays.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
@@ -14,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
-<script src="auth.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#playbook">Skip to content</a>
@@ -56,6 +54,7 @@
       <h1>My Playbook</h1>
       <p class="page-lead">Write down your own baseball notes, drills, and difficulty ratings.</p>
     </div>
+    <p id="playbook-user-badge" class="tabular-nums" style="margin:0;color:var(--accent);font-size:0.9rem;font-weight:600;" hidden></p>
   </div>
 
   <p id="playbook-login-note" class="feedback-banner is-warning" style="margin-top:0;margin-bottom:1.5rem;">
@@ -65,26 +64,26 @@
   <div class="playbook-layout">
     <section class="card" aria-labelledby="add-heading">
       <h2 id="add-heading">Add a Play Note</h2>
-      <form id="playbook-form" class="form-stack" onsubmit="return false;">
+      <form id="playbook-form" class="form-stack" onsubmit="return false;" novalidate>
         <div class="field">
           <label for="note-title">Play name</label>
-          <input type="text" id="note-title" name="title" placeholder="e.g., Force out at 2nd base" required>
+          <input type="text" id="note-title" name="title" maxlength="120" placeholder="e.g., Force out at 2nd base" required>
         </div>
         <div class="field">
           <label for="note-body">My strategy notes</label>
-          <textarea id="note-body" name="body" rows="4" placeholder="Write what you want to remember during a game..." required></textarea>
+          <textarea id="note-body" name="body" rows="4" maxlength="2000" placeholder="Write what you want to remember during a game..." required></textarea>
         </div>
         <div class="field">
           <label for="note-rating">Difficulty rating</label>
           <select id="note-rating" name="rating">
             <option value="1">1 — Easy</option>
-            <option value="2">2</option>
+            <option value="2">2 — Comfortable</option>
             <option value="3" selected>3 — Average</option>
-            <option value="4">4</option>
+            <option value="4">4 — Challenging</option>
             <option value="5">5 — Hard</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">Add to Playbook</button>
+        <button type="submit" id="playbook-submit-btn" class="btn btn-primary">Add to Playbook</button>
         <p id="playbook-feedback" class="feedback-banner" role="status"></p>
       </form>
     </section>
@@ -97,6 +96,19 @@
       </div>
     </section>
   </div>
+
+  <section class="section-block" aria-labelledby="favorites-heading">
+    <div class="section-head">
+      <div>
+        <h2 id="favorites-heading">Saved Favorite Plays</h2>
+        <p class="section-subtitle">Quick links to scenarios you bookmarked from the library.</p>
+      </div>
+    </div>
+    <ul id="playbook-favorites" class="card-grid"></ul>
+    <div id="favorites-empty" class="empty-state">
+      <p style="margin-bottom:0;">No favorite plays saved yet. Browse <a href="scenarios.html">Scenarios</a> to bookmark plays!</p>
+    </div>
+  </section>
 </main>
 
 <footer class="site-footer">

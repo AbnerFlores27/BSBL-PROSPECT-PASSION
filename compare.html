@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Compare Plays</title>
-<link rel="icon" href="data:,">
 <meta name="description" content="Compare two baseball plays side by side on difficulty, risk, and impact.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
@@ -14,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
-<script src="auth.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#compare">Skip to content</a>
@@ -61,20 +59,12 @@
   <form class="card compare-controls" onsubmit="return false;" aria-label="Select plays to compare">
     <div class="field">
       <label for="play-a">Play A</label>
-      <select id="play-a" style="width:100%;">
-        <option>Force Out vs. Tag Out</option>
-        <option>Infield Fly Rule Basics</option>
-        <option>Stealing Second Base Timing</option>
-      </select>
+      <select id="play-a" style="width:100%;"></select>
     </div>
-    <div></div>
+    <button type="button" id="swap-plays-btn" class="btn btn-secondary btn-sm" aria-label="Swap Play A and Play B">Swap</button>
     <div class="field">
       <label for="play-b">Play B</label>
-      <select id="play-b" style="width:100%;">
-        <option>Tagging Up on Fly Balls</option>
-        <option>Catcher Framing Fundamentals</option>
-        <option>Executing a Relay Throw</option>
-      </select>
+      <select id="play-b" style="width:100%;"></select>
     </div>
   </form>
 
@@ -84,27 +74,11 @@
       <thead>
         <tr>
           <th scope="col">Category</th>
-          <th scope="col">Force Out vs. Tag Out</th>
-          <th scope="col">Tagging Up on Fly Balls</th>
+          <th scope="col" id="compare-col-a">Play A</th>
+          <th scope="col" id="compare-col-b">Play B</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <th scope="row">Execution difficulty</th>
-          <td><strong>Low</strong> — touch the forced base</td>
-          <td><strong>Low</strong> — wait for first glove touch</td>
-        </tr>
-        <tr>
-          <th scope="row">Tactical risk</th>
-          <td><strong>Low</strong> — safe, routine play</td>
-          <td><strong>Medium</strong> — leaving early causes an out</td>
-        </tr>
-        <tr>
-          <th scope="row">Game impact</th>
-          <td><strong>High</strong> — sets up double plays</td>
-          <td><strong>High</strong> — scores runs on sacrifice flies</td>
-        </tr>
-      </tbody>
+      <tbody id="compare-tbody"></tbody>
     </table>
   </div>
 

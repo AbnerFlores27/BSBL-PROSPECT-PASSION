@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Scenario Library</title>
-<link rel="icon" href="data:,">
 <meta name="description" content="Browse all 8 baseball rules and Statcast scenarios.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
@@ -14,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
-<script src="auth.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#library">Skip to content</a>
@@ -56,7 +54,7 @@
       <h1>Scenario Library</h1>
       <p class="page-lead">Pick any play below to read its simple rule breakdown from five baseball viewpoints.</p>
     </div>
-    <p class="tabular-nums" style="margin:0;color:var(--text-muted);font-size:0.9rem;font-weight:600;">8 plays</p>
+    <p id="scenario-count" class="tabular-nums" style="margin:0;color:var(--text-muted);font-size:0.9rem;font-weight:600;">8 plays</p>
   </div>
 
   <form class="toolbar" onsubmit="return false;" aria-label="Filter and sort scenarios">
@@ -68,13 +66,11 @@
       <input type="search" id="search-box" placeholder="Search plays by keyword...">
     </div>
 
-    <div class="control-pair">
-      <label for="category-filter">Category</label>
-      <select id="category-filter">
-        <option value="all">All</option>
-        <option value="fundamental">Fundamentals</option>
-        <option value="analytics">Analytics</option>
-      </select>
+    <div class="segmented-group" role="group" aria-label="Category filter">
+      <button type="button" class="segmented-btn" data-category="all" aria-pressed="true">All</button>
+      <button type="button" class="segmented-btn" data-category="fundamental" aria-pressed="false">Fundamentals</button>
+      <button type="button" class="segmented-btn" data-category="analytics" aria-pressed="false">Analytics</button>
+      <button type="button" class="segmented-btn" data-category="saved" aria-pressed="false">Saved</button>
     </div>
 
     <div class="control-pair">
@@ -85,18 +81,26 @@
         <option value="popularity">Popularity</option>
       </select>
     </div>
+
+    <div class="control-pair">
+      <label for="page-size">Show</label>
+      <select id="page-size" style="min-width:90px;">
+        <option value="6">6</option>
+        <option value="4">4</option>
+        <option value="all" selected>All</option>
+      </select>
+    </div>
   </form>
 
   <ul id="scenario-list" class="card-grid">
-    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Force Out vs. Tag Out</a></h2><p class="scenario-desc">Two ways to get a runner out: step on the base, or tag the runner.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
-    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Infield Fly Rule Basics</a></h2><p class="scenario-desc">Protects runners so a fielder cannot drop an easy pop-up on purpose.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
-    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Stealing Second Base Timing</a></h2><p class="scenario-desc">How a runner reads the pitcher and beats the catcher's throw to 2nd.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
-    <li><article class="card scenario-card"><div><div class="meta-line">Analytics</div><h2><a href="detail.html">Reading Launch Angle &amp; Exit Velocity</a></h2><p class="scenario-desc">How hard and how high the ball is hit decides if it becomes a hit.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
-    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Catcher Framing Fundamentals</a></h2><p class="scenario-desc">Catching a borderline pitch cleanly so the umpire clearly sees a strike.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
-    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Executing a Relay Throw</a></h2><p class="scenario-desc">How the infielder lines up to relay a deep outfield throw back home.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
-    <li><article class="card scenario-card"><div><div class="meta-line">Analytics</div><h2><a href="detail.html">Understanding xwOBA Metrics</a></h2><p class="scenario-desc">Measuring how good a hitter's swing contact was, without fielding luck.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
-    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html">Tagging Up on Fly Balls</a></h2><p class="scenario-desc">When a runner can safely sprint to the next base after a fly ball catch.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html">Open Breakdown</a></div></article></li>
+    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html?id=force-vs-tag">Force Out vs. Tag Out</a></h2><p class="scenario-desc">Two ways to get a runner out: step on the base, or tag the runner.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html?id=force-vs-tag">Open Breakdown</a></div></article></li>
   </ul>
+
+  <div id="pagination-bar" class="pagination-bar" hidden>
+    <button type="button" id="prev-page-btn" class="btn btn-secondary btn-sm">Previous</button>
+    <span id="page-indicator" class="tabular-nums" style="font-size:0.9rem;color:var(--text-secondary);">Page 1 of 1</span>
+    <button type="button" id="next-page-btn" class="btn btn-secondary btn-sm">Next</button>
+  </div>
 
   <p id="empty-state" class="empty-state" hidden>No plays match your search. Try a different word!</p>
 </main>

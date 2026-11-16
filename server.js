@@ -1,230 +1,389 @@
-const crypto = require('crypto');
+/* DiamondIQ — Express Server & REST API
+   Serves the 7 HTML/CSS/JS pages and full REST API for auth,
+   8 seeded baseball scenarios, trivia scoring, ratings, favorites,
+   and protected user-owned Playbook CRUD. */
+
 const express = require('express');
 const path = require('path');
-const { promisify } = require('util');
-const { pool } = require('./db');
+const { store } = require('./db');
+const { OPENING_DAY_ISO, EXPERT_PROFILES, FUN_FACTS } = require('./data');
 
 const app = express();
-const PORT = Number(process.env.PORT) || 5000;
-const SESSION_COOKIE = 'diamondiq_session';
-const SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
-const scryptAsync = promisify(crypto.scrypt);
+const PORT = Number(process.env.PORT) || 3000;
+const COOKIE_NAME = 'diamondiq_sid';
+const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-app.set('trust proxy', 1);
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '100kb' }));
 
-function publicUser(row) {
-  return {
-    id: row.id,
-    username: row.username,
-    email: row.email,
-    createdAt: row.created_at,
-  };
+function parseCookies(cookieHeader) {
+  const result = {};
+  if (!cookieHeader || typeof cookieHeader !== 'string') return result;
+  for (const part of cookieHeader.split(';')) {
+    const eqIdx = part.indexOf('=');
+    if (eqIdx === -1) continue;
+    const key = part.slice(0, eqIdx).trim();
+    const val = part.slice(eqIdx + 1).trim();
+    if (key) {
+      try {
+        result[key] = decodeURIComponent(val);
+      } catch {
+        result[key] = val;
+      }
+    }
+  }
+  return result;
 }
 
-function sessionCookieOptions(req, expiresAt) {
-  return {
+function setSessionCookie(res, token) {
+  res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: req.secure,
     sameSite: 'lax',
     path: '/',
-    expires: expiresAt,
-  };
-}
-
-function readSessionToken(req) {
-  const cookieHeader = req.headers.cookie || '';
-  const cookie = cookieHeader.split(';').map((part) => part.trim())
-    .find((part) => part.startsWith(`${SESSION_COOKIE}=`));
-  if (!cookie) return null;
-  const token = cookie.slice(SESSION_COOKIE.length + 1);
-  return /^[A-Za-z0-9_-]{43}$/.test(token) ? token : null;
-}
-
-function hashSessionToken(token) {
-  return crypto.createHash('sha256').update(token).digest('hex');
-}
-
-async function createSession(userId, client = pool) {
-  const token = crypto.randomBytes(32).toString('base64url');
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  await client.query(
-    'INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)',
-    [hashSessionToken(token), userId, expiresAt],
-  );
-  return { token, expiresAt };
-}
-
-function setSessionCookie(req, res, session) {
-  res.cookie(SESSION_COOKIE, session.token, sessionCookieOptions(req, session.expiresAt));
-}
-
-async function currentUser(req) {
-  const token = readSessionToken(req);
-  if (!token) return null;
-  const result = await pool.query(
-    `SELECT u.id, u.username, u.email, u.created_at
-       FROM sessions s
-       JOIN users u ON u.id = s.user_id
-      WHERE s.token_hash = $1 AND s.expires_at > NOW()`,
-    [hashSessionToken(token)],
-  );
-  return result.rows[0] || null;
-}
-
-async function hashPassword(password) {
-  const salt = crypto.randomBytes(16);
-  const derivedKey = await scryptAsync(password, salt, 64, {
-    N: 16384,
-    r: 8,
-    p: 1,
-    maxmem: 64 * 1024 * 1024,
+    maxAge: COOKIE_MAX_AGE_MS
   });
-  return `scrypt$16384$8$1$${salt.toString('base64url')}$${derivedKey.toString('base64url')}`;
 }
 
-async function verifyPassword(password, storedHash) {
-  const parts = storedHash.split('$');
-  if (parts.length !== 6 || parts[0] !== 'scrypt') return false;
-  const [, cost, blockSize, parallelization, saltText, keyText] = parts;
-  if (cost !== '16384' || blockSize !== '8' || parallelization !== '1') return false;
+function clearSessionCookie(res) {
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/'
+  });
+}
+
+async function attachUser(req, _res, next) {
   try {
-    const salt = Buffer.from(saltText, 'base64url');
-    const expected = Buffer.from(keyText, 'base64url');
-    if (salt.length !== 16 || expected.length !== 64) return false;
-    const actual = await scryptAsync(password, salt, expected.length, {
-      N: 16384,
-      r: 8,
-      p: 1,
-      maxmem: 64 * 1024 * 1024,
-    });
-    return crypto.timingSafeEqual(actual, expected);
-  } catch {
-    return false;
+    const cookies = parseCookies(req.headers.cookie);
+    const token = cookies[COOKIE_NAME];
+    req.sessionToken = token || null;
+    req.user = token ? await store.getUserBySession(token) : null;
+    next();
+  } catch (err) {
+    next(err);
   }
 }
 
-app.use('/api/auth', (_req, res, next) => {
-  res.set('Cache-Control', 'no-store');
-  next();
+function requireAuth(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Please log in to continue.' });
+  }
+  return next();
+}
+
+app.use('/api', attachUser);
+
+/* =========================================================
+   Health, Stats & Fun Facts
+   ========================================================= */
+app.get('/api/health', async (_req, res) => {
+  res.json({ ok: true, storage: store.mode });
 });
 
-app.get('/api/auth/me', async (req, res, next) => {
+app.get('/api/stats', async (req, res, next) => {
   try {
-    const user = await currentUser(req);
-    res.json({ user: user ? publicUser(user) : null });
-  } catch (error) {
-    next(error);
+    const scenarios = await store.listScenarios();
+    const now = Date.now();
+    const openingMs = new Date(OPENING_DAY_ISO).getTime();
+    const daysUntilOpeningDay = Math.max(0, Math.ceil((openingMs - now) / (1000 * 60 * 60 * 24)));
+    const userStats = req.user ? await store.getUserStats(req.user.id) : null;
+
+    res.json({
+      openingDayIso: OPENING_DAY_ISO,
+      daysUntilOpeningDay,
+      totalScenarios: scenarios.length,
+      expertsCount: EXPERT_PROFILES.length,
+      experts: EXPERT_PROFILES,
+      funFacts: FUN_FACTS,
+      userStats
+    });
+  } catch (err) {
+    next(err);
   }
+});
+
+/* =========================================================
+   Authentication
+   ========================================================= */
+app.get('/api/auth/me', (req, res) => {
+  res.json({ user: req.user || null });
 });
 
 app.post('/api/auth/register', async (req, res, next) => {
-  let client;
   try {
-    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
-      return res.status(400).json({ error: 'Send your account details to register.' });
-    }
-    const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
-    const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
-    const password = typeof req.body.password === 'string' ? req.body.password : '';
-    const emailNormalized = email.toLowerCase();
+    const { username, email, password } = req.body || {};
+    const cleanUser = typeof username === 'string' ? username.trim() : '';
+    const cleanEmail = typeof email === 'string' ? email.trim() : '';
+    const cleanPass = typeof password === 'string' ? password : '';
 
-    if (!/^[A-Za-z0-9_]{3,30}$/.test(username)) {
-      return res.status(400).json({ error: 'Username must be 3–30 characters using letters, numbers, or underscores.' });
+    if (!/^[a-zA-Z0-9_-]{3,30}$/.test(cleanUser)) {
+      return res.status(400).json({
+        error: 'Username must be 3–30 characters (letters, numbers, _ or -).'
+      });
     }
-    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Enter a valid email address.' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 120) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
     }
-    if (password.length < 8 || password.length > 128) {
-      return res.status(400).json({ error: 'Password must be 8–128 characters.' });
+    if (cleanPass.length < 8 || cleanPass.length > 128) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
     }
 
-    const passwordHash = await hashPassword(password);
-    client = await pool.connect();
-    await client.query('BEGIN');
-    const result = await client.query(
-      `INSERT INTO users (username, username_normalized, email, email_normalized, password_hash)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, username, email, created_at`,
-      [username, username.toLowerCase(), email, emailNormalized, passwordHash],
-    );
-    const user = result.rows[0];
-    const session = await createSession(user.id, client);
-    await client.query('COMMIT');
-    setSessionCookie(req, res, session);
-    return res.status(201).json({ user: publicUser(user) });
-  } catch (error) {
-    if (client) {
-      try {
-        await client.query('ROLLBACK');
-      } catch {
-        // The connection may already have closed after a failed commit.
-      }
+    const user = await store.createUser({
+      username: cleanUser,
+      email: cleanEmail,
+      password: cleanPass
+    });
+    const token = await store.createSession(user.id);
+    setSessionCookie(res, token);
+    return res.status(201).json({ user });
+  } catch (err) {
+    if (err.code === 'CONFLICT') {
+      return res.status(409).json({ error: err.message });
     }
-    if (error.code === '23505') {
-      return res.status(409).json({ error: 'That username or email is already registered. Try signing in instead.' });
-    }
-    return next(error);
-  } finally {
-    if (client) client.release();
+    return next(err);
   }
 });
 
 app.post('/api/auth/login', async (req, res, next) => {
   try {
-    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
-      return res.status(400).json({ error: 'Enter your username or email and password.' });
-    }
-    const identifier = typeof req.body.identifier === 'string' ? req.body.identifier.trim().toLowerCase() : '';
-    const password = typeof req.body.password === 'string' ? req.body.password : '';
-    if (!identifier || !password) {
-      return res.status(400).json({ error: 'Enter your username or email and password.' });
+    const { identifier, password } = req.body || {};
+    const cleanId = typeof identifier === 'string' ? identifier.trim() : '';
+    const cleanPass = typeof password === 'string' ? password : '';
+
+    if (!cleanId || !cleanPass) {
+      return res.status(400).json({ error: 'Enter your username/email and password.' });
     }
 
-    const result = await pool.query(
-      `SELECT id, username, email, created_at, password_hash
-         FROM users
-        WHERE username_normalized = $1 OR email_normalized = $1
-        LIMIT 1`,
-      [identifier],
-    );
-    const user = result.rows[0];
-    if (!user || !(await verifyPassword(password, user.password_hash))) {
-      return res.status(401).json({ error: 'Username/email or password is incorrect.' });
+    const user = await store.verifyUserCredentials(cleanId, cleanPass);
+    if (!user) {
+      return res.status(401).json({ error: 'Wrong username/email or password. Try again!' });
     }
 
-    const session = await createSession(user.id);
-    setSessionCookie(req, res, session);
-    return res.json({ user: publicUser(user) });
-  } catch (error) {
-    return next(error);
+    const token = await store.createSession(user.id);
+    setSessionCookie(res, token);
+    return res.json({ user });
+  } catch (err) {
+    return next(err);
   }
 });
 
 app.post('/api/auth/logout', async (req, res, next) => {
   try {
-    const token = readSessionToken(req);
-    if (token) {
-      await pool.query('DELETE FROM sessions WHERE token_hash = $1', [hashSessionToken(token)]);
+    if (req.sessionToken) {
+      await store.deleteSession(req.sessionToken);
     }
-    res.clearCookie(SESSION_COOKIE, {
-      httpOnly: true,
-      secure: req.secure,
-      sameSite: 'lax',
-      path: '/',
-    });
+    clearSessionCookie(res);
     return res.json({ ok: true });
-  } catch (error) {
-    return next(error);
+  } catch (err) {
+    return next(err);
   }
 });
 
-app.use('/api', (error, _req, res, _next) => {
-  console.error('API request failed:', error.message);
-  res.status(500).json({ error: 'The request could not be completed. Please try again.' });
+/* =========================================================
+   Scenarios, Trivia & Ratings
+   ========================================================= */
+app.get('/api/scenarios', async (req, res, next) => {
+  try {
+    const { q = '', category = 'all', sort = 'az' } = req.query;
+    const scenarios = await store.listScenarios({
+      q: String(q),
+      category: String(category),
+      sort: String(sort)
+    });
+    res.json({ scenarios });
+  } catch (err) {
+    next(err);
+  }
 });
 
+app.get('/api/scenarios/:id', async (req, res, next) => {
+  try {
+    const scenario = await store.getScenarioById(req.params.id);
+    if (!scenario) {
+      return res.status(404).json({ error: 'Scenario not found.' });
+    }
+    return res.json({ scenario });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.post('/api/scenarios/:id/trivia', async (req, res, next) => {
+  try {
+    const scenario = await store.getScenarioById(req.params.id);
+    if (!scenario) {
+      return res.status(404).json({ error: 'Scenario not found.' });
+    }
+    const answer = typeof req.body?.answer === 'string' ? req.body.answer.trim().toLowerCase() : '';
+    if (!answer) {
+      return res.status(400).json({ error: 'Please pick an answer before checking.' });
+    }
+
+    const correct = answer === scenario.trivia.correctKey;
+    let mastered = false;
+    if (correct && req.user) {
+      mastered = await store.markTriviaMastered(req.user.id, scenario.id);
+    }
+
+    return res.json({
+      correct,
+      correctKey: scenario.trivia.correctKey,
+      explanation: correct
+        ? scenario.trivia.explanation
+        : 'Not quite! Read the 5-expert breakdown above for a hint and try another choice.',
+      mastered
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.get('/api/scenarios/:id/rating', async (req, res, next) => {
+  try {
+    const scenario = await store.getScenarioById(req.params.id);
+    if (!scenario) {
+      return res.status(404).json({ error: 'Scenario not found.' });
+    }
+    const rating = await store.getScenarioRating(scenario.id, req.user?.id || null);
+    return res.json(rating);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.post('/api/scenarios/:id/rating', requireAuth, async (req, res, next) => {
+  try {
+    const scenario = await store.getScenarioById(req.params.id);
+    if (!scenario) {
+      return res.status(404).json({ error: 'Scenario not found.' });
+    }
+    const stars = Number(req.body?.stars);
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5 stars.' });
+    }
+    const rating = await store.upsertScenarioRating(scenario.id, req.user.id, stars);
+    return res.json(rating);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/* =========================================================
+   Favorites
+   ========================================================= */
+app.get('/api/favorites', async (req, res, next) => {
+  try {
+    if (!req.user) return res.json({ favorites: [] });
+    const favorites = await store.listFavorites(req.user.id);
+    return res.json({ favorites });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.post('/api/favorites/:scenarioId', requireAuth, async (req, res, next) => {
+  try {
+    const scenario = await store.getScenarioById(req.params.scenarioId);
+    if (!scenario) {
+      return res.status(404).json({ error: 'Scenario not found.' });
+    }
+    const favorites = await store.addFavorite(req.user.id, scenario.id);
+    return res.json({ favorites });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.delete('/api/favorites/:scenarioId', requireAuth, async (req, res, next) => {
+  try {
+    const favorites = await store.removeFavorite(req.user.id, req.params.scenarioId);
+    return res.json({ favorites });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/* =========================================================
+   Protected Playbook CRUD
+   ========================================================= */
+function validatePlaybookPayload(bodyObj) {
+  const title = typeof bodyObj?.title === 'string' ? bodyObj.title.trim() : '';
+  const body = typeof bodyObj?.body === 'string' ? bodyObj.body.trim() : '';
+  const rating = Number(bodyObj?.rating);
+
+  if (title.length < 1 || title.length > 120) {
+    return { error: 'Play name is required (max 120 characters).' };
+  }
+  if (body.length < 1 || body.length > 2000) {
+    return { error: 'Strategy notes are required (max 2000 characters).' };
+  }
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return { error: 'Difficulty rating must be between 1 and 5.' };
+  }
+  return { title, body, rating };
+}
+
+app.get('/api/playbook', requireAuth, async (req, res, next) => {
+  try {
+    const entries = await store.listPlaybookEntries(req.user.id);
+    return res.json({ entries });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.post('/api/playbook', requireAuth, async (req, res, next) => {
+  try {
+    const parsed = validatePlaybookPayload(req.body);
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+    const entry = await store.createPlaybookEntry(req.user.id, parsed);
+    return res.status(201).json({ entry });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.put('/api/playbook/:id', requireAuth, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: 'Invalid playbook entry ID.' });
+    }
+    const parsed = validatePlaybookPayload(req.body);
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+
+    const result = await store.updatePlaybookEntry(id, req.user.id, parsed);
+    if (result.status === 'not_found') return res.status(404).json({ error: 'Playbook entry not found.' });
+    if (result.status === 'forbidden') return res.status(403).json({ error: 'You can only edit your own playbook entries.' });
+    return res.json({ entry: result.entry });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.delete('/api/playbook/:id', requireAuth, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: 'Invalid playbook entry ID.' });
+    }
+    const result = await store.deletePlaybookEntry(id, req.user.id);
+    if (result.status === 'not_found') return res.status(404).json({ error: 'Playbook entry not found.' });
+    if (result.status === 'forbidden') return res.status(403).json({ error: 'You can only delete your own playbook entries.' });
+    return res.json({ ok: true });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/* =========================================================
+   Static Assets & Fallback
+   ========================================================= */
 app.use(express.static(__dirname));
+
+app.use('/api', (err, _req, res, _next) => {
+  console.error('API Error:', err);
+  res.status(500).json({ error: 'Something went wrong on the server. Please try again.' });
+});
 
 app.use((_req, res) => {
   res
@@ -233,29 +392,10 @@ app.use((_req, res) => {
       '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>404 — DiamondIQ</title>' +
       '<link rel="stylesheet" href="/styles.css"></head><body>' +
       '<main class="container"><h1>404 — Page not found</h1>' +
-      '<p>That base is empty! <a href="/index.html">Go back to DiamondIQ Home</a>.</p></main></body></html>',
+      '<p>That base is empty! <a href="/index.html">Go back to DiamondIQ Home</a>.</p></main></body></html>'
     );
 });
 
-async function start() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is missing. Connect a Replit PostgreSQL database before starting DiamondIQ.');
-  }
-  await pool.query('SELECT 1');
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`DiamondIQ running on port ${PORT}`);
-  });
-}
-
-start().catch((error) => {
-  console.error(`DiamondIQ could not start: ${error.message}`);
-  process.exit(1);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`DiamondIQ running on http://0.0.0.0:${PORT} (storage: ${store.mode})`);
 });
-
-const sessionCleanup = setInterval(() => {
-  pool.query('DELETE FROM sessions WHERE expires_at <= NOW()')
-    .catch((error) => console.error('Expired session cleanup failed:', error.message));
-}, 60 * 60 * 1000);
-sessionCleanup.unref();
-
-module.exports = app;

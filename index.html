@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Home</title>
-<link rel="icon" href="data:,">
 <meta name="description" content="Baseball rules and stats explained in plain English by five experts for beginners.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
@@ -14,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
-<script src="auth.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#home">Skip to content</a>
@@ -83,17 +81,18 @@
         <h2 id="featured-heading">Force Out vs. Tag Out</h2>
         <p style="color:var(--text-secondary);">Two ways to get a runner out: step on the base with the ball, or tag the runner directly.</p>
       </div>
+      <div class="diamond-stage" id="home-diamond-stage" aria-label="Force play baseball diamond diagram"></div>
       <div class="surface-powder">
         <p style="margin-bottom:0;font-weight:500;">Quick rule: if a runner behind you is forcing you to run to the next base, the defense only needs to touch the bag. If nobody is pushing you forward, they have to tag you.</p>
       </div>
-      <a class="btn btn-primary" href="detail.html">See the 5-Expert Breakdown</a>
+      <a class="btn btn-primary" href="detail.html?id=force-vs-tag">See the 5-Expert Breakdown</a>
     </article>
   </section>
 
   <section class="kpi-strip" aria-label="DiamondIQ Quick Facts">
     <div class="kpi-card">
       <div class="kpi-label">Baseball Plays</div>
-      <div class="kpi-value">8</div>
+      <div class="kpi-value" id="kpi-plays">8</div>
       <p class="kpi-note">Rules &amp; Statcast lessons</p>
     </div>
     <div class="kpi-card">
@@ -103,13 +102,13 @@
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Opening Day</div>
-      <div class="kpi-value">Mar 25</div>
-      <p class="kpi-note">2027 MLB season opener</p>
+      <div class="kpi-value" id="kpi-countdown">Mar 25</div>
+      <p class="kpi-note" id="kpi-countdown-note">2027 MLB season opener</p>
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">Built For</div>
-      <div class="kpi-value">10+</div>
-      <p class="kpi-note">New fans &amp; youth players</p>
+      <div class="kpi-label" id="kpi-progress-label">Built For</div>
+      <div class="kpi-value" id="kpi-progress-value">10+</div>
+      <p class="kpi-note" id="kpi-progress-note">New fans &amp; youth players</p>
     </div>
   </section>
 
@@ -117,8 +116,45 @@
     <div class="fact-bar">
       <div class="fact-copy">
         <div class="fact-label" id="fact-heading">Baseball Fun Fact</div>
-        <p class="fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
+        <p class="fact-text" id="fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
       </div>
+      <button type="button" id="next-fact-btn" class="btn btn-secondary btn-sm">Next Fun Fact</button>
+    </div>
+  </section>
+
+  <section class="section-block" aria-labelledby="panel-heading">
+    <div class="section-head">
+      <div>
+        <h2 id="panel-heading">Meet the 5 Experts</h2>
+        <p class="section-subtitle">Every play is explained from five helpful angles.</p>
+      </div>
+    </div>
+    <div class="panel-overview-grid" id="panel-overview-grid">
+      <article class="card">
+        <div class="meta-line">Fundamentals</div>
+        <h3>Youth Baseball Coach</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Real rules and simple game-day footwork cues.</p>
+      </article>
+      <article class="card">
+        <div class="meta-line">Analytics</div>
+        <h3>Sabermetrics Analyst</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Modern Statcast metrics as clear Low/Medium/High gauges.</p>
+      </article>
+      <article class="card">
+        <div class="meta-line">Architecture</div>
+        <h3>Web Dev Mentor</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">How baseball logic maps cleanly to structured data and UI.</p>
+      </article>
+      <article class="card">
+        <div class="meta-line">Clarity</div>
+        <h3>UI/UX Designer</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">High-contrast visuals, SVG diagrams, and responsive grids.</p>
+      </article>
+      <article class="card">
+        <div class="meta-line">Beginner Check</div>
+        <h3>Rookie Player</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Plain-English "aha!" takeaways without confusing jargon.</p>
+      </article>
     </div>
   </section>
 
