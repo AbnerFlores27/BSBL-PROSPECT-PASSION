@@ -386,6 +386,8 @@ app.delete('/api/playbook/:id', requireAuth, async (req, res, next) => {
 /* =========================================================
    Static Assets & Fallback
    ========================================================= */
+app.get('/favicon.ico', (_req, res) => res.status(204).end());
+
 app.use(express.static(__dirname));
 
 app.use('/api', (err, _req, res, _next) => {
