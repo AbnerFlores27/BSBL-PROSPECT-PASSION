@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Scenario Library</title>
-<meta name="description" content="Browse all 8 baseball rules and Statcast scenarios.">
+<meta name="description" content="Search, filter, and explore all 8 baseball rules and Statcast scenarios.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -36,8 +36,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
-        <span>Dark Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,16 +46,20 @@
       </button>
     </div>
   </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <main id="library" class="container">
-  <div class="page-header">
+  <section class="subpage-masthead">
     <div>
+      <div class="kicker-line">Playbook Library · <span id="scenario-count" class="tabular-nums">8 plays</span></div>
       <h1>Scenario Library</h1>
-      <p class="page-lead">Pick any play below to read its simple rule breakdown from five baseball viewpoints.</p>
+      <p class="page-lead">Search by keyword, filter Fundamentals vs. Statcast Analytics, save your favorites, and open any play for its interactive field diagram and 5-expert breakdown.</p>
     </div>
-    <p id="scenario-count" class="tabular-nums" style="margin:0;color:var(--text-muted);font-size:0.9rem;font-weight:600;">8 plays</p>
-  </div>
+    <div class="subpage-masthead-media">
+      <img src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg" alt="Baserunner sliding into second base as the shortstop leaps to fire a relay throw" referrerpolicy="no-referrer">
+    </div>
+  </section>
 
   <form class="toolbar" onsubmit="return false;" aria-label="Filter and sort scenarios">
     <div class="search-wrap">
@@ -63,14 +67,14 @@
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
       </svg>
       <label class="sr-only" for="search-box">Search plays</label>
-      <input type="search" id="search-box" placeholder="Search plays by keyword...">
+      <input type="search" id="search-box" placeholder="Search plays (e.g., force, steal, exit velo)...">
     </div>
 
-    <div class="segmented-group" role="group" aria-label="Category filter">
-      <button type="button" class="segmented-btn" data-category="all" aria-pressed="true">All</button>
-      <button type="button" class="segmented-btn" data-category="fundamental" aria-pressed="false">Fundamentals</button>
-      <button type="button" class="segmented-btn" data-category="analytics" aria-pressed="false">Analytics</button>
-      <button type="button" class="segmented-btn" data-category="saved" aria-pressed="false">Saved</button>
+    <div class="segmented-group" id="category-tabs" role="group" aria-label="Filter by category">
+      <button type="button" class="segmented-btn" data-cat="all" aria-pressed="true">All</button>
+      <button type="button" class="segmented-btn" data-cat="fundamental" aria-pressed="false">Fundamentals</button>
+      <button type="button" class="segmented-btn" data-cat="analytics" aria-pressed="false">Analytics</button>
+      <button type="button" class="segmented-btn" data-cat="saved" aria-pressed="false">Saved</button>
     </div>
 
     <div class="control-pair">
@@ -83,8 +87,8 @@
     </div>
 
     <div class="control-pair">
-      <label for="page-size">Show</label>
-      <select id="page-size" style="min-width:90px;">
+      <label for="per-page">Show</label>
+      <select id="per-page">
         <option value="6">6</option>
         <option value="4">4</option>
         <option value="all" selected>All</option>
@@ -92,17 +96,17 @@
     </div>
   </form>
 
-  <ul id="scenario-list" class="card-grid">
-    <li><article class="card scenario-card"><div><div class="meta-line">Fundamental</div><h2><a href="detail.html?id=force-vs-tag">Force Out vs. Tag Out</a></h2><p class="scenario-desc">Two ways to get a runner out: step on the base, or tag the runner.</p></div><div class="card-footer-row"><a class="btn btn-primary btn-sm" href="detail.html?id=force-vs-tag">Open Breakdown</a></div></article></li>
-  </ul>
+  <ul id="scenario-list" class="card-grid"></ul>
+
+  <div id="empty-state" class="empty-state" hidden>
+    <p id="empty-state-msg" style="margin-bottom:0;">No plays match your search. Try a different word!</p>
+  </div>
 
   <div id="pagination-bar" class="pagination-bar" hidden>
     <button type="button" id="prev-page-btn" class="btn btn-secondary btn-sm">Previous</button>
-    <span id="page-indicator" class="tabular-nums" style="font-size:0.9rem;color:var(--text-secondary);">Page 1 of 1</span>
+    <span id="page-indicator" class="tabular-nums" style="font-size:0.9rem;font-weight:600;">Page 1 of 1</span>
     <button type="button" id="next-page-btn" class="btn btn-secondary btn-sm">Next</button>
   </div>
-
-  <p id="empty-state" class="empty-state" hidden>No plays match your search. Try a different word!</p>
 </main>
 
 <footer class="site-footer">

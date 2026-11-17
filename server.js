@@ -1,12 +1,10 @@
-/* DiamondIQ — Express Server & REST API
-   Serves the 7 HTML/CSS/JS pages and full REST API for auth,
-   8 seeded baseball scenarios, trivia scoring, ratings, favorites,
-   and protected user-owned Playbook CRUD. */
+/* DiamondIQ — Phase 4 Express Server & Full Interactive REST API
+   Serves all 7 pages, scrypt cookie auth, 8 seeded scenarios with search/filter/sort,
+   protected Playbook CRUD, Favorites, Trivia scoring/mastery, 5-Star Ratings, and Stats. */
 
 const express = require('express');
-const path = require('path');
 const { store } = require('./db');
-const { OPENING_DAY_ISO, EXPERT_PROFILES, FUN_FACTS } = require('./data');
+const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -73,28 +71,23 @@ function requireAuth(req, res, next) {
 app.use('/api', attachUser);
 
 /* =========================================================
-   Health, Stats & Fun Facts
+   Health & Dashboard Stats
    ========================================================= */
-app.get('/api/health', async (_req, res) => {
-  res.json({ ok: true, storage: store.mode });
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, phase: 4, storage: store.mode });
 });
 
 app.get('/api/stats', async (req, res, next) => {
   try {
-    const scenarios = await store.listScenarios();
+    const userStats = await store.getUserStats(req.user ? req.user.id : null);
     const now = Date.now();
-    const openingMs = new Date(OPENING_DAY_ISO).getTime();
-    const daysUntilOpeningDay = Math.max(0, Math.ceil((openingMs - now) / (1000 * 60 * 60 * 24)));
-    const userStats = req.user ? await store.getUserStats(req.user.id) : null;
-
+    const target = new Date(OPENING_DAY_ISO).getTime();
+    const daysUntilOpeningDay = Math.max(0, Math.ceil((target - now) / (1000 * 60 * 60 * 24)));
     res.json({
       openingDayIso: OPENING_DAY_ISO,
       daysUntilOpeningDay,
-      totalScenarios: scenarios.length,
-      expertsCount: EXPERT_PROFILES.length,
-      experts: EXPERT_PROFILES,
-      funFacts: FUN_FACTS,
-      userStats
+      facts: FUN_FACTS,
+      ...userStats
     });
   } catch (err) {
     next(err);
@@ -102,7 +95,7 @@ app.get('/api/stats', async (req, res, next) => {
 });
 
 /* =========================================================
-   Authentication
+   Authentication (Register / Login / Logout / Me)
    ========================================================= */
 app.get('/api/auth/me', (req, res) => {
   res.json({ user: req.user || null });
@@ -179,7 +172,7 @@ app.post('/api/auth/logout', async (req, res, next) => {
 });
 
 /* =========================================================
-   Scenarios, Trivia & Ratings
+   Scenarios (Search, Category Filter, Sort, Trivia, Ratings)
    ========================================================= */
 app.get('/api/scenarios', async (req, res, next) => {
   try {
@@ -187,7 +180,8 @@ app.get('/api/scenarios', async (req, res, next) => {
     const scenarios = await store.listScenarios({
       q: String(q),
       category: String(category),
-      sort: String(sort)
+      sort: String(sort),
+      userId: req.user ? req.user.id : null
     });
     res.json({ scenarios });
   } catch (err) {
@@ -201,7 +195,13 @@ app.get('/api/scenarios/:id', async (req, res, next) => {
     if (!scenario) {
       return res.status(404).json({ error: 'Scenario not found.' });
     }
-    return res.json({ scenario });
+    const masteredList = req.user ? await store.listTriviaMastered(req.user.id) : [];
+    const favoritesList = req.user ? await store.listFavorites(req.user.id) : [];
+    return res.json({
+      scenario,
+      mastered: masteredList.includes(scenario.id),
+      isFavorite: favoritesList.includes(scenario.id)
+    });
   } catch (err) {
     return next(err);
   }
@@ -213,24 +213,19 @@ app.post('/api/scenarios/:id/trivia', async (req, res, next) => {
     if (!scenario) {
       return res.status(404).json({ error: 'Scenario not found.' });
     }
-    const answer = typeof req.body?.answer === 'string' ? req.body.answer.trim().toLowerCase() : '';
-    if (!answer) {
-      return res.status(400).json({ error: 'Please pick an answer before checking.' });
+    const { answerKey } = req.body || {};
+    if (!answerKey || typeof answerKey !== 'string') {
+      return res.status(400).json({ error: 'Pick an answer first.' });
     }
-
-    const correct = answer === scenario.trivia.correctKey;
-    let mastered = false;
+    const correct = answerKey === scenario.trivia.correctKey;
     if (correct && req.user) {
-      mastered = await store.markTriviaMastered(req.user.id, scenario.id);
+      await store.markTriviaMastered(req.user.id, scenario.id);
     }
-
     return res.json({
       correct,
       correctKey: scenario.trivia.correctKey,
-      explanation: correct
-        ? scenario.trivia.explanation
-        : 'Not quite! Read the 5-expert breakdown above for a hint and try another choice.',
-      mastered
+      explanation: scenario.trivia.explanation,
+      mastered: Boolean(correct && req.user)
     });
   } catch (err) {
     return next(err);
@@ -243,7 +238,10 @@ app.get('/api/scenarios/:id/rating', async (req, res, next) => {
     if (!scenario) {
       return res.status(404).json({ error: 'Scenario not found.' });
     }
-    const rating = await store.getScenarioRating(scenario.id, req.user?.id || null);
+    const rating = await store.getScenarioRating(
+      scenario.id,
+      req.user ? req.user.id : null
+    );
     return res.json(rating);
   } catch (err) {
     return next(err);
@@ -260,7 +258,7 @@ app.post('/api/scenarios/:id/rating', requireAuth, async (req, res, next) => {
     if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
       return res.status(400).json({ error: 'Rating must be between 1 and 5 stars.' });
     }
-    const rating = await store.upsertScenarioRating(scenario.id, req.user.id, stars);
+    const rating = await store.setScenarioRating(req.user.id, scenario.id, stars);
     return res.json(rating);
   } catch (err) {
     return next(err);
@@ -268,15 +266,14 @@ app.post('/api/scenarios/:id/rating', requireAuth, async (req, res, next) => {
 });
 
 /* =========================================================
-   Favorites
+   Favorites (Saved Scenarios)
    ========================================================= */
 app.get('/api/favorites', async (req, res, next) => {
   try {
-    if (!req.user) return res.json({ favorites: [] });
-    const favorites = await store.listFavorites(req.user.id);
-    return res.json({ favorites });
+    const favorites = req.user ? await store.listFavorites(req.user.id) : [];
+    res.json({ favorites });
   } catch (err) {
-    return next(err);
+    next(err);
   }
 });
 
@@ -287,7 +284,7 @@ app.post('/api/favorites/:scenarioId', requireAuth, async (req, res, next) => {
       return res.status(404).json({ error: 'Scenario not found.' });
     }
     const favorites = await store.addFavorite(req.user.id, scenario.id);
-    return res.json({ favorites });
+    return res.status(201).json({ favorites });
   } catch (err) {
     return next(err);
   }
@@ -303,18 +300,18 @@ app.delete('/api/favorites/:scenarioId', requireAuth, async (req, res, next) => 
 });
 
 /* =========================================================
-   Protected Playbook CRUD
+   Playbook CRUD (Protected + Server Ownership Checks)
    ========================================================= */
-function validatePlaybookPayload(bodyObj) {
-  const title = typeof bodyObj?.title === 'string' ? bodyObj.title.trim() : '';
-  const body = typeof bodyObj?.body === 'string' ? bodyObj.body.trim() : '';
-  const rating = Number(bodyObj?.rating);
+function validatePlaybookPayload(payload) {
+  const title = typeof payload?.title === 'string' ? payload.title.trim() : '';
+  const body = typeof payload?.body === 'string' ? payload.body.trim() : '';
+  const rating = Number(payload?.rating);
 
-  if (title.length < 1 || title.length > 120) {
-    return { error: 'Play name is required (max 120 characters).' };
+  if (title.length < 2 || title.length > 120) {
+    return { error: 'Play name must be between 2 and 120 characters.' };
   }
-  if (body.length < 1 || body.length > 2000) {
-    return { error: 'Strategy notes are required (max 2000 characters).' };
+  if (body.length < 3 || body.length > 2000) {
+    return { error: 'Strategy notes must be between 3 and 2,000 characters.' };
   }
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     return { error: 'Difficulty rating must be between 1 and 5.' };
@@ -325,16 +322,18 @@ function validatePlaybookPayload(bodyObj) {
 app.get('/api/playbook', requireAuth, async (req, res, next) => {
   try {
     const entries = await store.listPlaybookEntries(req.user.id);
-    return res.json({ entries });
+    res.json({ entries });
   } catch (err) {
-    return next(err);
+    next(err);
   }
 });
 
 app.post('/api/playbook', requireAuth, async (req, res, next) => {
   try {
     const parsed = validatePlaybookPayload(req.body);
-    if (parsed.error) return res.status(400).json({ error: parsed.error });
+    if (parsed.error) {
+      return res.status(400).json({ error: parsed.error });
+    }
     const entry = await store.createPlaybookEntry(req.user.id, parsed);
     return res.status(201).json({ entry });
   } catch (err) {
@@ -344,16 +343,21 @@ app.post('/api/playbook', requireAuth, async (req, res, next) => {
 
 app.put('/api/playbook/:id', requireAuth, async (req, res, next) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
+    const entryId = Number(req.params.id);
+    if (!Number.isInteger(entryId) || entryId <= 0) {
       return res.status(400).json({ error: 'Invalid playbook entry ID.' });
     }
     const parsed = validatePlaybookPayload(req.body);
-    if (parsed.error) return res.status(400).json({ error: parsed.error });
-
-    const result = await store.updatePlaybookEntry(id, req.user.id, parsed);
-    if (result.status === 'not_found') return res.status(404).json({ error: 'Playbook entry not found.' });
-    if (result.status === 'forbidden') return res.status(403).json({ error: 'You can only edit your own playbook entries.' });
+    if (parsed.error) {
+      return res.status(400).json({ error: parsed.error });
+    }
+    const result = await store.updatePlaybookEntry(req.user.id, entryId, parsed);
+    if (result.status === 'not_found') {
+      return res.status(404).json({ error: 'Playbook entry not found.' });
+    }
+    if (result.status === 'forbidden') {
+      return res.status(403).json({ error: 'You can only edit your own playbook entries.' });
+    }
     return res.json({ entry: result.entry });
   } catch (err) {
     return next(err);
@@ -362,13 +366,17 @@ app.put('/api/playbook/:id', requireAuth, async (req, res, next) => {
 
 app.delete('/api/playbook/:id', requireAuth, async (req, res, next) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
+    const entryId = Number(req.params.id);
+    if (!Number.isInteger(entryId) || entryId <= 0) {
       return res.status(400).json({ error: 'Invalid playbook entry ID.' });
     }
-    const result = await store.deletePlaybookEntry(id, req.user.id);
-    if (result.status === 'not_found') return res.status(404).json({ error: 'Playbook entry not found.' });
-    if (result.status === 'forbidden') return res.status(403).json({ error: 'You can only delete your own playbook entries.' });
+    const result = await store.deletePlaybookEntry(req.user.id, entryId);
+    if (result.status === 'not_found') {
+      return res.status(404).json({ error: 'Playbook entry not found.' });
+    }
+    if (result.status === 'forbidden') {
+      return res.status(403).json({ error: 'You can only delete your own playbook entries.' });
+    }
     return res.json({ ok: true });
   } catch (err) {
     return next(err);
@@ -397,5 +405,5 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`DiamondIQ running on http://0.0.0.0:${PORT} (storage: ${store.mode})`);
+  console.log(`DiamondIQ Phase 4 running on http://0.0.0.0:${PORT} (storage: ${store.mode})`);
 });

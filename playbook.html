@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — My Playbook</title>
-<meta name="description" content="Save personal baseball strategy notes and favorite plays.">
+<meta name="description" content="Create, edit, and organize your personal baseball strategy notes and favorite plays.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -36,8 +36,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
-        <span>Dark Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,25 +46,33 @@
       </button>
     </div>
   </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <main id="playbook" class="container">
-  <div class="page-header">
+  <section class="subpage-masthead">
     <div>
+      <div class="kicker-line">Dugout Workspace <span id="playbook-user-badge" class="tabular-nums" style="margin-left:0.5rem;color:var(--accent);" hidden></span></div>
       <h1>My Playbook</h1>
-      <p class="page-lead">Write down your own baseball notes, drills, and difficulty ratings.</p>
+      <p class="page-lead">Keep your own game-day notes, practice drills, and favorite plays saved directly to your account.</p>
     </div>
-    <p id="playbook-user-badge" class="tabular-nums" style="margin:0;color:var(--accent);font-size:0.9rem;font-weight:600;" hidden></p>
-  </div>
+    <div class="subpage-masthead-media">
+      <img src="/src/assets/images/baseball_dugout_playbook_1794855949938.jpg" alt="Leather baseball glove, stitched baseball, and coach's tactical playbook notebook on a dugout bench" referrerpolicy="no-referrer">
+    </div>
+  </section>
 
   <p id="playbook-login-note" class="feedback-banner is-warning" style="margin-top:0;margin-bottom:1.5rem;">
-    Log in to save plays and notes to your personal playbook. <a href="login.html">Log in or register</a>
+    Log in or sign up to save plays and notes to your personal playbook.
+    <a href="login.html" style="font-weight:700;margin-left:0.4rem;">Log In</a> ·
+    <a href="register.html" style="font-weight:700;">Sign Up</a>
   </p>
 
   <div class="playbook-layout">
-    <section class="card" aria-labelledby="add-heading">
+    <section class="card card-led-top" aria-labelledby="add-heading">
+      <div class="rgb-led-rail" aria-hidden="true"></div>
       <h2 id="add-heading">Add a Play Note</h2>
       <form id="playbook-form" class="form-stack" onsubmit="return false;" novalidate>
+        <input type="hidden" id="playbook-edit-id" value="">
         <div class="field">
           <label for="note-title">Play name</label>
           <input type="text" id="note-title" name="title" maxlength="120" placeholder="e.g., Force out at 2nd base" required>
@@ -83,32 +91,34 @@
             <option value="5">5 — Hard</option>
           </select>
         </div>
-        <button type="submit" id="playbook-submit-btn" class="btn btn-primary">Add to Playbook</button>
+        <div style="display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center;">
+          <button type="submit" id="playbook-submit-btn" class="btn btn-primary">Add to Playbook</button>
+          <button type="button" id="playbook-cancel-btn" class="btn btn-ghost" hidden>Cancel Edit</button>
+        </div>
         <p id="playbook-feedback" class="feedback-banner" role="status"></p>
       </form>
     </section>
 
     <section aria-labelledby="entries-heading">
-      <h2 id="entries-heading" style="margin-bottom:1rem;">Saved Entries</h2>
+      <div class="section-head" style="margin-bottom:0.85rem;">
+        <h2 id="entries-heading" style="margin-bottom:0;">Saved Notes</h2>
+      </div>
       <ul id="playbook-entries" class="playbook-list"></ul>
       <div id="playbook-empty" class="empty-state">
         <p style="margin-bottom:0;">Your playbook is empty — add your first play note on the left!</p>
       </div>
+
+      <div class="section-block" style="margin-top:2rem;">
+        <div class="section-head" style="margin-bottom:0.85rem;">
+          <h2 style="margin-bottom:0;">Favorite Plays</h2>
+        </div>
+        <ul id="favorites-list" class="playbook-list"></ul>
+        <div id="favorites-empty" class="empty-state">
+          <p style="margin-bottom:0;">No favorite plays yet. Tap "Save Play" on any play in the Scenario Library!</p>
+        </div>
+      </div>
     </section>
   </div>
-
-  <section class="section-block" aria-labelledby="favorites-heading">
-    <div class="section-head">
-      <div>
-        <h2 id="favorites-heading">Saved Favorite Plays</h2>
-        <p class="section-subtitle">Quick links to scenarios you bookmarked from the library.</p>
-      </div>
-    </div>
-    <ul id="playbook-favorites" class="card-grid"></ul>
-    <div id="favorites-empty" class="empty-state">
-      <p style="margin-bottom:0;">No favorite plays saved yet. Browse <a href="scenarios.html">Scenarios</a> to bookmark plays!</p>
-    </div>
-  </section>
 </main>
 
 <footer class="site-footer">

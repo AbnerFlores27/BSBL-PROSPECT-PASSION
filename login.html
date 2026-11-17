@@ -10,7 +10,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -36,8 +36,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
-        <span>Dark Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,27 +46,44 @@
       </button>
     </div>
   </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <main id="login" class="container">
-  <div class="auth-shell card">
-    <h1>Log In</h1>
-    <p style="color:var(--text-secondary);">Sign in to access your saved favorites and personal playbook.</p>
-    <form id="login-form" class="form-stack" method="post" action="/api/auth/login" onsubmit="return false;" novalidate>
-      <div class="field">
-        <label for="login-user">Username or email</label>
-        <input type="text" id="login-user" name="identifier" placeholder="Enter username or email" required>
+  <div class="auth-split">
+    <div class="auth-showcase">
+      <img src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg" alt="Baserunner sliding into second base as the shortstop leaps to fire a relay throw" referrerpolicy="no-referrer">
+      <div class="editorial-banner-scrim">
+        <h2>Step back into the dugout</h2>
+        <p style="margin-bottom:0;">Log in to save notes, bookmark favorite plays, and track your trivia score.</p>
       </div>
-      <div class="field">
-        <label for="login-pass">Password</label>
-        <input type="password" id="login-pass" name="password" placeholder="At least 8 characters" required minlength="8">
+    </div>
+
+    <div class="auth-shell card card-led-top">
+      <div class="rgb-led-rail" aria-hidden="true"></div>
+      <div class="segmented-group" style="margin-bottom:1.1rem;align-self:flex-start;" role="navigation" aria-label="Account options">
+        <a class="segmented-btn" href="login.html" aria-pressed="true" style="text-decoration:none;background:var(--bg-surface);color:var(--accent);box-shadow:0 1px 3px rgba(15,25,42,0.14);">Log In</a>
+        <a class="segmented-btn" href="register.html" style="text-decoration:none;">Sign Up</a>
       </div>
-      <button type="submit" class="btn btn-primary">Log In</button>
-      <p id="login-error" class="feedback-banner" role="alert"></p>
-    </form>
-    <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">
-      New to DiamondIQ? <a href="register.html">Create an account</a>
-    </p>
+      <div class="kicker-line">Member Sign In</div>
+      <h1>Log In</h1>
+      <p style="color:var(--text-secondary);">Sign in with your username or email to access your personal playbook.</p>
+      <form id="login-form" class="form-stack" method="post" action="/api/auth/login" onsubmit="return false;" novalidate>
+        <div class="field">
+          <label for="login-user">Username or email</label>
+          <input type="text" id="login-user" name="identifier" placeholder="Enter username or email" required>
+        </div>
+        <div class="field">
+          <label for="login-pass">Password</label>
+          <input type="password" id="login-pass" name="password" placeholder="At least 8 characters" required minlength="8">
+        </div>
+        <button type="submit" class="btn btn-primary">Log In</button>
+        <p id="login-error" class="feedback-banner" role="alert"></p>
+      </form>
+      <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">
+        New to DiamondIQ? <a href="register.html">Create an account</a>
+      </p>
+    </div>
   </div>
 </main>
 

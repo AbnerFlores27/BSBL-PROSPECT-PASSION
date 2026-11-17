@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — 5-Expert Deep-Dive</title>
-<meta name="description" content="5-expert breakdown, stat meters, and trivia check for Force Out vs. Tag Out.">
+<meta name="description" content="5-expert breakdown, stat meters, rating, and trivia check for baseball scenarios.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -36,8 +36,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
-        <span>Dark Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,6 +46,7 @@
       </button>
     </div>
   </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <main id="deep-dive" class="container">
@@ -53,40 +54,59 @@
     <div>
       <div class="meta-line" id="detail-category">Fundamental · Scenario Deep-Dive</div>
       <h1 id="detail-title">Force Out vs. Tag Out</h1>
+      <p id="detail-mastered-note" style="margin:0;font-size:0.875rem;font-weight:600;color:var(--turf);" hidden>Trivia passed and saved to your progress.</p>
     </div>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.65rem;">
-      <label class="sr-only" for="scenario-switcher">Switch scenario</label>
-      <select id="scenario-switcher" aria-label="Switch baseball scenario"></select>
-      <button type="button" id="detail-favorite-btn" class="btn btn-secondary btn-sm" aria-pressed="false">Save Play</button>
-      <a class="btn btn-ghost btn-sm" href="scenarios.html">All Scenarios</a>
+    <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;">
+      <button type="button" id="detail-fav-btn" class="btn btn-secondary btn-sm btn-fav" aria-pressed="false">Save Play</button>
+      <a class="btn btn-ghost btn-sm" href="scenarios.html">Back to Scenarios</a>
     </div>
   </div>
 
-  <section class="detail-top-grid" aria-label="Scenario overview and field diagram">
-    <div style="display:flex;flex-direction:column;gap:1rem;">
-      <div class="surface-powder">
-        <h2>Quick Summary</h2>
-        <p id="detail-summary" style="margin-bottom:0;">When a runner has to run to the next base because the batter hit the ball, touching the base with the ball gets them out. Once that runner is safe to stay put (or nobody is behind them), fielders must tag the runner directly.</p>
-      </div>
+  <section class="detail-stage-grid" aria-label="Interactive field diagram and quick summary">
+    <div class="gameday-studio" style="display:flex;flex-direction:column;">
+      <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
+      <div class="stage-console" style="flex:1;">
+        <div class="stage-toolbar">
+          <div>
+            <div class="kicker-line" style="margin-bottom:0.15rem;">Interactive Play Stage</div>
+            <h2 style="font-size:1.35rem;margin-bottom:0;color:var(--text-primary);">Walk Through the Play</h2>
+          </div>
+          <div class="segmented-group" id="detail-step-controls" role="group" aria-label="Play breakdown steps">
+            <button type="button" class="segmented-btn" data-dstep="0" aria-pressed="true">1. Setup</button>
+            <button type="button" class="segmented-btn" data-dstep="1" aria-pressed="false">2. The Play</button>
+            <button type="button" class="segmented-btn" data-dstep="2" aria-pressed="false">3. Key Rule</button>
+          </div>
+        </div>
 
-      <div class="rating-box" aria-label="Rate this breakdown">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
-          <span style="font-weight:600;font-size:0.9rem;">Rate This Breakdown</span>
-          <span id="rating-summary" class="tabular-nums" style="font-size:0.85rem;color:var(--text-secondary);">No ratings yet</span>
-        </div>
-        <div class="star-group" id="star-group" role="group" aria-label="1 to 5 stars">
-          <button type="button" class="star-btn" data-stars="1" aria-label="1 star">★</button>
-          <button type="button" class="star-btn" data-stars="2" aria-label="2 stars">★</button>
-          <button type="button" class="star-btn" data-stars="3" aria-label="3 stars">★</button>
-          <button type="button" class="star-btn" data-stars="4" aria-label="4 stars">★</button>
-          <button type="button" class="star-btn" data-stars="5" aria-label="5 stars">★</button>
-        </div>
+        <div class="diamond-stage" id="detail-diamond-stage"></div>
+        <p id="detail-diagram-caption" style="font-size:0.92rem;color:var(--text-secondary);margin-bottom:0;"></p>
       </div>
     </div>
 
-    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;gap:0.75rem;">
-      <div class="diamond-stage" id="detail-diamond-stage"></div>
-      <p id="detail-diagram-caption" style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:0;"></p>
+    <div style="display:flex;flex-direction:column;gap:1rem;justify-content:space-between;">
+      <div class="surface-accent">
+        <h2>Quick Summary</h2>
+        <p id="detail-summary" style="margin-bottom:0;"></p>
+      </div>
+
+      <div class="card-subtle">
+        <div class="kicker-line">Official Key Rule</div>
+        <p id="detail-key-rule" style="margin-bottom:0;font-weight:500;"></p>
+      </div>
+
+      <div class="rating-box">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+          <span style="font-size:0.875rem;font-weight:600;">Rate How Helpful This Was</span>
+          <span id="rating-summary" class="tabular-nums" style="font-size:0.84rem;color:var(--text-secondary);">No ratings yet</span>
+        </div>
+        <div class="star-group" id="rating-stars" role="group" aria-label="Rate this play from 1 to 5 stars">
+          <button type="button" class="star-btn" data-star="1" aria-label="Rate 1 star">&#9733;</button>
+          <button type="button" class="star-btn" data-star="2" aria-label="Rate 2 stars">&#9733;</button>
+          <button type="button" class="star-btn" data-star="3" aria-label="Rate 3 stars">&#9733;</button>
+          <button type="button" class="star-btn" data-star="4" aria-label="Rate 4 stars">&#9733;</button>
+          <button type="button" class="star-btn" data-star="5" aria-label="Rate 5 stars">&#9733;</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -106,13 +126,13 @@
         <h2 id="experts-heading">The 5-Expert Breakdown</h2>
         <p class="section-subtitle">Tap any card to open or close that expert's note.</p>
       </div>
-      <button type="button" id="toggle-accordions-btn" class="btn btn-secondary btn-sm">Collapse All</button>
     </div>
     <div class="expert-grid" id="expert-grid"></div>
   </section>
 
   <section class="section-block" aria-labelledby="trivia-heading">
-    <div class="card">
+    <div class="card card-led-top">
+      <div class="rgb-led-rail" aria-hidden="true"></div>
       <h2 id="trivia-heading">Quick Trivia Check</h2>
       <form id="trivia-form" onsubmit="return false;">
         <fieldset class="trivia-fieldset">

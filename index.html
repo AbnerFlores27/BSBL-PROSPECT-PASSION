@@ -10,7 +10,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -36,8 +36,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
-        <span>Dark Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,147 +46,262 @@
       </button>
     </div>
   </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <main id="home" class="container">
-  <section class="hero-split" aria-label="Welcome and Featured Play">
-    <div class="hero-copy-card">
+  <section class="hero-editorial" aria-label="Welcome and Quick Scoreboard">
+    <div class="hero-copy-col">
       <div>
-        <p class="hero-kicker">Five Experts · One Pitch</p>
-        <h1>Baseball rules &amp; stats, explained in plain English.</h1>
-        <p class="hero-lead">Baseball rulebooks can feel confusing and boring when you are just starting out. DiamondIQ breaks down real plays using simple language and five helpful viewpoints.</p>
+        <div class="kicker-line">Five Experts · One Pitch</div>
+        <h1>Baseball rules &amp; stats, made clear for everyone.</h1>
+        <p class="hero-lead">Skip confusing rulebooks. Test Statcast swing physics live, walk through real diamond plays step by step, and read five plain-English viewpoints on every play.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="scenarios.html">Browse All 8 Plays</a>
-          <a class="btn btn-secondary" href="compare.html">Compare Two Plays</a>
+          <a class="btn btn-primary" href="scenarios.html">Explore All 8 Plays</a>
+          <a class="btn btn-secondary" href="#gameday-studio" id="hero-open-hitlab">Open Broadcast Studio</a>
         </div>
       </div>
 
-      <div class="hero-media">
-        <img
-          src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg"
-          alt="View from behind home plate across a manicured baseball infield at dusk"
-          referrerpolicy="no-referrer"
-        >
-        <div class="hero-media-caption">Learn the game one play at a time — made for beginners and new fans</div>
+      <div class="hero-metrics" aria-label="DiamondIQ Scoreboard">
+        <div class="hero-metric">
+          <div class="score-label">Plays</div>
+          <div class="score-value">8</div>
+          <p class="score-note">Rules &amp; Statcast</p>
+        </div>
+        <div class="hero-metric">
+          <div class="score-label">Opening Day</div>
+          <div class="score-value" id="kpi-countdown">--</div>
+          <p class="score-note">2027 opener</p>
+        </div>
+        <div class="hero-metric">
+          <div class="score-label">Mastered</div>
+          <div class="score-value" id="kpi-mastered">0 / 8</div>
+          <p class="score-note">Trivia checks</p>
+        </div>
+        <div class="hero-metric">
+          <div class="score-label">Saved &amp; Notes</div>
+          <div class="score-value" id="kpi-saved-notes">0</div>
+          <p class="score-note" id="kpi-saved-sub"><a href="login.html">Log in</a> or <a href="register.html">Sign up</a></p>
+        </div>
       </div>
     </div>
 
-    <article class="featured-spotlight" aria-labelledby="featured-heading">
-      <div>
-        <div class="meta-line">
-          <span>Featured Play of the Day</span>
+    <div class="hero-visual-panel">
+      <img
+        src="/src/assets/images/baseball_stadium_scoreboard_1794855945361.jpg"
+        alt="Sunny baseball stadium field and scoreboard before the first pitch"
+        referrerpolicy="no-referrer"
+      >
+      <div class="hero-visual-scrim">
+        <div class="meta-line" style="color:rgb(186,214,255);margin-bottom:0.35rem;">
+          <span>Featured Breakdown</span>
           <span aria-hidden="true">·</span>
           <span>Fundamental</span>
         </div>
-        <h2 id="featured-heading">Force Out vs. Tag Out</h2>
-        <p style="color:var(--text-secondary);">Two ways to get a runner out: step on the base with the ball, or tag the runner directly.</p>
+        <h2>Force Out vs. Tag Out</h2>
+        <p>Learn why stepping on 2nd base beats chasing the runner.</p>
+        <a class="btn btn-primary btn-sm" href="#gameday-studio" id="hero-open-featured">Watch Play Diagram</a>
       </div>
-      <div class="diamond-stage" id="home-diamond-stage" aria-label="Force play baseball diamond diagram"></div>
-      <div class="surface-powder">
-        <p style="margin-bottom:0;font-weight:500;">Quick rule: if a runner behind you is forcing you to run to the next base, the defense only needs to touch the bag. If nobody is pushing you forward, they have to tag you.</p>
-      </div>
-      <a class="btn btn-primary" href="detail.html?id=force-vs-tag">See the 5-Expert Breakdown</a>
-    </article>
-  </section>
-
-  <section class="kpi-strip" aria-label="DiamondIQ Quick Facts">
-    <div class="kpi-card">
-      <div class="kpi-label">Baseball Plays</div>
-      <div class="kpi-value" id="kpi-plays">8</div>
-      <p class="kpi-note">Rules &amp; Statcast lessons</p>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Expert Voices</div>
-      <div class="kpi-value">5</div>
-      <p class="kpi-note">Coach, Analyst, Dev, Designer, Rookie</p>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Opening Day</div>
-      <div class="kpi-value" id="kpi-countdown">Mar 25</div>
-      <p class="kpi-note" id="kpi-countdown-note">2027 MLB season opener</p>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label" id="kpi-progress-label">Built For</div>
-      <div class="kpi-value" id="kpi-progress-value">10+</div>
-      <p class="kpi-note" id="kpi-progress-note">New fans &amp; youth players</p>
     </div>
   </section>
 
-  <section class="section-block" aria-labelledby="fact-heading">
-    <div class="fact-bar">
-      <div class="fact-copy">
-        <div class="fact-label" id="fact-heading">Baseball Fun Fact</div>
-        <p class="fact-text" id="fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
+  <section id="gameday-studio" class="section-block gameday-studio" aria-labelledby="studio-heading">
+    <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
+    <div class="studio-topbar">
+      <div>
+        <h2 id="studio-heading">Gameday Broadcast Studio</h2>
+        <p>Switch between the live Statcast Hit Lab and our featured play diagram.</p>
       </div>
-      <button type="button" id="next-fact-btn" class="btn btn-secondary btn-sm">Next Fun Fact</button>
+      <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
+        <button type="button" class="segmented-btn" data-studio="hitlab" aria-pressed="true">Statcast Hit Lab</button>
+        <button type="button" class="segmented-btn" data-studio="play" aria-pressed="false">Featured Play: Force vs. Tag</button>
+      </div>
+    </div>
+
+    <div class="studio-body">
+      <div id="studio-panel-hitlab" class="hitlab-grid">
+        <div class="hitlab-stage">
+          <div id="hitlab-svg-wrap" aria-live="polite"></div>
+          <div class="hitlab-readout">
+            <div>
+              <div class="hitlab-stat-label">Projected Distance</div>
+              <div class="hitlab-stat-val" id="hitlab-dist">398 ft</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Play Result</div>
+              <div class="hitlab-stat-val" id="hitlab-outcome">Barrel Home Run!</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Est. Batting Avg</div>
+              <div class="hitlab-stat-val" id="hitlab-xba">.640</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-controls-card">
+          <div class="form-stack">
+            <div class="slider-field">
+              <div class="slider-head">
+                <label for="velo-slider">Exit Velocity</label>
+                <span class="tabular-nums" id="velo-val" style="color:var(--accent);">104 mph</span>
+              </div>
+              <input type="range" id="velo-slider" min="65" max="115" value="104" step="1">
+            </div>
+
+            <div class="slider-field">
+              <div class="slider-head">
+                <label for="angle-slider">Launch Angle</label>
+                <span class="tabular-nums" id="angle-val" style="color:var(--accent);">27°</span>
+              </div>
+              <input type="range" id="angle-slider" min="-10" max="55" value="27" step="1">
+            </div>
+          </div>
+
+          <div>
+            <div class="kicker-line">Quick Swing Presets</div>
+            <div class="segmented-group" id="hitlab-presets" style="width:100%;justify-content:space-between;margin-bottom:0.85rem;">
+              <button type="button" class="segmented-btn" data-velo="92" data-angle="-6" aria-pressed="false">Grounder</button>
+              <button type="button" class="segmented-btn" data-velo="98" data-angle="16" aria-pressed="false">Line Drive</button>
+              <button type="button" class="segmented-btn" data-velo="104" data-angle="27" aria-pressed="true">Barrel HR</button>
+              <button type="button" class="segmented-btn" data-velo="82" data-angle="48" aria-pressed="false">Pop-Up</button>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="detail.html?id=launch-angle-exit-velo" style="width:100%;">Open Full Barrel Lesson</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="studio-panel-play" class="hitlab-grid" hidden>
+        <div class="hitlab-stage">
+          <div class="diamond-stage" id="home-diamond-stage" aria-label="Force play baseball diamond diagram" style="border:0;padding:0.4rem;"></div>
+        </div>
+
+        <div class="studio-controls-card">
+          <div>
+            <div class="meta-line">
+              <span>Featured Play</span>
+              <span aria-hidden="true">·</span>
+              <span>Fundamental</span>
+            </div>
+            <h3 style="font-size:1.45rem;margin-bottom:0.5rem;">Force Out vs. Tag Out</h3>
+            <p id="home-step-note" style="color:var(--text-secondary);margin-bottom:0;">Runner on 1st is forced to run to 2nd when the ball is hit on the ground.</p>
+          </div>
+
+          <div>
+            <div class="kicker-line">Step Through the Play</div>
+            <div class="segmented-group" id="home-step-btns" role="group" aria-label="Step through featured play" style="margin-bottom:0.9rem;width:100%;justify-content:space-between;">
+              <button type="button" class="segmented-btn" data-step="0" aria-pressed="false">1. Setup</button>
+              <button type="button" class="segmented-btn" data-step="1" aria-pressed="true">2. Throw to 2nd</button>
+              <button type="button" class="segmented-btn" data-step="2" aria-pressed="false">3. Tag Rule</button>
+            </div>
+            <a class="btn btn-primary" href="detail.html?id=force-vs-tag" style="width:100%;">Open 5-Expert Breakdown</a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="section-block" aria-labelledby="panel-heading">
     <div class="section-head">
       <div>
-        <h2 id="panel-heading">Meet the 5 Experts</h2>
-        <p class="section-subtitle">Every play is explained from five helpful angles.</p>
+        <h2 id="panel-heading">Meet Your 5-Expert Roster</h2>
+        <p class="section-subtitle">Click any expert on the left to see how they break down every play.</p>
       </div>
     </div>
-    <div class="panel-overview-grid" id="panel-overview-grid">
-      <article class="card">
-        <div class="meta-line">Fundamentals</div>
-        <h3>Youth Baseball Coach</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Real rules and simple game-day footwork cues.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">Analytics</div>
-        <h3>Sabermetrics Analyst</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Modern Statcast metrics as clear Low/Medium/High gauges.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">Architecture</div>
-        <h3>Web Dev Mentor</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">How baseball logic maps cleanly to structured data and UI.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">Clarity</div>
-        <h3>UI/UX Designer</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">High-contrast visuals, SVG diagrams, and responsive grids.</p>
-      </article>
-      <article class="card">
-        <div class="meta-line">Beginner Check</div>
-        <h3>Rookie Player</h3>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0;">Plain-English "aha!" takeaways without confusing jargon.</p>
-      </article>
+
+    <div class="expert-roster-layout">
+      <div class="expert-roster-list" id="expert-roster-list" role="group" aria-label="Select an expert">
+        <button type="button" class="expert-roster-btn" data-expert="0" aria-pressed="true">
+          <span class="expert-roster-num">01</span>
+          <span><span class="expert-roster-name">Youth Baseball Coach</span><span class="expert-roster-role">Rules &amp; game-day footwork</span></span>
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+        <button type="button" class="expert-roster-btn" data-expert="1" aria-pressed="false">
+          <span class="expert-roster-num">02</span>
+          <span><span class="expert-roster-name">Sabermetrics Analyst</span><span class="expert-roster-role">Statcast numbers made simple</span></span>
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+        <button type="button" class="expert-roster-btn" data-expert="2" aria-pressed="false">
+          <span class="expert-roster-num">03</span>
+          <span><span class="expert-roster-name">Web Dev Mentor</span><span class="expert-roster-role">How the app turns rules into data</span></span>
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+        <button type="button" class="expert-roster-btn" data-expert="3" aria-pressed="false">
+          <span class="expert-roster-num">04</span>
+          <span><span class="expert-roster-name">UI/UX Designer</span><span class="expert-roster-role">Clear diagrams &amp; easy layout</span></span>
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+        <button type="button" class="expert-roster-btn" data-expert="4" aria-pressed="false">
+          <span class="expert-roster-num">05</span>
+          <span><span class="expert-roster-name">Rookie Player</span><span class="expert-roster-role">Plain-English "aha!" check</span></span>
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+
+      <div class="expert-spotlight-panel" id="expert-spotlight-panel" aria-live="polite">
+        <div>
+          <div class="kicker-line" id="roster-spot-role">01 · Baseball Fundamentals</div>
+          <h3 id="roster-spot-title" style="font-size:1.8rem;margin-bottom:0.65rem;">Youth Baseball Coach</h3>
+          <p id="roster-spot-focus" style="color:var(--text-secondary);font-size:1.02rem;margin-bottom:0;">Real rules, where to throw the ball, and simple game-day footwork cues you can use right away.</p>
+        </div>
+        <a class="btn btn-primary btn-sm" href="detail.html?id=force-vs-tag" style="align-self:flex-start;">See All 5 in Action</a>
+      </div>
     </div>
   </section>
 
   <section class="section-block" aria-labelledby="explore-heading">
     <div class="section-head">
-      <h2 id="explore-heading">Start Exploring</h2>
+      <div>
+        <h2 id="explore-heading">Explore DiamondIQ</h2>
+        <p class="section-subtitle">Search plays, compare strategies side by side, and save personal dugout notes.</p>
+      </div>
     </div>
-    <div class="explore-grid">
-      <article class="card explore-card">
-        <div>
-          <div class="meta-line">Learn the Rules</div>
-          <h3>Scenario Library</h3>
-          <p style="color:var(--text-secondary);margin-bottom:0;">Explore 8 common plays from force outs and stealing bases to exit velocity.</p>
+
+    <div class="bento-explore">
+      <article class="card bento-feature">
+        <div class="bento-feature-media">
+          <img
+            src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg"
+            alt="Baserunner sliding into second base as the shortstop fires a relay throw"
+            referrerpolicy="no-referrer"
+          >
         </div>
-        <a class="btn btn-secondary btn-sm" href="scenarios.html" style="align-self:flex-start;">Open Library</a>
-      </article>
-      <article class="card explore-card">
-        <div>
-          <div class="meta-line">Side by Side</div>
-          <h3>Compare Two Plays</h3>
-          <p style="color:var(--text-secondary);margin-bottom:0;">See which play is harder to pull off, riskier on defense, or bigger for the scoreboard.</p>
+        <div class="bento-feature-body">
+          <div>
+            <div class="meta-line">Search &amp; Filter · 8 Lessons</div>
+            <h3 style="font-size:1.45rem;">Scenario Library</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Browse all 8 baseball plays and Statcast concepts, filter by category, star your favorites, and test yourself with trivia checks.</p>
+          </div>
+          <a class="btn btn-primary btn-sm" href="scenarios.html" style="align-self:flex-start;">Open Scenario Library</a>
         </div>
-        <a class="btn btn-secondary btn-sm" href="compare.html" style="align-self:flex-start;">Compare Plays</a>
       </article>
-      <article class="card explore-card">
-        <div>
-          <div class="meta-line">Your Notes</div>
-          <h3>My Playbook</h3>
-          <p style="color:var(--text-secondary);margin-bottom:0;">Keep track of your favorite plays and write down tips you want to remember.</p>
-        </div>
-        <a class="btn btn-secondary btn-sm" href="playbook.html" style="align-self:flex-start;">Open Playbook</a>
-      </article>
+
+      <div class="bento-side-stack">
+        <article class="card explore-card">
+          <div>
+            <div class="meta-line">Side by Side</div>
+            <h3>Compare Two Plays</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Pick any two plays and compare skill level, tactical risk, and scoring impact.</p>
+          </div>
+          <a class="btn btn-secondary btn-sm" href="compare.html" style="align-self:flex-start;">Compare Plays</a>
+        </article>
+
+        <article class="card explore-card">
+          <div>
+            <div class="meta-line">Your Account</div>
+            <h3>My Playbook</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Write, edit, and organize your own game-day notes and favorite plays.</p>
+          </div>
+          <a class="btn btn-secondary btn-sm" href="playbook.html" style="align-self:flex-start;">Open Playbook</a>
+        </article>
+      </div>
+    </div>
+
+    <div class="fact-bar" aria-labelledby="fact-heading">
+      <div class="fact-copy">
+        <div class="fact-label" id="fact-heading">Baseball Fun Fact</div>
+        <p class="fact-text" id="fun-fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
+      </div>
+      <button type="button" id="next-fact-btn" class="btn btn-secondary btn-sm">Next Fact</button>
     </div>
   </section>
 </main>

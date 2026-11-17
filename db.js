@@ -1,12 +1,15 @@
-/* DiamondIQ — Data Persistence & Auth Layer
-   Supports PostgreSQL (via pg + DATABASE_URL) with automatic,
-   API-compatible in-memory fallback when DATABASE_URL is unset. */
+/* DiamondIQ — Phase 4 Database & Auth Layer
+   Supports PostgreSQL (via pg + DATABASE_URL) with automatic
+   local file persistence (.diamondiq-store.json) when DATABASE_URL is unset. */
 
+const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const { Pool } = require('pg');
 const { SCENARIOS } = require('./data');
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const LOCAL_STORE_PATH = path.join(__dirname, '.diamondiq-store.json');
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -26,26 +29,68 @@ function verifyPassword(password, storedHash) {
 }
 
 /* =========================================================
-   In-Memory Store (active when DATABASE_URL is unset)
+   Local Persistent Store (when DATABASE_URL is unset)
    ========================================================= */
-function createMemoryStore() {
+function createLocalStore() {
   let nextUserId = 1;
   let nextEntryId = 1;
-
-  const users = []; // { id, username, email, passwordHash, createdAt }
+  let users = []; // { id, username, email, passwordHash, createdAt }
   const sessions = new Map(); // token -> { token, userId, expiresAt }
   const scenarios = SCENARIOS.map((s) => ({ ...s }));
-  const playbookEntries = []; // { id, userId, title, body, rating, createdAt, updatedAt }
-  const favorites = new Map(); // userId -> Set<scenarioId>
-  const triviaMastered = new Map(); // userId -> Set<scenarioId>
-  const scenarioRatings = new Map(); // scenarioId -> Map<userId, stars>
+  let playbookEntries = []; // { id, userId, title, body, rating, createdAt, updatedAt }
+  let favorites = []; // { userId, scenarioId, createdAt }
+  let triviaMastered = []; // { userId, scenarioId, createdAt }
+  let scenarioRatings = []; // { userId, scenarioId, stars, updatedAt }
+
+  function loadFromDisk() {
+    try {
+      if (!fs.existsSync(LOCAL_STORE_PATH)) return;
+      const raw = JSON.parse(fs.readFileSync(LOCAL_STORE_PATH, 'utf8'));
+      if (Number.isInteger(raw.nextUserId)) nextUserId = raw.nextUserId;
+      if (Number.isInteger(raw.nextEntryId)) nextEntryId = raw.nextEntryId;
+      if (Array.isArray(raw.users)) users = raw.users;
+      if (Array.isArray(raw.playbookEntries)) playbookEntries = raw.playbookEntries;
+      if (Array.isArray(raw.favorites)) favorites = raw.favorites;
+      if (Array.isArray(raw.triviaMastered)) triviaMastered = raw.triviaMastered;
+      if (Array.isArray(raw.scenarioRatings)) scenarioRatings = raw.scenarioRatings;
+      if (Array.isArray(raw.sessions)) {
+        for (const s of raw.sessions) {
+          if (s && s.token && s.expiresAt > Date.now()) sessions.set(s.token, s);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not read local store file, starting fresh:', err.message);
+    }
+  }
+
+  function saveToDisk() {
+    try {
+      const payload = {
+        nextUserId,
+        nextEntryId,
+        users,
+        sessions: Array.from(sessions.values()),
+        playbookEntries,
+        favorites,
+        triviaMastered,
+        scenarioRatings
+      };
+      const tmpPath = `${LOCAL_STORE_PATH}.tmp`;
+      fs.writeFileSync(tmpPath, JSON.stringify(payload, null, 2), 'utf8');
+      fs.renameSync(tmpPath, LOCAL_STORE_PATH);
+    } catch (err) {
+      console.warn('Could not persist local store file:', err.message);
+    }
+  }
+
+  loadFromDisk();
 
   function toPublicUser(u) {
     return u ? { id: u.id, username: u.username, email: u.email, createdAt: u.createdAt } : null;
   }
 
   return {
-    mode: 'memory',
+    mode: 'local-file',
     async ensureReady() {
       return;
     },
@@ -70,6 +115,7 @@ function createMemoryStore() {
         createdAt: new Date().toISOString()
       };
       users.push(user);
+      saveToDisk();
       return toPublicUser(user);
     },
 
@@ -88,6 +134,7 @@ function createMemoryStore() {
       const token = crypto.randomBytes(32).toString('hex');
       const expiresAt = Date.now() + SESSION_TTL_MS;
       sessions.set(token, { token, userId, expiresAt });
+      saveToDisk();
       return token;
     },
 
@@ -97,6 +144,7 @@ function createMemoryStore() {
       if (!sess) return null;
       if (Date.now() > sess.expiresAt) {
         sessions.delete(token);
+        saveToDisk();
         return null;
       }
       const user = users.find((u) => u.id === sess.userId);
@@ -104,24 +152,38 @@ function createMemoryStore() {
     },
 
     async deleteSession(token) {
-      if (token) sessions.delete(token);
+      if (token) {
+        sessions.delete(token);
+        saveToDisk();
+      }
     },
 
-    async listScenarios({ q = '', category = 'all', sort = 'az' } = {}) {
+    async listScenarios({ q = '', category = 'all', sort = 'az', userId = null } = {}) {
       let list = [...scenarios];
-      const query = String(q || '').trim().toLowerCase();
-      if (query) {
+      const needle = String(q || '').trim().toLowerCase();
+      if (needle) {
         list = list.filter(
           (s) =>
-            s.title.toLowerCase().includes(query) ||
-            s.shortSummary.toLowerCase().includes(query) ||
-            s.quickTakeaway.toLowerCase().includes(query) ||
-            s.categoryLabel.toLowerCase().includes(query)
+            s.title.toLowerCase().includes(needle) ||
+            s.shortSummary.toLowerCase().includes(needle) ||
+            s.quickTakeaway.toLowerCase().includes(needle) ||
+            s.categoryLabel.toLowerCase().includes(needle)
         );
       }
-      if (category && category !== 'all') {
+
+      if (category === 'saved') {
+        if (!userId) {
+          list = [];
+        } else {
+          const savedIds = new Set(
+            favorites.filter((f) => f.userId === userId).map((f) => f.scenarioId)
+          );
+          list = list.filter((s) => savedIds.has(s.id));
+        }
+      } else if (category === 'fundamental' || category === 'analytics') {
         list = list.filter((s) => s.category === category);
       }
+
       if (sort === 'difficulty') {
         list.sort((a, b) => a.difficulty - b.difficulty || a.title.localeCompare(b.title));
       } else if (sort === 'popularity') {
@@ -136,62 +198,10 @@ function createMemoryStore() {
       return scenarios.find((s) => s.id === id) || null;
     },
 
-    async listFavorites(userId) {
-      if (!userId) return [];
-      const set = favorites.get(userId);
-      return set ? Array.from(set) : [];
-    },
-
-    async addFavorite(userId, scenarioId) {
-      if (!favorites.has(userId)) favorites.set(userId, new Set());
-      favorites.get(userId).add(scenarioId);
-      return Array.from(favorites.get(userId));
-    },
-
-    async removeFavorite(userId, scenarioId) {
-      if (favorites.has(userId)) favorites.get(userId).delete(scenarioId);
-      return this.listFavorites(userId);
-    },
-
-    async markTriviaMastered(userId, scenarioId) {
-      if (!userId) return false;
-      if (!triviaMastered.has(userId)) triviaMastered.set(userId, new Set());
-      triviaMastered.get(userId).add(scenarioId);
-      return true;
-    },
-
-    async getUserStats(userId) {
-      if (!userId) {
-        return { masteredCount: 0, favoritesCount: 0, playbookCount: 0 };
-      }
-      const masteredCount = triviaMastered.get(userId)?.size || 0;
-      const favoritesCount = favorites.get(userId)?.size || 0;
-      const playbookCount = playbookEntries.filter((e) => e.userId === userId).length;
-      return { masteredCount, favoritesCount, playbookCount };
-    },
-
-    async getScenarioRating(scenarioId, userId) {
-      const map = scenarioRatings.get(scenarioId);
-      if (!map || map.size === 0) {
-        return { average: 0, count: 0, userStars: null };
-      }
-      const values = Array.from(map.values());
-      const sum = values.reduce((acc, v) => acc + v, 0);
-      const average = Math.round((sum / values.length) * 10) / 10;
-      const userStars = userId && map.has(userId) ? map.get(userId) : null;
-      return { average, count: values.length, userStars };
-    },
-
-    async upsertScenarioRating(scenarioId, userId, stars) {
-      if (!scenarioRatings.has(scenarioId)) scenarioRatings.set(scenarioId, new Map());
-      scenarioRatings.get(scenarioId).set(userId, stars);
-      return this.getScenarioRating(scenarioId, userId);
-    },
-
     async listPlaybookEntries(userId) {
       return playbookEntries
         .filter((e) => e.userId === userId)
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     },
 
     async createPlaybookEntry(userId, { title, body, rating }) {
@@ -206,32 +216,114 @@ function createMemoryStore() {
         updatedAt: now
       };
       playbookEntries.push(entry);
+      saveToDisk();
       return entry;
     },
 
-    async updatePlaybookEntry(id, userId, { title, body, rating }) {
-      const entry = playbookEntries.find((e) => e.id === Number(id));
+    async updatePlaybookEntry(userId, entryId, { title, body, rating }) {
+      const entry = playbookEntries.find((e) => e.id === entryId);
       if (!entry) return { status: 'not_found' };
       if (entry.userId !== userId) return { status: 'forbidden' };
       entry.title = title;
       entry.body = body;
       entry.rating = rating;
       entry.updatedAt = new Date().toISOString();
+      saveToDisk();
       return { status: 'ok', entry };
     },
 
-    async deletePlaybookEntry(id, userId) {
-      const idx = playbookEntries.findIndex((e) => e.id === Number(id));
+    async deletePlaybookEntry(userId, entryId) {
+      const idx = playbookEntries.findIndex((e) => e.id === entryId);
       if (idx === -1) return { status: 'not_found' };
       if (playbookEntries[idx].userId !== userId) return { status: 'forbidden' };
       playbookEntries.splice(idx, 1);
+      saveToDisk();
       return { status: 'ok' };
+    },
+
+    async listFavorites(userId) {
+      if (!userId) return [];
+      return favorites.filter((f) => f.userId === userId).map((f) => f.scenarioId);
+    },
+
+    async addFavorite(userId, scenarioId) {
+      const exists = favorites.some((f) => f.userId === userId && f.scenarioId === scenarioId);
+      if (!exists) {
+        favorites.push({ userId, scenarioId, createdAt: new Date().toISOString() });
+        saveToDisk();
+      }
+      return this.listFavorites(userId);
+    },
+
+    async removeFavorite(userId, scenarioId) {
+      favorites = favorites.filter((f) => !(f.userId === userId && f.scenarioId === scenarioId));
+      saveToDisk();
+      return this.listFavorites(userId);
+    },
+
+    async markTriviaMastered(userId, scenarioId) {
+      if (!userId) return [];
+      const exists = triviaMastered.some((m) => m.userId === userId && m.scenarioId === scenarioId);
+      if (!exists) {
+        triviaMastered.push({ userId, scenarioId, createdAt: new Date().toISOString() });
+        saveToDisk();
+      }
+      return this.listTriviaMastered(userId);
+    },
+
+    async listTriviaMastered(userId) {
+      if (!userId) return [];
+      return triviaMastered.filter((m) => m.userId === userId).map((m) => m.scenarioId);
+    },
+
+    async getScenarioRating(scenarioId, userId = null) {
+      const rows = scenarioRatings.filter((r) => r.scenarioId === scenarioId);
+      const count = rows.length;
+      const average = count
+        ? Number((rows.reduce((sum, r) => sum + r.stars, 0) / count).toFixed(1))
+        : 0;
+      const mine = userId ? rows.find((r) => r.userId === userId) : null;
+      return { average, count, userStars: mine ? mine.stars : 0 };
+    },
+
+    async setScenarioRating(userId, scenarioId, stars) {
+      const existing = scenarioRatings.find(
+        (r) => r.userId === userId && r.scenarioId === scenarioId
+      );
+      if (existing) {
+        existing.stars = stars;
+        existing.updatedAt = new Date().toISOString();
+      } else {
+        scenarioRatings.push({
+          userId,
+          scenarioId,
+          stars,
+          updatedAt: new Date().toISOString()
+        });
+      }
+      saveToDisk();
+      return this.getScenarioRating(scenarioId, userId);
+    },
+
+    async getUserStats(userId) {
+      return {
+        scenariosCount: scenarios.length,
+        masteredCount: userId
+          ? triviaMastered.filter((m) => m.userId === userId).length
+          : 0,
+        favoritesCount: userId
+          ? favorites.filter((f) => f.userId === userId).length
+          : 0,
+        playbookCount: userId
+          ? playbookEntries.filter((e) => e.userId === userId).length
+          : 0
+      };
     }
   };
 }
 
 /* =========================================================
-   PostgreSQL Store (active when DATABASE_URL is configured)
+   PostgreSQL Store (when DATABASE_URL is configured)
    ========================================================= */
 function createPostgresStore(connectionString) {
   const pool = new Pool({
@@ -458,112 +550,46 @@ function createPostgresStore(connectionString) {
       await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
     },
 
-    async listScenarios({ q = '', category = 'all', sort = 'az' } = {}) {
+    async listScenarios({ q = '', category = 'all', sort = 'az', userId = null } = {}) {
       await this.ensureReady();
-      const where = [];
-      const params = [];
-      if (q && q.trim()) {
-        params.push(`%${q.trim().toLowerCase()}%`);
-        where.push(
-          `(LOWER(title) LIKE $${params.length} OR LOWER(short_summary) LIKE $${params.length} OR LOWER(quick_takeaway) LIKE $${params.length})`
+      const res = await pool.query('SELECT * FROM scenarios ORDER BY title ASC');
+      let list = res.rows.map(mapScenarioRow);
+      const needle = String(q || '').trim().toLowerCase();
+      if (needle) {
+        list = list.filter(
+          (s) =>
+            s.title.toLowerCase().includes(needle) ||
+            s.shortSummary.toLowerCase().includes(needle) ||
+            s.quickTakeaway.toLowerCase().includes(needle) ||
+            s.categoryLabel.toLowerCase().includes(needle)
         );
       }
-      if (category && category !== 'all') {
-        params.push(category);
-        where.push(`category = $${params.length}`);
+
+      if (category === 'saved') {
+        if (!userId) {
+          list = [];
+        } else {
+          const favIds = new Set(await this.listFavorites(userId));
+          list = list.filter((s) => favIds.has(s.id));
+        }
+      } else if (category === 'fundamental' || category === 'analytics') {
+        list = list.filter((s) => s.category === category);
       }
-      let orderBy = 'title ASC';
-      if (sort === 'difficulty') orderBy = 'difficulty ASC, title ASC';
-      if (sort === 'popularity') orderBy = 'popularity DESC, title ASC';
-      const sql = `SELECT * FROM scenarios ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY ${orderBy}`;
-      const res = await pool.query(sql, params);
-      return res.rows.map(mapScenarioRow);
+
+      if (sort === 'difficulty') {
+        list.sort((a, b) => a.difficulty - b.difficulty || a.title.localeCompare(b.title));
+      } else if (sort === 'popularity') {
+        list.sort((a, b) => b.popularity - a.popularity || a.title.localeCompare(b.title));
+      } else {
+        list.sort((a, b) => a.title.localeCompare(b.title));
+      }
+      return list;
     },
 
     async getScenarioById(id) {
       await this.ensureReady();
       const res = await pool.query('SELECT * FROM scenarios WHERE id = $1', [id]);
       return res.rows[0] ? mapScenarioRow(res.rows[0]) : null;
-    },
-
-    async listFavorites(userId) {
-      if (!userId) return [];
-      await this.ensureReady();
-      const res = await pool.query('SELECT scenario_id FROM favorites WHERE user_id = $1', [userId]);
-      return res.rows.map((r) => r.scenario_id);
-    },
-
-    async addFavorite(userId, scenarioId) {
-      await this.ensureReady();
-      await pool.query(
-        'INSERT INTO favorites (user_id, scenario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [userId, scenarioId]
-      );
-      return this.listFavorites(userId);
-    },
-
-    async removeFavorite(userId, scenarioId) {
-      await this.ensureReady();
-      await pool.query('DELETE FROM favorites WHERE user_id = $1 AND scenario_id = $2', [userId, scenarioId]);
-      return this.listFavorites(userId);
-    },
-
-    async markTriviaMastered(userId, scenarioId) {
-      if (!userId) return false;
-      await this.ensureReady();
-      await pool.query(
-        'INSERT INTO trivia_mastered (user_id, scenario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [userId, scenarioId]
-      );
-      return true;
-    },
-
-    async getUserStats(userId) {
-      if (!userId) return { masteredCount: 0, favoritesCount: 0, playbookCount: 0 };
-      await this.ensureReady();
-      const [m, f, p] = await Promise.all([
-        pool.query('SELECT COUNT(*)::int AS cnt FROM trivia_mastered WHERE user_id = $1', [userId]),
-        pool.query('SELECT COUNT(*)::int AS cnt FROM favorites WHERE user_id = $1', [userId]),
-        pool.query('SELECT COUNT(*)::int AS cnt FROM playbook_entries WHERE user_id = $1', [userId])
-      ]);
-      return {
-        masteredCount: m.rows[0].cnt,
-        favoritesCount: f.rows[0].cnt,
-        playbookCount: p.rows[0].cnt
-      };
-    },
-
-    async getScenarioRating(scenarioId, userId) {
-      await this.ensureReady();
-      const agg = await pool.query(
-        'SELECT COALESCE(ROUND(AVG(stars)::numeric, 1), 0) AS avg, COUNT(*)::int AS cnt FROM scenario_ratings WHERE scenario_id = $1',
-        [scenarioId]
-      );
-      let userStars = null;
-      if (userId) {
-        const u = await pool.query(
-          'SELECT stars FROM scenario_ratings WHERE scenario_id = $1 AND user_id = $2',
-          [scenarioId, userId]
-        );
-        if (u.rows[0]) userStars = u.rows[0].stars;
-      }
-      return {
-        average: Number(agg.rows[0].avg) || 0,
-        count: agg.rows[0].cnt,
-        userStars
-      };
-    },
-
-    async upsertScenarioRating(scenarioId, userId, stars) {
-      await this.ensureReady();
-      await pool.query(
-        `INSERT INTO scenario_ratings (user_id, scenario_id, stars, updated_at)
-         VALUES ($1, $2, $3, NOW())
-         ON CONFLICT (user_id, scenario_id)
-         DO UPDATE SET stars = EXCLUDED.stars, updated_at = NOW()`,
-        [userId, scenarioId, stars]
-      );
-      return this.getScenarioRating(scenarioId, userId);
     },
 
     async listPlaybookEntries(userId) {
@@ -586,9 +612,11 @@ function createPostgresStore(connectionString) {
       return mapEntryRow(res.rows[0]);
     },
 
-    async updatePlaybookEntry(id, userId, { title, body, rating }) {
+    async updatePlaybookEntry(userId, entryId, { title, body, rating }) {
       await this.ensureReady();
-      const existing = await pool.query('SELECT user_id FROM playbook_entries WHERE id = $1', [id]);
+      const existing = await pool.query('SELECT user_id FROM playbook_entries WHERE id = $1', [
+        entryId
+      ]);
       if (existing.rows.length === 0) return { status: 'not_found' };
       if (existing.rows[0].user_id !== userId) return { status: 'forbidden' };
       const res = await pool.query(
@@ -596,25 +624,138 @@ function createPostgresStore(connectionString) {
          SET title = $1, body = $2, rating = $3, updated_at = NOW()
          WHERE id = $4 AND user_id = $5
          RETURNING *`,
-        [title, body, rating, id, userId]
+        [title, body, rating, entryId, userId]
       );
       return { status: 'ok', entry: mapEntryRow(res.rows[0]) };
     },
 
-    async deletePlaybookEntry(id, userId) {
+    async deletePlaybookEntry(userId, entryId) {
       await this.ensureReady();
-      const existing = await pool.query('SELECT user_id FROM playbook_entries WHERE id = $1', [id]);
+      const existing = await pool.query('SELECT user_id FROM playbook_entries WHERE id = $1', [
+        entryId
+      ]);
       if (existing.rows.length === 0) return { status: 'not_found' };
       if (existing.rows[0].user_id !== userId) return { status: 'forbidden' };
-      await pool.query('DELETE FROM playbook_entries WHERE id = $1 AND user_id = $2', [id, userId]);
+      await pool.query('DELETE FROM playbook_entries WHERE id = $1 AND user_id = $2', [
+        entryId,
+        userId
+      ]);
       return { status: 'ok' };
+    },
+
+    async listFavorites(userId) {
+      if (!userId) return [];
+      await this.ensureReady();
+      const res = await pool.query(
+        'SELECT scenario_id FROM favorites WHERE user_id = $1 ORDER BY created_at DESC',
+        [userId]
+      );
+      return res.rows.map((r) => r.scenario_id);
+    },
+
+    async addFavorite(userId, scenarioId) {
+      await this.ensureReady();
+      await pool.query(
+        `INSERT INTO favorites (user_id, scenario_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, scenario_id) DO NOTHING`,
+        [userId, scenarioId]
+      );
+      return this.listFavorites(userId);
+    },
+
+    async removeFavorite(userId, scenarioId) {
+      await this.ensureReady();
+      await pool.query('DELETE FROM favorites WHERE user_id = $1 AND scenario_id = $2', [
+        userId,
+        scenarioId
+      ]);
+      return this.listFavorites(userId);
+    },
+
+    async markTriviaMastered(userId, scenarioId) {
+      if (!userId) return [];
+      await this.ensureReady();
+      await pool.query(
+        `INSERT INTO trivia_mastered (user_id, scenario_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, scenario_id) DO NOTHING`,
+        [userId, scenarioId]
+      );
+      return this.listTriviaMastered(userId);
+    },
+
+    async listTriviaMastered(userId) {
+      if (!userId) return [];
+      await this.ensureReady();
+      const res = await pool.query(
+        'SELECT scenario_id FROM trivia_mastered WHERE user_id = $1',
+        [userId]
+      );
+      return res.rows.map((r) => r.scenario_id);
+    },
+
+    async getScenarioRating(scenarioId, userId = null) {
+      await this.ensureReady();
+      const agg = await pool.query(
+        'SELECT COUNT(*)::int AS count, COALESCE(AVG(stars), 0)::float AS avg FROM scenario_ratings WHERE scenario_id = $1',
+        [scenarioId]
+      );
+      const count = agg.rows[0].count;
+      const average = count ? Number(agg.rows[0].avg.toFixed(1)) : 0;
+      let userStars = 0;
+      if (userId) {
+        const mine = await pool.query(
+          'SELECT stars FROM scenario_ratings WHERE scenario_id = $1 AND user_id = $2',
+          [scenarioId, userId]
+        );
+        if (mine.rows[0]) userStars = mine.rows[0].stars;
+      }
+      return { average, count, userStars };
+    },
+
+    async setScenarioRating(userId, scenarioId, stars) {
+      await this.ensureReady();
+      await pool.query(
+        `INSERT INTO scenario_ratings (user_id, scenario_id, stars, updated_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (user_id, scenario_id) DO UPDATE SET
+           stars = EXCLUDED.stars,
+           updated_at = NOW()`,
+        [userId, scenarioId, stars]
+      );
+      return this.getScenarioRating(scenarioId, userId);
+    },
+
+    async getUserStats(userId) {
+      await this.ensureReady();
+      const sCount = await pool.query('SELECT COUNT(*)::int AS c FROM scenarios');
+      if (!userId) {
+        return {
+          scenariosCount: sCount.rows[0].c,
+          masteredCount: 0,
+          favoritesCount: 0,
+          playbookCount: 0
+        };
+      }
+      const [mRes, fRes, pRes] = await Promise.all([
+        pool.query('SELECT COUNT(*)::int AS c FROM trivia_mastered WHERE user_id = $1', [userId]),
+        pool.query('SELECT COUNT(*)::int AS c FROM favorites WHERE user_id = $1', [userId]),
+        pool.query('SELECT COUNT(*)::int AS c FROM playbook_entries WHERE user_id = $1', [userId])
+      ]);
+      return {
+        scenariosCount: sCount.rows[0].c,
+        masteredCount: mRes.rows[0].c,
+        favoritesCount: fRes.rows[0].c,
+        playbookCount: pRes.rows[0].c
+      };
     }
   };
 }
 
-const memoryFallback = createMemoryStore();
+const localFallback = createLocalStore();
 const dbUrl = (process.env.DATABASE_URL || '').trim();
-const primaryStore = dbUrl ? createPostgresStore(dbUrl) : memoryFallback;
+const primaryStore = dbUrl ? createPostgresStore(dbUrl) : localFallback;
 
 module.exports = {
   store: primaryStore

@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Compare Plays</title>
-<meta name="description" content="Compare two baseball plays side by side on difficulty, risk, and impact.">
+<meta name="description" content="Compare any two baseball plays side by side on difficulty, risk, and impact.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -36,8 +36,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
-        <span>Dark Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,25 +46,33 @@
       </button>
     </div>
   </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <main id="compare" class="container">
-  <div class="page-header">
+  <section class="subpage-masthead">
     <div>
+      <div class="kicker-line">Head-to-Head Matchup</div>
       <h1>Play &amp; Stat Comparison</h1>
-      <p class="page-lead">Compare two baseball plays side by side to see which one is tougher to pull off and why it matters.</p>
+      <p class="page-lead">Pick any two plays from the 8-play library to compare execution difficulty, tactical risk, and scoring impact side by side.</p>
     </div>
-  </div>
+    <div class="subpage-masthead-media">
+      <img src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg" alt="Wide view of a baseball diamond seen from behind home plate" referrerpolicy="no-referrer">
+    </div>
+  </section>
 
-  <form class="card compare-controls" onsubmit="return false;" aria-label="Select plays to compare">
-    <div class="field">
-      <label for="play-a">Play A</label>
-      <select id="play-a" style="width:100%;"></select>
-    </div>
-    <button type="button" id="swap-plays-btn" class="btn btn-secondary btn-sm" aria-label="Swap Play A and Play B">Swap</button>
-    <div class="field">
-      <label for="play-b">Play B</label>
-      <select id="play-b" style="width:100%;"></select>
+  <form class="card card-led-top" onsubmit="return false;" aria-label="Select plays to compare" style="margin-bottom:1.35rem;">
+    <div class="rgb-led-rail" aria-hidden="true"></div>
+    <div class="compare-controls" style="margin-bottom:0;">
+      <div class="field">
+        <label for="play-a">Play A</label>
+        <select id="play-a" style="width:100%;"></select>
+      </div>
+      <div class="vs-marker" aria-hidden="true">VS</div>
+      <div class="field">
+        <label for="play-b">Play B</label>
+        <select id="play-b" style="width:100%;"></select>
+      </div>
     </div>
   </form>
 
@@ -74,8 +82,8 @@
       <thead>
         <tr>
           <th scope="col">Category</th>
-          <th scope="col" id="compare-col-a">Play A</th>
-          <th scope="col" id="compare-col-b">Play B</th>
+          <th scope="col" id="compare-th-a">Play A</th>
+          <th scope="col" id="compare-th-b">Play B</th>
         </tr>
       </thead>
       <tbody id="compare-tbody"></tbody>
@@ -83,9 +91,9 @@
   </div>
 
   <section class="section-block">
-    <div class="surface-powder">
-      <h2 style="font-size:1.15rem;margin-bottom:0.35rem;">Quick Verdict</h2>
-      <p id="compare-verdict" style="margin-bottom:0;">Both plays are beginner-friendly fundamentals. Force outs happen on defense almost every inning, while tagging up helps runners score without needing a base hit.</p>
+    <div class="surface-accent">
+      <h2 style="font-size:1.35rem;margin-bottom:0.35rem;">Quick Verdict</h2>
+      <p id="compare-verdict" style="margin-bottom:0;">Select two plays above to compare them side by side.</p>
     </div>
   </section>
 </main>
