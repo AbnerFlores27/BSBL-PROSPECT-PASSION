@@ -4,7 +4,7 @@
   "description": "DiamondIQ - Multi-Perspective Baseball Educational Hub",
   "main": "server.js",
   "scripts": {
-    "dev": "PORT=3000 node server.js",
+    "dev": "PORT=5000 node server.js",
     "start": "node server.js",
     "build": "node --check server.js && node --check db.js && node --check data.js && node --check ui.js",
     "lint": "node --check server.js && node --check db.js && node --check data.js && node --check ui.js"
