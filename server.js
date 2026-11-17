@@ -2,6 +2,7 @@
    Serves all 7 pages, scrypt cookie auth, 8 seeded scenarios with search/filter/sort,
    protected Playbook CRUD, Favorites, Trivia scoring/mastery, 5-Star Ratings, and Stats. */
 
+const path = require('path');
 const express = require('express');
 const { store } = require('./db');
 const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
@@ -74,7 +75,7 @@ app.use('/api', attachUser);
    Health & Dashboard Stats
    ========================================================= */
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, phase: 4, storage: store.mode });
+  res.json({ ok: true, phase: 5, storage: store.mode });
 });
 
 app.get('/api/stats', async (req, res, next) => {
@@ -386,6 +387,7 @@ app.delete('/api/playbook/:id', requireAuth, async (req, res, next) => {
 /* =========================================================
    Static Assets & Fallback
    ========================================================= */
+app.use('/vendor/three', express.static(path.join(__dirname, 'node_modules', 'three')));
 app.use(express.static(__dirname));
 
 app.use('/api', (err, _req, res, _next) => {
@@ -405,5 +407,5 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`DiamondIQ Phase 4 running on http://0.0.0.0:${PORT} (storage: ${store.mode})`);
+  console.log(`DiamondIQ Phases 1-5 running on http://0.0.0.0:${PORT} (storage: ${store.mode})`);
 });

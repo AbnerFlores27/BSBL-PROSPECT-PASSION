@@ -122,79 +122,257 @@
   }
 
   /* =========================================================
-     Tactical SVG Baseball Diamond & Analytics Diagrams
+     Tactical Baseball Diamond & Analytics Diagrams (MLB Broadcast Vector Art)
      step = 0 (Setup), 1 (The Play), 2 (Key Rule / Result)
      ========================================================= */
+  let svgUidCounter = 0;
+
+  function renderBaseballMarkup(cx, cy, r = 8.5) {
+    const k = r * 0.56;
+    return `
+      <g>
+        <ellipse cx="${cx + 1.5}" cy="${cy + r + 1.5}" rx="${r * 0.85}" ry="${r * 0.35}" fill="rgba(0,0,0,0.42)"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+        <circle cx="${cx - r * 0.25}" cy="${cy - r * 0.25}" r="${r * 0.35}" fill="rgba(255,255,255,0.9)"/>
+        <path d="M ${cx - r * 0.45} ${cy - r * 0.78} Q ${cx - k * 0.15} ${cy} ${cx - r * 0.45} ${cy + r * 0.78}" fill="none" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M ${cx + r * 0.45} ${cy - r * 0.78} Q ${cx + k * 0.15} ${cy} ${cx + r * 0.45} ${cy + r * 0.78}" fill="none" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round"/>
+      </g>`;
+  }
+
+  function renderFielderFigure(cx, cy, label, active = false) {
+    const bodyCol = active ? '#0ea5e9' : '#334155';
+    const helmetCol = active ? '#0284c7' : '#1e293b';
+    const strokeCol = active ? '#e0f2fe' : '#94a3b8';
+    return `
+      <g transform="translate(${cx}, ${cy})">
+        <ellipse cx="0" cy="8.5" rx="7.5" ry="3" fill="rgba(0,0,0,0.42)"/>
+        ${active ? '<circle cx="0" cy="-1" r="13" fill="rgba(56,189,248,0.22)" stroke="#38bdf8" stroke-width="1.2"/>' : ''}
+        <!-- Athletic Fielder Stance -->
+        <path d="M -5 7 L -3 1 L 3 1 L 5 7" fill="none" stroke="#e2e8f0" stroke-width="2.1" stroke-linecap="round"/>
+        <rect x="-5.5" y="-5" width="11" height="8" rx="3" fill="${bodyCol}" stroke="${strokeCol}" stroke-width="1"/>
+        <!-- Glove on Side -->
+        <circle cx="-6.8" cy="-1.5" r="2.6" fill="#92400e" stroke="#fbbf24" stroke-width="0.7"/>
+        <!-- Cap & Visor -->
+        <circle cx="0" cy="-8.5" r="3.8" fill="#fed7aa"/>
+        <path d="M -4 -9 A 4 4 0 0 1 4 -9 Z" fill="${helmetCol}"/>
+        <rect x="-2" y="-9.2" width="5.5" height="1.4" rx="0.6" fill="${helmetCol}"/>
+        <!-- Label Chip -->
+        <rect x="-9.5" y="9.5" width="19" height="10" rx="3" fill="rgba(10,18,32,0.88)" stroke="${active ? '#38bdf8' : 'rgba(255,255,255,0.25)'}" stroke-width="0.9"/>
+        <text x="0" y="16.5" text-anchor="middle" font-size="6.8" font-weight="800" fill="${active ? '#7dd3fc' : '#f8fafc'}">${label}</text>
+      </g>`;
+  }
+
+  function renderRunnerFigure(cx, cy, label = 'RUN') {
+    return `
+      <g transform="translate(${cx}, ${cy})">
+        <ellipse cx="0" cy="8" rx="7" ry="2.6" fill="rgba(0,0,0,0.45)"/>
+        <path d="M -4.5 7 L -1 1 L 4 6.5" fill="none" stroke="#fef08a" stroke-width="2.1" stroke-linecap="round"/>
+        <rect x="-4.5" y="-5" width="9" height="7.5" rx="2.5" fill="#dc2626" stroke="#fecaca" stroke-width="1"/>
+        <circle cx="0" cy="-8.2" r="3.6" fill="#fed7aa"/>
+        <path d="M -4 -8.8 A 4 4 0 0 1 4 -8.8 Z" fill="#b91c1c"/>
+        <rect x="-11" y="9" width="22" height="10" rx="3" fill="#b91c1c" stroke="#fecaca" stroke-width="0.8"/>
+        <text x="0" y="16" text-anchor="middle" font-size="6.5" font-weight="800" fill="#ffffff">${label}</text>
+      </g>`;
+  }
+
   function renderDiagramSvg(diagram, step = 1) {
     if (!diagram) return '';
+    const uid = ++svgUidCounter;
 
     if (diagram.mode === 'statcast-arc') {
       const showBarrel = step >= 1;
       const showNote = step === 2;
       return `
-        <svg class="diamond-svg" viewBox="0 0 320 220" role="img" aria-label="${escapeHtml(diagram.callout)}">
-          <rect x="0" y="0" width="320" height="220" rx="12" fill="var(--field-turf)"/>
-          <line x1="36" y1="184" x2="290" y2="184" stroke="var(--field-line)" stroke-width="2.5"/>
-          <path d="M 36 184 L 270 155" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="4 4"/>
-          <path d="M 36 184 Q 120 45 200 26" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="4 4"/>
-          ${showBarrel ? '<path d="M 36 184 Q 155 110 285 95" fill="none" stroke="var(--accent)" stroke-width="4.5"/>' : ''}
-          <line x1="36" y1="184" x2="275" y2="62" stroke="var(--stitch)" stroke-width="2.5" stroke-dasharray="6 4"/>
-          <circle cx="36" cy="184" r="7" fill="var(--field-line)" stroke="var(--field-ink)" stroke-width="2"/>
-          <rect x="174" y="72" width="122" height="28" rx="6" fill="var(--bg-surface)" stroke="var(--accent)" stroke-width="1.5"/>
-          <text x="235" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="var(--field-ink)">${showNote ? '98+ MPH · .500+ AVG' : '26°–30° BARREL'}</text>
-          <text x="278" y="152" text-anchor="end" font-size="10" font-weight="600" fill="var(--field-ink)">10°–25° Line Drive</text>
-          <text x="198" y="42" text-anchor="end" font-size="10" font-weight="600" fill="var(--field-ink)">50°+ Pop-up</text>
+        <svg class="diamond-svg" viewBox="0 0 400 250" role="img" aria-label="${escapeHtml(diagram.callout)}">
+          <defs>
+            <linearGradient id="sky_${uid}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#06101e"/>
+              <stop offset="58%" stop-color="#112848"/>
+              <stop offset="100%" stop-color="#1d4a6e"/>
+            </linearGradient>
+            <linearGradient id="turf_${uid}" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#14532d"/>
+              <stop offset="50%" stop-color="#22864a"/>
+              <stop offset="100%" stop-color="#14532d"/>
+            </linearGradient>
+            <linearGradient id="cone_${uid}" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.42"/>
+              <stop offset="100%" stop-color="#22c55e" stop-opacity="0.06"/>
+            </linearGradient>
+            <linearGradient id="hrGlow_${uid}" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="55%" stop-color="#22d3ee"/>
+              <stop offset="100%" stop-color="#fbbf24"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="400" height="250" rx="12" fill="url(#sky_${uid})"/>
+
+          <!-- Stadium Light Towers & Upper Bleachers Behind Fence -->
+          <line x1="348" y1="138" x2="348" y2="42" stroke="#64748b" stroke-width="3.2"/>
+          <rect x="331" y="34" width="34" height="12" rx="2.5" fill="#e0f2fe" stroke="#93c5fd" stroke-width="1"/>
+          <polygon points="318,168 398,128 398,210 318,210" fill="#17253e" stroke="#334155" stroke-width="1.2"/>
+          <line x1="322" y1="175" x2="396" y2="140" stroke="rgba(148,163,184,0.28)" stroke-width="2"/>
+          <line x1="322" y1="186" x2="396" y2="152" stroke="rgba(148,163,184,0.28)" stroke-width="2"/>
+          <line x1="322" y1="197" x2="396" y2="164" stroke="rgba(148,163,184,0.28)" stroke-width="2"/>
+
+          <!-- Mowed Turf & Dirt Batter's Box -->
+          <rect x="0" y="206" width="400" height="44" fill="url(#turf_${uid})"/>
+          <rect x="14" y="203" width="58" height="9" rx="3" fill="#b77b47"/>
+          <line x1="12" y1="206" x2="392" y2="206" stroke="rgba(255,255,255,0.65)" stroke-width="1.5"/>
+
+          <!-- Distance Yardage Markers -->
+          <text x="150" y="222" text-anchor="middle" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.55)">200 FT</text>
+          <text x="235" y="222" text-anchor="middle" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.55)">300 FT</text>
+
+          <!-- Padded 400ft Outfield Wall -->
+          <rect x="308" y="164" width="12" height="42" rx="2" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.2"/>
+          <rect x="306" y="161" width="16" height="5" rx="2" fill="#facc15"/>
+          <text x="314" y="224" text-anchor="middle" font-size="9" font-weight="800" fill="#fde68a">400 FT WALL</text>
+
+          <!-- Batter Swinging at Home Plate -->
+          <g transform="translate(36, 174)">
+            <ellipse cx="4" cy="30" rx="14" ry="3.5" fill="rgba(0,0,0,0.45)"/>
+            <path d="M 0 12 L -5 29 M 2 12 L 10 29" stroke="#e2e8f0" stroke-width="3.2" stroke-linecap="round"/>
+            <rect x="-4" y="-1" width="9" height="15" rx="3" fill="#1d4ed8" stroke="#93c5fd" stroke-width="0.8"/>
+            <circle cx="1" cy="-6" r="5" fill="#fed7aa"/>
+            <path d="M -4 -7 A 5 5 0 0 1 6 -7 Z" fill="#0f172a"/>
+            <line x1="5" y1="4" x2="27" y2="-11" stroke="#f59e0b" stroke-width="3.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Barrel Zone Cone & Flight Comparisons -->
+          <polygon points="54,180 388,54 388,128" fill="url(#cone_${uid})"/>
+          <path d="M 54 182 L 195 205" fill="none" stroke="rgba(251,191,36,0.75)" stroke-width="2" stroke-dasharray="4 4"/>
+          <path d="M 54 180 Q 172 142 296 184" fill="none" stroke="rgba(226,232,240,0.8)" stroke-width="2" stroke-dasharray="4 4"/>
+          <path d="M 54 180 Q 110 34 180 202" fill="none" stroke="rgba(248,113,113,0.78)" stroke-width="2" stroke-dasharray="4 4"/>
+          ${
+            showBarrel
+              ? `<path class="svg-flow-arc" d="M 54 180 Q 198 22 372 142" fill="none" stroke="url(#hrGlow_${uid})" stroke-width="4.8" stroke-linecap="round"/>
+                 <circle cx="372" cy="142" r="5" fill="#fbbf24"/>
+                 <rect x="148" y="64" width="136" height="20" rx="4" fill="rgba(10,18,32,0.85)" stroke="#38bdf8" stroke-width="1"/>
+                 <text x="216" y="78" text-anchor="middle" font-size="9.5" font-weight="800" fill="#7dd3fc">92 FT APEX · 416 FT HR!</text>`
+              : ''
+          }
+          ${showBarrel ? renderBaseballMarkup(252, 88, 7.5) : renderBaseballMarkup(58, 178, 7.5)}
+          <text x="145" y="54" text-anchor="start" font-size="9" font-weight="700" fill="#fca5a5">52° Pop-Up</text>
+          <text x="278" y="160" text-anchor="end" font-size="9" font-weight="700" fill="#cbd5e1">14° Liner</text>
+          <rect x="12" y="10" width="246" height="26" rx="6" fill="rgba(10,18,32,0.9)" stroke="#38bdf8" stroke-width="1.2"/>
+          <text x="135" y="27" text-anchor="middle" font-size="10.2" font-weight="800" fill="#f8fafc">${showNote ? 'BARREL: 98+ MPH · 26°–30° · OVER WALL' : 'ELEVATED 26°–30° BARREL ZONE'}</text>
         </svg>`;
     }
 
     if (diagram.mode === 'framing-zone') {
-      const ballY = step === 0 ? 168 : step === 1 ? 152 : 142;
+      const ballY = step === 0 ? 172 : step === 1 ? 156 : 145;
       return `
-        <svg class="diamond-svg" viewBox="0 0 320 220" role="img" aria-label="${escapeHtml(diagram.callout)}">
+        <svg class="diamond-svg" viewBox="0 0 400 250" role="img" aria-label="${escapeHtml(diagram.callout)}">
           <defs>
-            <marker id="arrowHead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-              <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
+            <linearGradient id="fg_${uid}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#091526"/>
+              <stop offset="66%" stop-color="#16324f"/>
+              <stop offset="100%" stop-color="#6b4426"/>
+            </linearGradient>
+            <marker id="fArr_${uid}" markerWidth="7" markerHeight="7" refX="4" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill="#38bdf8"/>
             </marker>
           </defs>
-          <rect x="0" y="0" width="320" height="220" rx="12" fill="var(--field-turf)"/>
-          <rect x="108" y="42" width="104" height="114" rx="6" fill="var(--bg-surface)" fill-opacity="0.9" stroke="var(--field-ink)" stroke-width="2.5"/>
-          <rect x="96" y="30" width="128" height="138" rx="10" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>
-          <polygon points="124,182 196,182 196,194 160,206 124,194" fill="var(--field-line)" stroke="var(--field-ink)" stroke-width="2"/>
-          <circle cx="160" cy="${ballY}" r="9" fill="var(--stitch)"/>
-          ${step >= 1 ? '<path d="M 160 168 L 160 138" stroke="var(--accent)" stroke-width="3" marker-end="url(#arrowHead)"/>' : ''}
-          <text x="160" y="23" text-anchor="middle" font-size="11" font-weight="700" fill="var(--field-ink)">SHADOW ZONE + STRIKE ZONE</text>
-          <text x="160" y="98" text-anchor="middle" font-size="11" font-weight="600" fill="var(--field-ink)">${step === 2 ? 'Hold glove steady!' : 'Catch smoothly upward'}</text>
+          <rect x="0" y="0" width="400" height="250" rx="12" fill="url(#fg_${uid})"/>
+          <!-- Stadium Turf & Mound Distance -->
+          <rect x="0" y="108" width="400" height="74" fill="#14532d" opacity="0.62"/>
+          <ellipse cx="200" cy="118" rx="48" ry="10" fill="#9a6437" opacity="0.72"/>
+          <circle cx="200" cy="100" r="3.5" fill="#e2e8f0" opacity="0.7"/>
+          <rect x="196" y="104" width="8" height="12" rx="2" fill="#1d4ed8" opacity="0.7"/>
+
+          <!-- Batter in Stance Left Box -->
+          <g opacity="0.38" fill="#cbd5e1">
+            <circle cx="88" cy="56" r="11"/>
+            <path d="M 74 72 Q 88 68 102 74 L 106 135 L 96 196 L 84 196 L 85 138 L 72 196 L 62 196 Z"/>
+            <line x1="98" y1="88" x2="128" y2="46" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+          </g>
+          <!-- Chalk Boxes & Home Plate -->
+          <rect x="42" y="196" width="90" height="42" fill="none" stroke="rgba(255,255,255,0.48)" stroke-width="2"/>
+          <rect x="268" y="196" width="90" height="42" fill="none" stroke="rgba(255,255,255,0.48)" stroke-width="2"/>
+          <polygon points="164,202 236,202 236,214 200,228 164,214" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+
+          <!-- Stitched Rawhide Leather Catcher Mitt -->
+          <g transform="translate(200, ${ballY + 8})">
+            <ellipse cx="0" cy="2" rx="34" ry="27" fill="rgba(0,0,0,0.45)"/>
+            <ellipse cx="0" cy="0" rx="31" ry="25" fill="#85451d" stroke="#f59e0b" stroke-width="2"/>
+            <ellipse cx="-2" cy="-2" rx="18" ry="15" fill="#592a0e" stroke="#b45309" stroke-width="1.2"/>
+            <path d="M -20 -9 Q 0 -22 20 -9" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="3 2"/>
+          </g>
+
+          <!-- Shadow Border + 3x3 Glass Strike Zone -->
+          <rect x="132" y="38" width="136" height="146" rx="10" fill="rgba(56,189,248,0.08)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 4"/>
+          <rect x="148" y="52" width="104" height="118" rx="4" fill="rgba(15,23,42,0.34)" stroke="#f8fafc" stroke-width="2.2"/>
+          <line x1="183" y1="52" x2="183" y2="170" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+          <line x1="217" y1="52" x2="217" y2="170" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+          <line x1="148" y1="91" x2="252" y2="91" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+          <line x1="148" y1="130" x2="252" y2="130" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+          ${renderBaseballMarkup(200, ballY, 9)}
+          ${step >= 1 ? `<path class="svg-flow-arc" d="M 200 176 L 200 138" stroke="#38bdf8" stroke-width="3.2" marker-end="url(#fArr_${uid})"/>` : ''}
+          <rect x="65" y="10" width="270" height="22" rx="5" fill="rgba(10,18,32,0.9)" stroke="#38bdf8" stroke-width="1"/>
+          <text x="200" y="25" text-anchor="middle" font-size="10.2" font-weight="800" fill="#f8fafc">${step === 2 ? 'HOLD QUIET TARGET IN SHADOW ZONE' : 'PULL BORDERLINE PITCH UP INTO ZONE'}</text>
         </svg>`;
     }
 
     if (diagram.mode === 'xwoba-scale') {
-      const fillW = step === 0 ? 78 : step === 1 ? 142 : 185;
+      const fillW = step === 0 ? 115 : step === 1 ? 202 : 272;
+      const valText = step === 0 ? '.320' : step === 1 ? '.385' : '.650';
       return `
-        <svg class="diamond-svg" viewBox="0 0 320 220" role="img" aria-label="${escapeHtml(diagram.callout)}">
-          <rect x="0" y="0" width="320" height="220" rx="12" fill="var(--field-turf)"/>
-          <rect x="24" y="44" width="272" height="132" rx="10" fill="var(--bg-surface)" stroke="var(--border-strong)" stroke-width="1.5"/>
-          <text x="160" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="var(--field-ink)">xwOBA Contact Quality Scale</text>
-          <rect x="44" y="92" width="232" height="18" rx="9" fill="var(--bg-muted)"/>
-          <rect x="44" y="92" width="${fillW}" height="18" rx="9" fill="var(--accent)"/>
-          <circle cx="122" cy="101" r="6" fill="var(--bg-surface)" stroke="var(--field-ink)" stroke-width="2"/>
-          <circle cx="185" cy="101" r="6" fill="var(--bg-surface)" stroke="var(--field-ink)" stroke-width="2"/>
-          <circle cx="229" cy="101" r="6" fill="var(--bg-surface)" stroke="var(--field-ink)" stroke-width="2"/>
-          <text x="122" y="132" text-anchor="middle" font-size="10" font-weight="700" fill="var(--field-ink)">.320 Avg</text>
-          <text x="185" y="132" text-anchor="middle" font-size="10" font-weight="700" fill="var(--field-ink)">.370 Great</text>
-          <text x="234" y="132" text-anchor="middle" font-size="10" font-weight="700" fill="var(--field-ink)">.400+ MVP</text>
-          <text x="160" y="158" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--text-secondary)">${step === 0 ? 'Hard hit + walks count most' : '104 mph lineout = .000 AVG, ~.650 xwOBA'}</text>
+        <svg class="diamond-svg" viewBox="0 0 400 250" role="img" aria-label="${escapeHtml(diagram.callout)}">
+          <defs>
+            <linearGradient id="xw_${uid}" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="55%" stop-color="#fbbf24"/>
+              <stop offset="100%" stop-color="#ef4444"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="400" height="250" rx="12" fill="#0c1729"/>
+          <rect x="14" y="14" width="372" height="222" rx="10" fill="#13223a" stroke="#2d4368" stroke-width="1.5"/>
+          <text x="200" y="38" text-anchor="middle" font-size="13" font-weight="800" fill="#f8fafc">Same Barrel Contact · Different Fielder Luck</text>
+
+          <!-- Left Mini Diamond: Lineout -->
+          <rect x="28" y="48" width="164" height="68" rx="7" fill="#0d1829" stroke="#334155"/>
+          <path d="M 110 108 L 80 76 Q 110 56 140 76 Z" fill="#14532d"/>
+          <line class="svg-flow-arc" x1="110" y1="106" x2="96" y2="75" stroke="#f87171" stroke-width="2.2"/>
+          <circle cx="96" cy="75" r="4" fill="#ef4444" stroke="#fff" stroke-width="1"/>
+          <text x="110" y="64" text-anchor="middle" font-size="8.8" font-weight="800" fill="#fca5a5">SS LINEOUT · .000 AVG</text>
+          <text x="110" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText} xwOBA</text>
+
+          <!-- Right Mini Diamond: Gap Double -->
+          <rect x="208" y="48" width="164" height="68" rx="7" fill="#0d1829" stroke="#334155"/>
+          <path d="M 290 108 L 260 76 Q 290 56 320 76 Z" fill="#14532d"/>
+          <line class="svg-flow-arc" x1="290" y1="106" x2="314" y2="66" stroke="#4ade80" stroke-width="2.2"/>
+          <circle cx="314" cy="66" r="4" fill="#22c55e" stroke="#fff" stroke-width="1"/>
+          <text x="290" y="64" text-anchor="middle" font-size="8.8" font-weight="800" fill="#86efac">GAP DOUBLE · 1.000 AVG</text>
+          <text x="290" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText} xwOBA</text>
+
+          <rect x="44" y="132" width="312" height="22" rx="11" fill="#091322" stroke="#2d4266"/>
+          <rect x="44" y="132" width="${fillW}" height="22" rx="11" fill="url(#xw_${uid})"/>
+          <circle cx="154" cy="143" r="6" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
+          <circle cx="240" cy="143" r="6" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
+          <circle cx="309" cy="143" r="6" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
+          <text x="154" y="172" text-anchor="middle" font-size="10.2" font-weight="700" fill="#cbd5e1">.320 Avg</text>
+          <text x="240" y="172" text-anchor="middle" font-size="10.2" font-weight="700" fill="#fde68a">.370 Great</text>
+          <text x="309" y="172" text-anchor="middle" font-size="10.2" font-weight="700" fill="#fca5a5">.400+ MVP</text>
+          <rect x="38" y="186" width="324" height="34" rx="6" fill="rgba(10,18,32,0.92)" stroke="#38bdf8" stroke-width="1"/>
+          <text x="200" y="207" text-anchor="middle" font-size="10.2" font-weight="700" fill="#f8fafc">Measures Contact Speed &amp; Angle — Zero Defense Luck</text>
         </svg>`;
     }
 
+    // Broadcast Stadium Diamond ViewBox 400 x 250 with 3D Bleacher Wall + Realistic Fielder Silhouettes
     const coords = {
-      HOME: [160, 192],
-      '1B': [228, 126],
-      '2B': [160, 60],
-      '3B': [92, 126],
-      P: [160, 128],
-      SS: [122, 80],
-      LF: [64, 42],
-      CF: [160, 26]
+      HOME: [200, 214],
+      '1B': [286, 138],
+      '2B': [200, 68],
+      '3B': [114, 138],
+      P: [200, 144],
+      SS: [152, 84],
+      '2BF': [248, 84],
+      '1BF': [274, 118],
+      '3BF': [126, 118],
+      LF: [80, 46],
+      CF: [200, 30],
+      RF: [320, 46]
     };
 
     const occupied = new Set(diagram.occupiedBases || []);
@@ -205,64 +383,119 @@
     const baseSquare = (name, cx, cy) => {
       const isOccupied = occupied.has(name);
       const isHighlight = highlight === name;
-      const fill = isHighlight ? 'var(--accent)' : isOccupied ? 'var(--stitch)' : 'var(--field-line)';
+      const fill = isHighlight ? '#38bdf8' : isOccupied ? '#f87171' : '#ffffff';
       return `
         <g>
-          <rect x="${cx - 8}" y="${cy - 8}" width="16" height="16" rx="2" transform="rotate(45 ${cx} ${cy})" fill="${fill}" stroke="var(--field-ink)" stroke-width="2"/>
-          ${isOccupied ? `<circle cx="${cx}" cy="${cy - 18}" r="6" fill="var(--stitch)" stroke="var(--bg-surface)" stroke-width="2"/>` : ''}
+          ${isHighlight ? `<circle cx="${cx}" cy="${cy}" r="18" fill="rgba(56,189,248,0.28)" stroke="#38bdf8" stroke-width="2"/>` : ''}
+          <rect x="${cx - 7.5}" y="${cy - 5.5}" width="16" height="16" rx="2" transform="rotate(45 ${cx} ${cy + 2})" fill="rgba(0,0,0,0.4)"/>
+          <rect x="${cx - 8}" y="${cy - 8}" width="16" height="16" rx="2.5" transform="rotate(45 ${cx} ${cy})" fill="${fill}" stroke="#0f172a" stroke-width="1.8"/>
+          ${isOccupied ? renderRunnerFigure(cx + (name === '1B' ? 14 : -14), cy - 16, 'RUN') : ''}
         </g>`;
     };
 
+    const fieldersMarkup = `
+      ${renderFielderFigure(coords.P[0], coords.P[1], 'P', false)}
+      ${renderFielderFigure(coords['3BF'][0], coords['3BF'][1], '3B', false)}
+      ${renderFielderFigure(coords['1BF'][0], coords['1BF'][1], '1B', false)}
+      ${renderFielderFigure(coords['2BF'][0], coords['2BF'][1], '2B', diagram.mode === 'infield-force' || diagram.mode === 'steal-2b')}
+      ${renderFielderFigure(coords.SS[0], coords.SS[1], 'SS', diagram.mode === 'infield-force' || diagram.mode === 'infield-fly' || diagram.mode === 'relay-throw')}
+      ${renderFielderFigure(coords.LF[0], coords.LF[1], 'LF', diagram.mode === 'relay-throw')}
+      ${renderFielderFigure(coords.CF[0], coords.CF[1], 'CF', diagram.mode === 'tag-up')}
+      ${renderFielderFigure(coords.RF[0], coords.RF[1], 'RF', false)}
+    `;
+
     let throwPath = '';
     if (step >= 1) {
-      throwPath = diagram.mode === 'relay-throw'
-        ? `<line x1="${coords.LF[0]}" y1="${coords.LF[1]}" x2="${coords.SS[0]}" y2="${coords.SS[1]}" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="5 4"/>
-           <line x1="${coords.SS[0]}" y1="${coords.SS[1]}" x2="${coords.HOME[0]}" y2="${coords.HOME[1]}" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#throwArrow)"/>
-           <circle cx="${coords.SS[0]}" cy="${coords.SS[1]}" r="7" fill="var(--bg-surface)" stroke="var(--accent)" stroke-width="2.5"/>
-           <text x="${coords.SS[0] - 12}" y="${coords.SS[1] - 10}" font-size="10" font-weight="700" fill="var(--field-ink)">CUT</text>`
-        : `<line x1="${fromPt[0]}" y1="${fromPt[1]}" x2="${toPt[0]}" y2="${toPt[1]}" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#throwArrow)"/>`;
+      if (diagram.mode === 'relay-throw') {
+        throwPath = `
+          <path d="M ${coords.LF[0]} ${coords.LF[1]} Q 112 72 ${coords.SS[0]} ${coords.SS[1]}" fill="none" stroke="rgba(0,0,0,0.34)" stroke-width="5" transform="translate(0,4)"/>
+          <path class="svg-flow-arc" d="M ${coords.LF[0]} ${coords.LF[1]} Q 112 62 ${coords.SS[0]} ${coords.SS[1]}" fill="none" stroke="#38bdf8" stroke-width="3"/>
+          <path d="M ${coords.SS[0]} ${coords.SS[1]} Q 186 146 ${coords.HOME[0]} ${coords.HOME[1]}" fill="none" stroke="rgba(0,0,0,0.34)" stroke-width="5" transform="translate(0,4)"/>
+          <path class="svg-flow-arc" d="M ${coords.SS[0]} ${coords.SS[1]} Q 186 136 ${coords.HOME[0]} ${coords.HOME[1]}" fill="none" stroke="#38bdf8" stroke-width="3" marker-end="url(#tArr_${uid})"/>
+          <rect x="${coords.SS[0] - 13}" y="${coords.SS[1] - 24}" width="26" height="12" rx="3" fill="#0ea5e9" stroke="#e0f2fe" stroke-width="1"/>
+          <text x="${coords.SS[0]}" y="${coords.SS[1] - 15}" text-anchor="middle" font-size="7.5" font-weight="800" fill="#ffffff">CUT</text>
+          ${renderBaseballMarkup(coords.LF[0], coords.LF[1], 7)}`;
+      } else {
+        const mx = (fromPt[0] + toPt[0]) / 2 + (fromPt[0] < toPt[0] ? -12 : 12);
+        const my = (fromPt[1] + toPt[1]) / 2 - 18;
+        throwPath = `
+          <path d="M ${fromPt[0]} ${fromPt[1]} Q ${mx} ${my + 8} ${toPt[0]} ${toPt[1]}" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="5"/>
+          <path class="svg-flow-arc" d="M ${fromPt[0]} ${fromPt[1]} Q ${mx} ${my} ${toPt[0]} ${toPt[1]}" fill="none" stroke="#38bdf8" stroke-width="3" marker-end="url(#tArr_${uid})"/>
+          ${renderBaseballMarkup(fromPt[0], fromPt[1], 6.5)}`;
+      }
     }
 
     let runnerArrow = '';
     if (step >= 1) {
-      runnerArrow = diagram.mode === 'steal-2b'
-        ? `<line x1="222" y1="120" x2="170" y2="68" stroke="var(--field-ink)" stroke-width="2.5" marker-end="url(#runArrow)"/>`
-        : diagram.mode === 'tag-up'
-        ? `<line x1="98" y1="132" x2="150" y2="184" stroke="var(--field-ink)" stroke-width="2.5" marker-end="url(#runArrow)"/>`
-        : diagram.mode === 'infield-force'
-        ? `<line x1="222" y1="120" x2="170" y2="68" stroke="var(--field-ink)" stroke-width="2.5" marker-end="url(#runArrow)"/>`
-        : '';
+      if (diagram.mode === 'steal-2b' || diagram.mode === 'infield-force') {
+        runnerArrow = `<path class="svg-flow-arc" d="M 274 128 Q 248 98 216 74" fill="none" stroke="#fde047" stroke-width="3" marker-end="url(#rArr_${uid})"/>`;
+      } else if (diagram.mode === 'tag-up') {
+        runnerArrow = `<path class="svg-flow-arc" d="M 122 146 Q 152 178 184 202" fill="none" stroke="#fde047" stroke-width="3" marker-end="url(#rArr_${uid})"/>`;
+      }
     }
 
-    const calloutPill = step === 2
-      ? `<rect x="20" y="8" width="280" height="22" rx="5" fill="var(--bg-surface)" stroke="var(--accent)" stroke-width="1.5"/>
-         <text x="160" y="23" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--field-ink)">${escapeHtml(diagram.callout.slice(0, 48))}</text>`
-      : '';
+    const banner =
+      step === 2
+        ? `<rect x="14" y="218" width="372" height="24" rx="5" fill="rgba(10,18,32,0.92)" stroke="#38bdf8" stroke-width="1.2"/>
+           <text x="200" y="234" text-anchor="middle" font-size="9.8" font-weight="800" fill="#f8fafc">${escapeHtml(diagram.callout.slice(0, 56))}</text>`
+        : '';
 
     return `
-      <svg class="diamond-svg" viewBox="0 0 320 220" role="img" aria-label="${escapeHtml(diagram.callout)}">
+      <svg class="diamond-svg" viewBox="0 0 400 250" role="img" aria-label="${escapeHtml(diagram.callout)}">
         <defs>
-          <marker id="throwArrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
+          <pattern id="mow_${uid}" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="11" height="22" fill="#175c35"/>
+            <rect x="11" width="11" height="22" fill="#217846"/>
+          </pattern>
+          <radialGradient id="clay_${uid}" cx="50%" cy="55%" r="55%">
+            <stop offset="0%" stop-color="#d4955c"/>
+            <stop offset="100%" stop-color="#9e6231"/>
+          </radialGradient>
+          <marker id="tArr_${uid}" markerWidth="7" markerHeight="7" refX="4.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#38bdf8"/>
           </marker>
-          <marker id="runArrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="var(--field-ink)"/>
+          <marker id="rArr_${uid}" markerWidth="7" markerHeight="7" refX="4.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#fde047"/>
           </marker>
         </defs>
-        <rect x="0" y="0" width="320" height="220" rx="12" fill="var(--field-turf)"/>
-        <polygon points="160,44 244,126 160,206 76,126" fill="var(--field-dirt)"/>
-        <polygon points="160,60 228,126 160,192 92,126" fill="var(--field-turf)" stroke="var(--field-line)" stroke-width="2"/>
-        <circle cx="160" cy="128" r="10" fill="var(--field-dirt)" stroke="var(--field-line)" stroke-width="1.5"/>
+        <!-- Stadium Bleacher Frame, Warning Track & Outfield Wall -->
+        <rect x="0" y="0" width="400" height="250" rx="12" fill="#0b1727"/>
+        <path d="M 4 56 Q 200 -34 396 56 L 396 250 L 4 250 Z" fill="#17253e"/>
+        <path d="M 10 66 Q 200 -24 390 66 L 390 250 L 10 250 Z" fill="#8f532c"/>
+        <path d="M 16 74 Q 200 -10 384 74 L 384 250 L 16 250 Z" fill="url(#mow_${uid})"/>
+        <path d="M 10 66 Q 200 -24 390 66" fill="none" stroke="#1e40af" stroke-width="6"/>
+        <path d="M 10 63 Q 200 -27 390 63" fill="none" stroke="#facc15" stroke-width="2"/>
+
+        <!-- Infield Clay Apron & Cutout Grass -->
+        <path d="M 54 140 Q 200 6 346 140 L 200 242 Z" fill="url(#clay_${uid})" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+        <polygon points="200,76 270,138 200,198 130,138" fill="url(#mow_${uid})"/>
+
+        <!-- Chalk Foul Lines + Dugout Shelters -->
+        <line x1="200" y1="214" x2="18" y2="68" stroke="rgba(255,255,255,0.8)" stroke-width="2.2"/>
+        <line x1="200" y1="214" x2="382" y2="68" stroke="rgba(255,255,255,0.8)" stroke-width="2.2"/>
+        <polygon points="72,172 102,196 95,206 65,182" fill="#0f172a" stroke="#64748b" stroke-width="1.2"/>
+        <polygon points="328,172 298,196 305,206 335,182" fill="#0f172a" stroke="#64748b" stroke-width="1.2"/>
+
+        <!-- Pitcher's Mound + Rubber -->
+        <circle cx="200" cy="142" r="16" fill="url(#clay_${uid})" stroke="rgba(255,255,255,0.4)" stroke-width="1.1"/>
+        <rect x="193" y="140.5" width="14" height="3.2" rx="1" fill="#ffffff"/>
+
+        <!-- Home Plate Dirt Circle & Batter Boxes -->
+        <circle cx="200" cy="212" r="22" fill="url(#clay_${uid})" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+        <rect x="180" y="204" width="10" height="17" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <rect x="210" y="204" width="10" height="17" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+
+        ${fieldersMarkup}
         ${throwPath}
         ${runnerArrow}
-        ${baseSquare('2B', 160, 60)}
-        ${baseSquare('1B', 228, 126)}
-        ${baseSquare('3B', 92, 126)}
-        <polygon points="152,186 168,186 168,194 160,201 152,194" fill="${highlight === 'HOME' ? 'var(--accent)' : 'var(--field-line)'}" stroke="var(--field-ink)" stroke-width="2"/>
-        <text x="248" y="130" font-size="10" font-weight="700" fill="var(--field-ink)">1B</text>
-        <text x="160" y="42" text-anchor="middle" font-size="10" font-weight="700" fill="var(--field-ink)">2B</text>
-        <text x="72" y="130" text-anchor="end" font-size="10" font-weight="700" fill="var(--field-ink)">3B</text>
-        ${calloutPill}
+        ${baseSquare('2B', 200, 68)}
+        ${baseSquare('1B', 286, 138)}
+        ${baseSquare('3B', 114, 138)}
+        <polygon points="192,208 208,208 208,215 200,222 192,215" fill="${highlight === 'HOME' ? '#38bdf8' : '#ffffff'}" stroke="#0f172a" stroke-width="1.6"/>
+        <text x="309" y="142" font-size="11" font-weight="800" fill="#ffffff" style="paint-order:stroke;stroke:#0f172a;stroke-width:3px;">1B</text>
+        <text x="200" y="50" text-anchor="middle" font-size="11" font-weight="800" fill="#ffffff" style="paint-order:stroke;stroke:#0f172a;stroke-width:3px;">2B</text>
+        <text x="91" y="142" text-anchor="end" font-size="11" font-weight="800" fill="#ffffff" style="paint-order:stroke;stroke:#0f172a;stroke-width:3px;">3B</text>
+        ${banner}
       </svg>`;
   }
 
@@ -409,104 +642,1204 @@
       }
     }
 
-    // 3. Interactive Statcast Hit Lab
-    const veloSlider = document.getElementById('velo-slider');
-    const angleSlider = document.getElementById('angle-slider');
-    const veloVal = document.getElementById('velo-val');
-    const angleVal = document.getElementById('angle-val');
-    const hitWrap = document.getElementById('hitlab-svg-wrap');
-    const distEl = document.getElementById('hitlab-dist');
-    const outEl = document.getElementById('hitlab-outcome');
-    const xbaEl = document.getElementById('hitlab-xba');
-    const presetsWrap = document.getElementById('hitlab-presets');
-
-    const updateHitLab = () => {
-      if (!veloSlider || !angleSlider || !hitWrap) return;
-      const mph = Number(veloSlider.value);
-      const deg = Number(angleSlider.value);
-      if (veloVal) veloVal.textContent = `${mph} mph`;
-      if (angleVal) angleVal.textContent = `${deg}°`;
-
-      // Simplified readable baseball distance & outcome physics
-      let dist = 0;
-      let peakY = 175;
-      if (deg <= 2) {
-        dist = Math.round(45 + (mph - 60) * 1.4 + Math.max(0, deg + 10) * 4);
-        peakY = 178;
-      } else {
-        const angleFactor = Math.sin((Math.min(55, Math.max(3, deg)) * Math.PI) / 90);
-        const carryFactor = Math.cos(((deg - 28) * Math.PI) / 110);
-        dist = Math.max(60, Math.round((mph * mph * 0.041) * Math.max(0.28, carryFactor) * (0.45 + 0.55 * angleFactor)));
-        peakY = Math.max(24, Math.round(182 - deg * 2.7 - (mph - 65) * 0.45));
+    // 3. Interactive MLB-Style Pitching + Mini PCI + HitTrax Stadium Simulator + 5 Real Bats
+    const BATS = {
+      'baum-gold': {
+        id: 'baum-gold',
+        name: 'Baum Bat Gold',
+        shortLabel: 'BAUM GOLD',
+        meta: 'PermaWood Composite · Slight End-Load · 2.505" Barrel',
+        desc: 'Glazed maple wood finish over a composite core. Narrower pro-wood barrel with crisp atomic crack sound and pro exit velocity.',
+        construction: '1pc-wood',
+        weightMod: 0.985,
+        popMod: 0.975,
+        sweetSpot: 0.86,
+        soundType: 'wood',
+        barrelColor: '#d49b4b',
+        barrelHi: '#f3cb83',
+        barrelLo: '#9a621f',
+        taperColor: '#b87a2a',
+        handleColor: '#1a130e',
+        accentColor: '#f59e0b',
+        trimColor: '#111827',
+        capColor: '#18120c',
+        capStyle: 'cupped'
+      },
+      'goods-2026': {
+        id: 'goods-2026',
+        name: '2026 DeMarini The Goods',
+        shortLabel: '26 GOODS',
+        meta: '2-Piece Hybrid · Heavy End-Load · 2 5/8" Barrel',
+        desc: 'Matte black X14 Alloy Barrel with red/teal accents, stiff 1375 Composite Handle, and notched Tremor End Cap for towering bombs.',
+        construction: '2pc',
+        cuffColor: '#ef4444',
+        cuffTrim: '#2dd4bf',
+        weightMod: 0.992,
+        popMod: 1.045,
+        sweetSpot: 0.96,
+        soundType: 'hybrid',
+        barrelColor: '#1e2430',
+        barrelHi: '#475569',
+        barrelLo: '#0d1117',
+        taperColor: '#111827',
+        handleColor: '#0f172a',
+        accentColor: '#2dd4bf',
+        trimColor: '#ef4444',
+        capColor: '#090d14',
+        capStyle: 'tremor'
+      },
+      'goods-2022': {
+        id: 'goods-2022',
+        name: '2022 DeMarini The Goods',
+        shortLabel: '22 GOODS',
+        meta: 'Half+Half Hybrid · Classic End-Load · 2 5/8" Barrel',
+        desc: 'Signature brushed chrome silver X14 Alloy barrel + black Paraflex Plus composite handle with crimson red graphics and smooth whip.',
+        construction: '2pc',
+        cuffColor: '#dc2626',
+        cuffTrim: '#18181b',
+        weightMod: 0.998,
+        popMod: 1.033,
+        sweetSpot: 0.98,
+        soundType: 'hybrid',
+        barrelColor: '#cbd5e1',
+        barrelHi: '#ffffff',
+        barrelLo: '#64748b',
+        taperColor: '#334155',
+        handleColor: '#18181b',
+        accentColor: '#dc2626',
+        trimColor: '#0f172a',
+        capColor: '#18181b',
+        capStyle: 'dish'
+      },
+      'combat-rodeo': {
+        id: 'combat-rodeo',
+        name: 'Combat MFG Spec-A1 Rodeo',
+        shortLabel: 'RODEO A1',
+        meta: '1-Piece SFX Alloy · Balanced Whip · Clinch Tan Grip',
+        desc: 'Antique cream barrel with deep maroon & burnt-orange western stripes, seamless 1-piece taper, tan Clinch grip, and loud Combat thwack.',
+        construction: '1pc',
+        weightMod: 1.024,
+        popMod: 1.02,
+        sweetSpot: 1.06,
+        soundType: 'combat',
+        barrelColor: '#efe4ce',
+        barrelHi: '#fffbf2',
+        barrelLo: '#cbb898',
+        taperColor: '#7f1d1d',
+        handleColor: '#854d0e',
+        accentColor: '#7f1d1d',
+        trimColor: '#ea580c',
+        capColor: '#7f1d1d',
+        capStyle: 'flared'
+      },
+      'combat-blue': {
+        id: 'combat-blue',
+        name: 'Combat Spec-A1 Members Club Blue',
+        shortLabel: 'CLUB BLUE',
+        meta: '1-Piece Country Club Alloy · Ultra-Balanced · Widest Sweet Spot',
+        desc: 'Powder sky-blue SFX alloy barrel with navy & gold Country Club bands, argyle navy handle grip, and the widest sweet-spot forgiveness.',
+        construction: '1pc',
+        weightMod: 1.028,
+        popMod: 1.016,
+        sweetSpot: 1.1,
+        soundType: 'combat',
+        barrelColor: '#67c1f5',
+        barrelHi: '#d8f1ff',
+        barrelLo: '#2b7ec1',
+        taperColor: '#1e3a8a',
+        handleColor: '#172554',
+        accentColor: '#1e3a8a',
+        trimColor: '#facc15',
+        capColor: '#172554',
+        capStyle: 'flared'
       }
-
-      let outcome = 'Routine Out';
-      let xba = '.180';
-      let arcColor = 'var(--accent)';
-
-      if (deg < 8) {
-        outcome = mph >= 95 ? 'Hard Grounder' : 'Ground Ball';
-        xba = mph >= 95 ? '.290' : '.210';
-        arcColor = 'var(--gold)';
-      } else if (deg >= 8 && deg <= 22) {
-        outcome = mph >= 95 ? 'Rocket Line Drive!' : 'Line Drive Single';
-        xba = mph >= 95 ? '.720' : '.540';
-        arcColor = 'var(--accent)';
-      } else if (deg >= 23 && deg <= 34 && dist >= 385) {
-        outcome = mph >= 98 ? 'BARREL HOME RUN!' : 'Over the Wall HR!';
-        xba = '.860';
-        arcColor = 'var(--accent)';
-      } else if (deg > 38) {
-        outcome = dist < 210 ? 'Infield Pop-Up' : 'High Fly Out';
-        xba = dist < 210 ? '.030' : '.140';
-        arcColor = 'var(--stitch)';
-      } else {
-        outcome = dist >= 330 ? 'Deep Warning-Track Fly' : 'Outfield Fly Ball';
-        xba = dist >= 340 ? '.380' : '.240';
-        arcColor = 'var(--gold)';
-      }
-
-      if (distEl) distEl.textContent = `${dist} ft`;
-      if (outEl) {
-        outEl.textContent = outcome;
-        outEl.style.color = arcColor;
-      }
-      if (xbaEl) xbaEl.textContent = xba;
-
-      // Map 0..450ft to x=36..444 inside SVG viewBox 480x210; fence at ~400ft (x=392)
-      const endX = Math.min(458, Math.max(68, Math.round(36 + (dist / 450) * 408)));
-      const midX = Math.round((36 + endX) / 2);
-      const endY = dist >= 400 ? 158 : 182;
-
-      hitWrap.innerHTML = `
-        <svg viewBox="0 0 480 210" style="width:100%;height:auto;display:block;border-radius:8px;background:var(--field-turf);" role="img" aria-label="Baseball flight arc ${dist} feet">
-          <line x1="20" y1="184" x2="462" y2="184" stroke="var(--field-line)" stroke-width="2"/>
-          <rect x="392" y="138" width="6" height="46" rx="2" fill="var(--gold)"/>
-          <text x="395" y="131" text-anchor="middle" font-size="10" font-weight="700" fill="var(--field-ink)">400 ft Wall</text>
-          <text x="150" y="198" text-anchor="middle" font-size="10" font-weight="600" fill="var(--field-ink)">Infield (120 ft)</text>
-          <text x="300" y="198" text-anchor="middle" font-size="10" font-weight="600" fill="var(--field-ink)">Outfield (300 ft)</text>
-          <path d="M 36 184 Q ${midX} ${peakY} ${endX} ${endY}" fill="none" stroke="${arcColor}" stroke-width="4" stroke-linecap="round"/>
-          <circle cx="36" cy="184" r="6" fill="var(--field-line)" stroke="var(--field-ink)" stroke-width="2"/>
-          <circle cx="${endX}" cy="${endY}" r="7" fill="${arcColor}" stroke="var(--bg-surface)" stroke-width="2"/>
-        </svg>`;
     };
 
-    if (veloSlider && angleSlider) {
-      veloSlider.oninput = updateHitLab;
-      angleSlider.oninput = updateHitLab;
-      if (presetsWrap) {
-        presetsWrap.onclick = (e) => {
-          const btn = e.target.closest('[data-velo]');
-          if (!btn) return;
-          veloSlider.value = btn.dataset.velo;
-          angleSlider.value = btn.dataset.angle;
-          presetsWrap.querySelectorAll('[data-velo]').forEach((b) => {
-            b.setAttribute('aria-pressed', String(b === btn));
-          });
-          updateHitLab();
+    const STADIUMS = {
+      fenway: {
+        id: 'fenway',
+        name: 'Fenway Park',
+        dimsLabel: 'Fenway Park · 310 LF · 420 CF · 302 RF',
+        skyTop: '#071426',
+        skyMid: '#122949',
+        skyLow: '#1b3d64',
+        wallColor: '#1b4d38',
+        wallCap: '#fbbf24',
+        wallDist(phi) {
+          // phi in [-0.785 .. +0.785] (-45 LF to +45 RF)
+          if (phi < -0.18) return 310 + ((phi + 0.785) / 0.605) * 68;
+          if (phi < 0.16) return 388 + Math.cos(((phi - 0.02) / 0.18) * Math.PI * 0.5) * 32;
+          return 380 - ((phi - 0.16) / 0.625) * 78;
+        },
+        wallHeight(phi) {
+          if (phi < -0.15) return 37; // Iconic Green Monster!
+          if (phi < 0.12) return 17;
+          return 5; // Pesky's Pole corner
+        }
+      },
+      wrigley: {
+        id: 'wrigley',
+        name: 'Wrigley Field',
+        dimsLabel: 'Wrigley Field · 355 LF · 400 CF · 353 RF',
+        skyTop: '#0b1c36',
+        skyMid: '#19375f',
+        skyLow: '#2b557c',
+        wallColor: '#255c32',
+        wallCap: '#b45309',
+        wallDist(phi) {
+          return 354 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 46;
+        },
+        wallHeight() {
+          return 11.5; // Brick + Ivy
+        }
+      },
+      dodger: {
+        id: 'dodger',
+        name: 'Dodger Stadium',
+        dimsLabel: 'Dodger Stadium · 330 LF · 395 CF · 330 RF',
+        skyTop: '#161130',
+        skyMid: '#372357',
+        skyLow: '#7a3c4a',
+        wallColor: '#1d4ed8',
+        wallCap: '#fbbf24',
+        wallDist(phi) {
+          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+        },
+        wallHeight() {
+          return 9;
+        }
+      },
+      cage: {
+        id: 'cage',
+        name: 'Indoor HitTrax Cage',
+        dimsLabel: 'Indoor HitTrax · 400 FT Simulated Net',
+        skyTop: '#070d18',
+        skyMid: '#0e1b2f',
+        skyLow: '#142742',
+        wallColor: '#1e3a5f',
+        wallCap: '#fbbf24',
+        wallDist() {
+          return 400;
+        },
+        wallHeight() {
+          return 28;
+        }
+      }
+    };
+
+    const PITCH_TYPES = {
+      fastball: { name: '4-Seam Fastball', mphMin: 91, mphMax: 95, dur: 0.6, dropFt: 1.0, breakX: 0.14 },
+      slider: { name: 'Sharp Slider', mphMin: 82, mphMax: 85, dur: 0.7, dropFt: 2.1, breakX: -0.58 },
+      curve: { name: '12-6 Curveball', mphMin: 74, mphMax: 78, dur: 0.8, dropFt: 3.6, breakX: -0.15 },
+      changeup: { name: 'Fade Changeup', mphMin: 79, mphMax: 83, dur: 0.75, dropFt: 2.5, breakX: 0.42 }
+    };
+
+    const cageCanvas = document.getElementById('cage-canvas');
+    const sprayCanvas = document.getElementById('hittrax-spray-canvas');
+    const batRack = document.getElementById('bat-rack');
+    const stadiumTabs = document.getElementById('stadium-tabs');
+    const pitchTabs = document.getElementById('pitch-tabs');
+    const swingBtn = document.getElementById('cage-swing-btn');
+    const demoBtn = document.getElementById('cage-demo-btn');
+    const pciModeBtn = document.getElementById('cage-pci-mode-btn');
+    const soundBtn = document.getElementById('cage-sound-btn');
+    const pitchNote = document.getElementById('cage-pitch-note');
+    const evEl = document.getElementById('hitlab-ev');
+    const laEl = document.getElementById('hitlab-la');
+    const distEl = document.getElementById('hitlab-dist');
+    const apexEl = document.getElementById('hitlab-apex');
+    const outEl = document.getElementById('hitlab-outcome');
+    const batSpecMeta = document.getElementById('bat-spec-meta');
+    const batSpecName = document.getElementById('bat-spec-name');
+    const batSpecDesc = document.getElementById('bat-spec-desc');
+    const batPreviewSvg = document.getElementById('bat-preview-svg');
+    const sprayLabel = document.getElementById('spray-stadium-label');
+    const sessionPill = document.getElementById('session-count-pill');
+    const sprayClearBtn = document.getElementById('spray-clear-btn');
+    const countReadout = document.getElementById('count-readout');
+
+    function renderBatSvg(bat) {
+      const cuff =
+        bat.construction === '2pc'
+          ? `<rect x="132" y="12.5" width="15" height="19" rx="2.5" fill="${bat.cuffColor}" stroke="${bat.cuffTrim}" stroke-width="1.5"/>
+             <line x1="139.5" y1="13" x2="139.5" y2="31" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`
+          : '';
+      const woodGrain =
+        bat.construction === '1pc-wood'
+          ? `<line x1="168" y1="15" x2="320" y2="15" stroke="rgba(120,53,15,0.34)" stroke-width="1.1"/>
+             <line x1="172" y1="21" x2="316" y2="21" stroke="rgba(120,53,15,0.22)" stroke-width="1"/>
+             <line x1="168" y1="28" x2="320" y2="28" stroke="rgba(120,53,15,0.28)" stroke-width="1.1"/>`
+          : '';
+      const argyleGrip =
+        bat.id === 'combat-blue'
+          ? `<path d="M 32 17 L 40 27 M 44 17 L 52 27 M 56 17 L 64 27 M 68 17 L 76 27 M 80 17 L 88 27 M 92 17 L 100 27 M 40 17 L 32 27 M 52 17 L 44 27 M 64 17 L 56 27 M 76 17 L 68 27 M 88 17 L 80 27" stroke="rgba(250,204,21,0.52)" stroke-width="1.3"/>`
+          : `<path d="M 30 17 L 37 27 M 42 17 L 49 27 M 54 17 L 61 27 M 66 17 L 73 27 M 78 17 L 85 27 M 90 17 L 97 27" stroke="rgba(255,255,255,0.26)" stroke-width="1.6"/>`;
+      const capMarkup =
+        bat.capStyle === 'tremor'
+          ? `<path d="M 324 10 L 334 12.5 L 334 31.5 L 324 34 Z" fill="${bat.capColor}"/><line x1="331.5" y1="14" x2="331.5" y2="30" stroke="${bat.accentColor}" stroke-width="1.6" stroke-dasharray="3 2"/>`
+          : bat.capStyle === 'flared'
+            ? `<rect x="323" y="9.5" width="10" height="25" rx="4" fill="${bat.capColor}" stroke="${bat.trimColor}" stroke-width="1.2"/>`
+            : `<rect x="324" y="10" width="9" height="24" rx="3.5" fill="${bat.capColor}"/>`;
+
+      return `
+        <svg viewBox="0 0 344 44" role="img" aria-label="${escapeHtml(bat.name)}">
+          <defs>
+            <linearGradient id="bsvg_${bat.id}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${bat.barrelLo}"/>
+              <stop offset="16%" stop-color="${bat.barrelColor}"/>
+              <stop offset="36%" stop-color="${bat.barrelHi}"/>
+              <stop offset="68%" stop-color="${bat.barrelColor}"/>
+              <stop offset="100%" stop-color="${bat.barrelLo}"/>
+            </linearGradient>
+            <linearGradient id="hsvg_${bat.id}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#090d14"/>
+              <stop offset="40%" stop-color="${bat.handleColor}"/>
+              <stop offset="100%" stop-color="#05080d"/>
+            </linearGradient>
+          </defs>
+          <!-- Drop Shadow -->
+          <ellipse cx="176" cy="39" rx="154" ry="3.5" fill="rgba(0,0,0,0.45)"/>
+          <!-- Knob -->
+          <ellipse cx="18" cy="22" rx="6" ry="9.5" fill="${bat.trimColor || '#0f172a'}" stroke="rgba(255,255,255,0.34)" stroke-width="1"/>
+          <!-- Handle -->
+          <rect x="22" y="17" width="84" height="10" rx="2" fill="url(#hsvg_${bat.id})"/>
+          ${argyleGrip}
+          <!-- Taper -->
+          <polygon points="104,17 162,10 162,34 104,27" fill="${bat.taperColor}"/>
+          <!-- 3D Shaded Cylindrical Barrel -->
+          <rect x="160" y="9.5" width="166" height="25" rx="4.5" fill="url(#bsvg_${bat.id})"/>
+          ${woodGrain}
+          <!-- Glossy Specular Highlight Line -->
+          <line x1="166" y1="15" x2="320" y2="15" stroke="rgba(255,255,255,0.38)" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Barrel Graphic Bands & Model Label -->
+          <rect x="172" y="9.5" width="8" height="25" fill="${bat.accentColor}"/>
+          <rect x="183" y="9.5" width="4" height="25" fill="${bat.trimColor || '#ffffff'}"/>
+          <rect x="292" y="9.5" width="10" height="25" fill="${bat.accentColor}" opacity="0.9"/>
+          ${cuff}
+          ${capMarkup}
+          <text x="238" y="25.2" text-anchor="middle" font-size="9.4" font-weight="800" letter-spacing="1.2" fill="${bat.id === 'goods-2026' ? '#f8fafc' : '#0f172a'}" opacity="0.94">${bat.shortLabel}</text>
+        </svg>`;
+    }
+
+    if (cageCanvas) {
+      const hudCanvas = document.getElementById('pci-hud-canvas');
+      const hctx = hudCanvas ? hudCanvas.getContext('2d') : null;
+      const LOG_W = 800;
+      const LOG_H = 450;
+
+      let activeBatId = 'goods-2026';
+      let activeStadiumId = 'fenway';
+      let selectedPitchType = 'mix';
+      let autoPciMode = false;
+      let soundOn = true;
+      let audioCtx = null;
+      let cageEngaged = false;
+      let engine3D = null;
+
+      // Session / Game State
+      const session = {
+        balls: 0,
+        strikes: 0,
+        outs: 0,
+        hits: 0,
+        hrs: 0,
+        sprays: []
+      };
+
+      // Mini PCI in normalized strike-zone coords: x in [-1.5..1.5], y in [-1.5..1.5]
+      // y < 0 = TOP of strike zone (screen up), y > 0 = BOTTOM of strike zone (screen down)
+      const pci = {
+        x: 0,
+        y: 0.14,
+        targetX: 0,
+        targetY: 0.14
+      };
+
+      const keysDown = new Set();
+
+      // Animation State Machine: 'idle' | 'windup' | 'pitch' | 'flight'
+      const sim = {
+        phase: 'idle',
+        t: 0,
+        lastTs: 0,
+        camT: 0,
+        pitch: null,
+        pitchPos: null,
+        swingTriggered: false,
+        swingT: 0,
+        swingAngle: -0.42,
+        contactResolved: false,
+        flashTimer: 0,
+        flashColor: '#38bdf8',
+        calloutText: '',
+        calloutSub: '',
+        calloutTimer: 0,
+        demoAutoSwing: false,
+        flight: null,
+        flightCur: null,
+        flightPoints: null,
+        flightMaxIdx: 0,
+        flightColor: '#38bdf8',
+        flightFair: true
+      };
+
+      function tryInit3D() {
+        if (engine3D || typeof window.createStadium3DEngine !== 'function') return;
+        try {
+          engine3D = window.createStadium3DEngine(cageCanvas, BATS, STADIUMS);
+          engine3D.setStadium(activeStadiumId);
+          engine3D.setBat(activeBatId);
+          const dpr = engine3D.isSoftwareGl ? Math.min(window.devicePixelRatio || 1, 1.25) : Math.min(window.devicePixelRatio || 1, 2);
+          engine3D.resize(Math.round(LOG_W * dpr), Math.round(LOG_H * dpr));
+        } catch (err) {
+          console.error('3D stadium init failed:', err);
+        }
+      }
+      tryInit3D();
+      if (!engine3D) {
+        window.addEventListener('diamondiq-3d-ready', tryInit3D, { once: true });
+      }
+
+      function playBatAudio(kind) {
+        if (!soundOn) return;
+        try {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return;
+          if (!audioCtx) audioCtx = new Ctx();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          if (kind === 'wood') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(240, now);
+            osc.frequency.exponentialRampToValueAtTime(70, now + 0.08);
+            gain.gain.setValueAtTime(0.45, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          } else if (kind === 'combat') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1080, now);
+            osc.frequency.exponentialRampToValueAtTime(760, now + 0.25);
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.27);
+          } else if (kind === 'whiff') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(190, now);
+            osc.frequency.exponentialRampToValueAtTime(110, now + 0.09);
+            gain.gain.setValueAtTime(0.16, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          } else {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(610, now);
+            osc.frequency.exponentialRampToValueAtTime(420, now + 0.22);
+            gain.gain.setValueAtTime(0.32, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+          }
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.28);
+        } catch {
+          /* ignore */
+        }
+      }
+
+      function updateBatDom() {
+        const bat = BATS[activeBatId] || BATS['goods-2026'];
+        if (batSpecMeta) batSpecMeta.textContent = bat.meta;
+        if (batSpecName) batSpecName.textContent = bat.name;
+        if (batSpecDesc) batSpecDesc.textContent = bat.desc;
+        if (batPreviewSvg) batPreviewSvg.innerHTML = renderBatSvg(bat);
+        if (engine3D) engine3D.setBat(activeBatId);
+      }
+
+      function updateSessionDom(hitInfo = null) {
+        if (hitInfo) {
+          if (evEl) evEl.textContent = hitInfo.exitVelo != null ? `${hitInfo.exitVelo} mph` : '-- mph';
+          if (laEl) laEl.textContent = hitInfo.launchAngle != null ? `${hitInfo.launchAngle}°` : '--°';
+          if (distEl) distEl.textContent = hitInfo.dist != null ? `${hitInfo.dist} ft` : '-- ft';
+          if (apexEl) apexEl.textContent = hitInfo.apex != null ? `${hitInfo.apex} ft` : '-- ft';
+          if (outEl) {
+            outEl.textContent = hitInfo.outcome || 'Pitch Ready';
+            outEl.style.color = hitInfo.color || 'var(--accent)';
+          }
+        }
+        if (sessionPill) sessionPill.textContent = `${session.hrs} HR · ${session.hits} Hits`;
+        if (countReadout) countReadout.textContent = `Count: ${session.balls}-${session.strikes} · Outs: ${session.outs}`;
+        drawSprayChart();
+      }
+
+      function drawSprayChart() {
+        if (!sprayCanvas) return;
+        const sctx = sprayCanvas.getContext('2d');
+        const w = sprayCanvas.width;
+        const h = sprayCanvas.height;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.fenway;
+        if (sprayLabel) sprayLabel.textContent = st.dimsLabel;
+
+        sctx.clearRect(0, 0, w, h);
+        sctx.fillStyle = '#091322';
+        sctx.fillRect(0, 0, w, h);
+
+        const ox = w / 2;
+        const oy = h - 18;
+        const pxPerFt = (h - 38) / 435;
+
+        // Warning Track Edge
+        sctx.beginPath();
+        sctx.moveTo(ox, oy);
+        for (let i = 0; i <= 30; i++) {
+          const phi = -0.785 + (i / 30) * 1.57;
+          const d = (st.wallDist(phi) + 8) * pxPerFt;
+          sctx.lineTo(ox + Math.sin(phi) * d, oy - Math.cos(phi) * d);
+        }
+        sctx.closePath();
+        sctx.fillStyle = '#5c341a';
+        sctx.fill();
+
+        // Turf Outfield Wedge with Mowed Grass Radial Glow
+        sctx.beginPath();
+        sctx.moveTo(ox, oy);
+        for (let i = 0; i <= 30; i++) {
+          const phi = -0.785 + (i / 30) * 1.57;
+          const d = st.wallDist(phi) * pxPerFt;
+          sctx.lineTo(ox + Math.sin(phi) * d, oy - Math.cos(phi) * d);
+        }
+        sctx.closePath();
+        const turfGrad = sctx.createRadialGradient(ox, oy, 10, ox, oy, 420 * pxPerFt);
+        turfGrad.addColorStop(0, '#1f7a44');
+        turfGrad.addColorStop(1, '#124728');
+        sctx.fillStyle = turfGrad;
+        sctx.fill();
+
+        // Infield dirt diamond
+        sctx.fillStyle = '#a36839';
+        sctx.beginPath();
+        sctx.arc(ox, oy - 75 * pxPerFt, 48 * pxPerFt, Math.PI * 1.15, Math.PI * 1.85);
+        sctx.lineTo(ox, oy);
+        sctx.closePath();
+        sctx.fill();
+
+        // Outfield Wall Outline
+        sctx.beginPath();
+        for (let i = 0; i <= 30; i++) {
+          const phi = -0.785 + (i / 30) * 1.57;
+          const d = st.wallDist(phi) * pxPerFt;
+          const px = ox + Math.sin(phi) * d;
+          const py = oy - Math.cos(phi) * d;
+          if (i === 0) sctx.moveTo(px, py);
+          else sctx.lineTo(px, py);
+        }
+        sctx.strokeStyle = st.wallCap;
+        sctx.lineWidth = 2.6;
+        sctx.stroke();
+
+        // Foul Lines
+        sctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        sctx.lineWidth = 1;
+        [-0.785, 0.785].forEach((phi) => {
+          const d = st.wallDist(phi) * pxPerFt;
+          sctx.beginPath();
+          sctx.moveTo(ox, oy);
+          sctx.lineTo(ox + Math.sin(phi) * d, oy - Math.cos(phi) * d);
+          sctx.stroke();
+        });
+
+        // Distance rings
+        [200, 300, 400].forEach((ft) => {
+          sctx.beginPath();
+          sctx.arc(ox, oy, ft * pxPerFt, -Math.PI * 0.75, -Math.PI * 0.25);
+          sctx.strokeStyle = 'rgba(255,255,255,0.14)';
+          sctx.stroke();
+        });
+
+        // Plotted HitTrax Spray Shots
+        session.sprays.forEach((sp, i) => {
+          const sx = ox + sp.xFt * pxPerFt;
+          const sy = oy - sp.yFt * pxPerFt;
+          sctx.beginPath();
+          sctx.moveTo(ox, oy);
+          sctx.lineTo(sx, sy);
+          sctx.strokeStyle = sp.color;
+          sctx.globalAlpha = i === session.sprays.length - 1 ? 0.92 : 0.4;
+          sctx.lineWidth = i === session.sprays.length - 1 ? 2.2 : 1.2;
+          sctx.stroke();
+
+          sctx.beginPath();
+          sctx.arc(sx, sy, sp.isHr ? 4.4 : 3.2, 0, Math.PI * 2);
+          sctx.fillStyle = sp.color;
+          sctx.globalAlpha = 1;
+          sctx.fill();
+        });
+      }
+
+      // Compute authentic 3D ball flight (ft, sub-stepped gravity + drag + Magnus backspin lift)
+      function simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg) {
+        const st = STADIUMS[activeStadiumId] || STADIUMS.fenway;
+        const v0 = exitVelo * 1.46667;
+        const theta = (launchDeg * Math.PI) / 180;
+        const phi = (sprayDeg * Math.PI) / 180;
+
+        let x = 0;
+        let y = 2.0;
+        let z = 3.0;
+        let vx = v0 * Math.cos(theta) * Math.sin(phi);
+        let vy = v0 * Math.cos(theta) * Math.cos(phi);
+        let vz = v0 * Math.sin(theta);
+
+        const dt = 1 / 90;
+        const points = [{ x, y, z, t: 0 }];
+        let apex = z;
+        let t = 0;
+        let isHr = false;
+        let wallHit = false;
+        const fair = Math.abs(sprayDeg) <= 45;
+
+        for (let step = 0; step < 650; step++) {
+          t += dt;
+          const speed = Math.hypot(vx, vy, vz);
+          const drag = 0.00205 * speed;
+          const spinCarry = launchDeg > 8 && launchDeg < 45 ? 0.072 * speed : 0.025 * speed;
+
+          const ax = -drag * vx;
+          const ay = -drag * vy;
+          const az = -32.174 - drag * vz + spinCarry;
+
+          vx += ax * dt;
+          vy += ay * dt;
+          vz += az * dt;
+
+          x += vx * dt;
+          y += vy * dt;
+          z += vz * dt;
+
+          if (z > apex) apex = z;
+          if (step % 2 === 0) points.push({ x, y, z: Math.max(0, z), t });
+
+          const horiz = Math.hypot(x, y);
+          const curPhi = Math.atan2(x, Math.max(1, y));
+          if (fair && !isHr && !wallHit && Math.abs(curPhi) <= 0.785) {
+            const wDist = st.wallDist(curPhi);
+            const wH = st.wallHeight(curPhi);
+            if (horiz >= wDist) {
+              if (z > wH || st.id === 'cage') {
+                isHr = z > wH || (st.id === 'cage' && launchDeg >= 16);
+              } else {
+                wallHit = true;
+                vy = -vy * 0.35;
+                vx = vx * 0.45;
+                vz = Math.max(4, vz * 0.4);
+              }
+            }
+          }
+
+          if (z <= 0) {
+            if (!isHr && Math.abs(vz) > 18 && points.length < 280) {
+              z = 0.1;
+              vz = Math.abs(vz) * 0.34;
+              vx *= 0.68;
+              vy *= 0.68;
+            } else {
+              break;
+            }
+          }
+        }
+
+        const last = points[points.length - 1];
+        const finalDist = Math.round(Math.hypot(last.x, last.y));
+        const finalApex = Math.round(apex);
+
+        let outcome = 'Out';
+        let color = '#94a3b8';
+        if (!fair) {
+          outcome = 'Foul Ball';
+          color = '#fbbf24';
+        } else if (isHr) {
+          outcome = finalDist >= 425 ? 'UPPER DECK BOMB!' : 'HOME RUN!';
+          color = '#38bdf8';
+        } else if (wallHit) {
+          outcome = 'DOUBLE OFF WALL!';
+          color = '#22c55e';
+        } else if (launchDeg < 8) {
+          outcome = exitVelo >= 95 ? 'Hard Single!' : 'Ground Out';
+          color = exitVelo >= 95 ? '#22c55e' : '#fbbf24';
+        } else if (launchDeg <= 22 && exitVelo >= 92) {
+          outcome = finalDist >= 260 ? 'Gap Double!' : 'Line Drive Single!';
+          color = '#22c55e';
+        } else if (launchDeg > 42 && finalDist < 220) {
+          outcome = 'Infield Pop-Up';
+          color = '#f87171';
+        } else {
+          outcome = finalDist >= 320 ? 'Deep Warning-Track Fly' : 'Fly Out';
+          color = '#fbbf24';
+        }
+
+        return {
+          points,
+          dist: finalDist,
+          apex: finalApex,
+          exitVelo: Number(exitVelo.toFixed(1)),
+          launchAngle: Math.round(launchDeg),
+          sprayDeg: Math.round(sprayDeg),
+          outcome,
+          isHr: fair && isHr,
+          wallHit,
+          fair,
+          color,
+          endX: last.x,
+          endY: last.y,
+          totalTime: t
         };
       }
-      updateHitLab();
+
+      function launchPitch(isDemoHr = false) {
+        if (sim.phase === 'windup' || sim.phase === 'pitch') return;
+        const keys = ['fastball', 'slider', 'curve', 'changeup'];
+        const chosenKey = isDemoHr
+          ? 'fastball'
+          : selectedPitchType === 'mix'
+            ? keys[Math.floor(Math.random() * keys.length)]
+            : selectedPitchType;
+        const spec = PITCH_TYPES[chosenKey] || PITCH_TYPES.fastball;
+        const mph = isDemoHr
+          ? 86
+          : Math.round(spec.mphMin + Math.random() * (spec.mphMax - spec.mphMin));
+
+        const endX = isDemoHr ? 0.04 : (Math.random() - 0.5) * 1.75;
+        const endY = isDemoHr ? 0.0 : (Math.random() - 0.5) * 1.65;
+
+        sim.phase = 'windup';
+        sim.t = 0;
+        sim.camT = 0;
+        sim.swingTriggered = false;
+        sim.swingT = 0;
+        sim.swingAngle = -0.42;
+        sim.contactResolved = false;
+        sim.demoAutoSwing = isDemoHr;
+        sim.pitchPos = null;
+        sim.flightCur = null;
+        sim.flightPoints = null;
+        sim.flightMaxIdx = 0;
+        sim.pitch = {
+          typeKey: chosenKey,
+          name: isDemoHr ? '86 mph Centerpiece Fastball' : `${mph} mph ${spec.name}`,
+          mph,
+          dur: isDemoHr ? 0.72 : spec.dur,
+          dropFt: isDemoHr ? 0.75 : spec.dropFt,
+          breakX: isDemoHr ? 0.0 : spec.breakX,
+          endX,
+          endY
+        };
+        if (swingBtn) swingBtn.textContent = 'SWING! (Space)';
+        if (pitchNote) pitchNote.textContent = `${sim.pitch.name} · Watch the shrinking ring!`;
+      }
+
+      function resolveSwing() {
+        if (sim.phase !== 'pitch' || sim.contactResolved || !sim.pitch) return;
+        sim.contactResolved = true;
+        const bat = BATS[activeBatId] || BATS['goods-2026'];
+
+        const timingErr = sim.t - 0.94;
+        const absTime = Math.abs(timingErr);
+
+        let curPciX = pci.x;
+        let curPciY = pci.y;
+        if (sim.demoAutoSwing) {
+          curPciX = sim.pitch.endX;
+          curPciY = sim.pitch.endY + 0.30; // PCI slightly BELOW ball -> 28° high-arc HR over wall!
+        } else if (autoPciMode) {
+          curPciX = sim.pitch.endX + (Math.random() - 0.5) * 0.14;
+          curPciY = sim.pitch.endY + 0.22 + (Math.random() - 0.5) * 0.16;
+        }
+
+        const dx = curPciX - sim.pitch.endX;
+        const underBallOffset = curPciY - sim.pitch.endY; // >0 means PCI is lower/under ball -> loft!
+        const distFromSweet = Math.hypot(dx * 0.9, underBallOffset);
+
+        const maxReach = 0.95 * bat.sweetSpot;
+        if (absTime > 0.23 || distFromSweet > maxReach) {
+          playBatAudio('whiff');
+          session.strikes++;
+          let call = 'Swinging Strike';
+          if (session.strikes >= 3) {
+            call = 'Strikeout!';
+            session.balls = 0;
+            session.strikes = 0;
+            session.outs = (session.outs + 1) % 3;
+          }
+          sim.calloutText = call.toUpperCase();
+          sim.calloutSub = absTime > 0.23 ? (timingErr < 0 ? 'Too Early' : 'Too Late') : 'Missed PCI';
+          sim.calloutTimer = 1.3;
+          updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, outcome: call, color: '#f87171' });
+          if (swingBtn) swingBtn.textContent = 'Throw Pitch';
+          return;
+        }
+
+        const barrelFactor = Math.max(0.25, 1 - distFromSweet / maxReach) * Math.max(0.45, 1 - absTime * 2.2);
+        const swingMph = sim.demoAutoSwing ? 81 : 72 + barrelFactor * 10;
+        const exitVelo = 0.21 * sim.pitch.mph + 1.14 * bat.popMod * bat.weightMod * swingMph * (0.78 + 0.26 * barrelFactor);
+
+        // Positive underBallOffset (PCI slightly below ball) produces realistic 26°-34° towering bombs!
+        let launchDeg = sim.demoAutoSwing ? 29 : 15 + underBallOffset * 44 + (Math.random() - 0.5) * 3;
+        launchDeg = Math.max(-10, Math.min(56, launchDeg));
+
+        let sprayDeg = sim.demoAutoSwing ? -15 : timingErr * 155 + dx * 22;
+        if (absTime > 0.16) {
+          sprayDeg = timingErr < 0 ? -56 : 56;
+        }
+        sprayDeg = Math.max(-68, Math.min(68, sprayDeg));
+
+        playBatAudio(bat.soundType);
+        sim.flashTimer = 1;
+        const flight = simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg);
+        sim.flashColor = flight.color;
+        sim.flight = { ...flight, playTime: 0 };
+        sim.flightPoints = flight.points;
+        sim.flightColor = flight.color;
+        sim.flightFair = flight.fair;
+        sim.flightMaxIdx = 0;
+        sim.flightCur = flight.points[0];
+        sim.phase = 'flight';
+        sim.t = 0;
+
+        if (!flight.fair) {
+          if (session.strikes < 2) session.strikes++;
+          sim.calloutText = 'FOUL BALL';
+          sim.calloutSub = `${flight.exitVelo} mph · ${flight.launchAngle}°`;
+        } else {
+          session.balls = 0;
+          session.strikes = 0;
+          if (flight.isHr || flight.wallHit || flight.outcome.includes('Single') || flight.outcome.includes('Double')) {
+            session.hits++;
+            if (flight.isHr) session.hrs++;
+          } else {
+            session.outs = (session.outs + 1) % 3;
+          }
+          session.sprays.push({
+            xFt: flight.endX,
+            yFt: flight.endY,
+            dist: flight.dist,
+            apex: flight.apex,
+            isHr: flight.isHr,
+            color: flight.color,
+            stadiumId: activeStadiumId
+          });
+          if (session.sprays.length > 24) session.sprays.shift();
+          sim.calloutText = flight.outcome;
+          sim.calloutSub = `${flight.dist} FT · ${flight.exitVelo} MPH · ${flight.apex} FT APEX`;
+        }
+        sim.calloutTimer = 2.8;
+
+        updateSessionDom({
+          exitVelo: flight.exitVelo,
+          launchAngle: flight.launchAngle,
+          dist: flight.dist,
+          apex: flight.apex,
+          outcome: flight.outcome,
+          color: flight.color
+        });
+        if (pitchNote) pitchNote.textContent = `${flight.outcome} — ${flight.dist} ft (${flight.launchAngle}° launch, ${flight.apex} ft peak)`;
+        if (swingBtn) swingBtn.textContent = 'Throw Pitch';
+      }
+
+      // Compute pixel-exact Strike Zone HUD rectangle projected through live 3D camera!
+      function getStrikeZoneHudRect() {
+        if (engine3D) {
+          const tl = engine3D.projectWorldToNorm(-0.88, 3.65, 0);
+          const br = engine3D.projectWorldToNorm(0.88, 1.65, 0);
+          const x = tl.nx * LOG_W;
+          const y = tl.ny * LOG_H;
+          const w = Math.max(76, (br.nx - tl.nx) * LOG_W);
+          const h = Math.max(76, (br.ny - tl.ny) * LOG_H);
+          return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
+        }
+        return { x: LOG_W / 2 - 58, y: 222, w: 116, h: 110, cx: LOG_W / 2, cy: 277 };
+      }
+
+      function scheduleNextFrame() {
+        if (engine3D && engine3D.isSoftwareGl) {
+          setTimeout(() => requestAnimationFrame(renderFrame), 16);
+        } else {
+          requestAnimationFrame(renderFrame);
+        }
+      }
+
+      function renderFrame(ts) {
+        const dt = sim.lastTs ? Math.min(0.05, (ts - sim.lastTs) / 1000) : 0.016;
+        sim.lastTs = ts;
+
+        // Keyboard PCI movement
+        const spd = 2.6 * dt;
+        if (keysDown.has('ArrowLeft') || keysDown.has('a') || keysDown.has('A')) pci.targetX -= spd;
+        if (keysDown.has('ArrowRight') || keysDown.has('d') || keysDown.has('D')) pci.targetX += spd;
+        if (keysDown.has('ArrowUp') || keysDown.has('w') || keysDown.has('W')) pci.targetY -= spd;
+        if (keysDown.has('ArrowDown') || keysDown.has('s') || keysDown.has('S')) pci.targetY += spd;
+        pci.targetX = Math.max(-1.45, Math.min(1.45, pci.targetX));
+        pci.targetY = Math.max(-1.45, Math.min(1.45, pci.targetY));
+        pci.x += (pci.targetX - pci.x) * Math.min(1, dt * 18);
+        pci.y += (pci.targetY - pci.y) * Math.min(1, dt * 18);
+
+        const desiredCam = sim.phase === 'flight' ? 1 : 0;
+        sim.camT += (desiredCam - sim.camT) * Math.min(1, dt * 5.2);
+
+        const st = STADIUMS[activeStadiumId] || STADIUMS.fenway;
+        const bat = BATS[activeBatId] || BATS['goods-2026'];
+
+        // Advance State Machine & Compute 3D World Ball Positions
+        if (sim.phase === 'windup') {
+          sim.t += dt / 0.42;
+          if (sim.t >= 1) {
+            sim.phase = 'pitch';
+            sim.t = 0;
+          }
+        } else if (sim.phase === 'pitch' && sim.pitch) {
+          sim.t += dt / sim.pitch.dur;
+          const p = Math.min(1.06, sim.t);
+          const easeP = Math.pow(p, 1.05);
+
+          // 3D world pitch trajectory from pitcher's release (0.9, 6.2, -55) to plate (px, py, 0)
+          const plateX = sim.pitch.endX * 0.88;
+          const plateY = 2.65 - sim.pitch.endY * 1.0; // strike zone center y=2.65 ft
+          const bx = 0.9 + (plateX - 0.9) * easeP - Math.sin(p * Math.PI * 0.65) * sim.pitch.breakX * 1.6 * (1 - p);
+          const by = 6.2 + (plateY - 6.2) * easeP + Math.sin(p * Math.PI) * sim.pitch.dropFt * 0.55;
+          const bz = -55 + 55 * easeP;
+          sim.pitchPos = { x: bx, y: Math.max(0.32, by), z: bz };
+
+          if (sim.demoAutoSwing || autoPciMode) {
+            pci.targetX = sim.pitch.endX;
+            pci.targetY = sim.pitch.endY + (sim.demoAutoSwing ? 0.30 : 0.22);
+          }
+
+          if (sim.demoAutoSwing && !sim.swingTriggered && sim.t >= 0.92) {
+            sim.swingTriggered = true;
+            resolveSwing();
+          }
+
+          if (sim.swingTriggered && sim.phase === 'pitch') {
+            sim.swingT += dt * 7.5;
+            sim.swingAngle = -0.45 + sim.swingT * 1.45;
+          }
+
+          if (sim.t >= 1.06 && sim.phase === 'pitch') {
+            if (!sim.contactResolved) {
+              const isStrike = Math.abs(sim.pitch.endX) <= 1.05 && Math.abs(sim.pitch.endY) <= 1.05;
+              let call = isStrike ? 'Called Strike' : 'Ball';
+              if (isStrike) {
+                session.strikes++;
+                if (session.strikes >= 3) {
+                  call = 'Called Strikeout!';
+                  session.balls = 0;
+                  session.strikes = 0;
+                  session.outs = (session.outs + 1) % 3;
+                }
+              } else {
+                session.balls++;
+                if (session.balls >= 4) {
+                  call = 'Base on Balls!';
+                  session.balls = 0;
+                  session.strikes = 0;
+                }
+              }
+              sim.calloutText = call.toUpperCase();
+              sim.calloutSub = sim.pitch.name;
+              sim.calloutTimer = 1.25;
+              updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, outcome: call, color: isStrike ? '#f87171' : '#38bdf8' });
+              if (swingBtn) swingBtn.textContent = 'Throw Pitch';
+            }
+            sim.phase = 'idle';
+          }
+        } else if (sim.phase === 'flight' && sim.flight) {
+          const fl = sim.flight;
+          fl.playTime += dt * 1.05;
+          sim.swingAngle = Math.min(0.95, sim.swingAngle + dt * 5.2);
+
+          const progress = Math.min(1, fl.playTime / Math.max(0.8, fl.totalTime));
+          const maxIdx = Math.max(1, Math.floor(progress * (fl.points.length - 1)));
+          sim.flightMaxIdx = maxIdx;
+          sim.flightCur = fl.points[maxIdx];
+
+          if (fl.playTime >= fl.totalTime + 1.15) {
+            sim.phase = 'idle';
+            sim.swingAngle = -0.42;
+          }
+        } else {
+          sim.swingAngle = -0.42 + Math.sin(ts * 0.0022) * 0.028;
+        }
+
+        // Render True 3D Three.js Ballpark on #cage-canvas
+        if (engine3D) {
+          engine3D.updateAndRender(sim, dt);
+        }
+
+        // Draw Transparent Broadcast HUD Overlay on #pci-hud-canvas
+        if (hctx) {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const hw = LOG_W * dpr;
+          const hh = LOG_H * dpr;
+          if (hudCanvas.width !== hw || hudCanvas.height !== hh) {
+            hudCanvas.width = hw;
+            hudCanvas.height = hh;
+          }
+          hctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          hctx.clearRect(0, 0, LOG_W, LOG_H);
+
+          const zr = getStrikeZoneHudRect();
+          const zoneAlpha = Math.max(0, 1 - sim.camT * 1.9);
+
+          if (zoneAlpha > 0.02) {
+            hctx.save();
+            hctx.globalAlpha = zoneAlpha;
+
+            // 3x3 Glass Strike Zone
+            hctx.fillStyle = 'rgba(10, 18, 32, 0.16)';
+            hctx.fillRect(zr.x, zr.y, zr.w, zr.h);
+            hctx.strokeStyle = 'rgba(248, 250, 252, 0.72)';
+            hctx.lineWidth = 1.8;
+            hctx.strokeRect(zr.x, zr.y, zr.w, zr.h);
+
+            hctx.strokeStyle = 'rgba(248, 250, 252, 0.25)';
+            hctx.lineWidth = 1;
+            for (let g = 1; g <= 2; g++) {
+              hctx.beginPath();
+              hctx.moveTo(zr.x + (zr.w * g) / 3, zr.y);
+              hctx.lineTo(zr.x + (zr.w * g) / 3, zr.y + zr.h);
+              hctx.stroke();
+              hctx.beginPath();
+              hctx.moveTo(zr.x, zr.y + (zr.h * g) / 3);
+              hctx.lineTo(zr.x + zr.w, zr.y + (zr.h * g) / 3);
+              hctx.stroke();
+            }
+
+            // MLB The Show Mini PCI Reticle scaled by bat sweetSpot
+            const drawPciX = zr.cx + pci.x * (zr.w * 0.5);
+            const drawPciY = zr.cy + pci.y * (zr.h * 0.5);
+            const rxOuter = 30 * bat.sweetSpot;
+            const ryOuter = 19 * bat.sweetSpot;
+            const rxInner = 15 * bat.sweetSpot;
+            const ryInner = 9.5 * bat.sweetSpot;
+
+            hctx.strokeStyle = autoPciMode ? 'rgba(251, 191, 36, 0.85)' : 'rgba(56, 189, 248, 0.9)';
+            hctx.lineWidth = 1.8;
+            hctx.beginPath();
+            hctx.ellipse(drawPciX, drawPciY, rxOuter, ryOuter, 0, 0, Math.PI * 2);
+            hctx.stroke();
+
+            hctx.fillStyle = autoPciMode ? 'rgba(251, 191, 36, 0.18)' : 'rgba(56, 189, 248, 0.2)';
+            hctx.beginPath();
+            hctx.ellipse(drawPciX, drawPciY, rxInner, ryInner, 0, 0, Math.PI * 2);
+            hctx.fill();
+            hctx.strokeStyle = '#ffffff';
+            hctx.lineWidth = 1.4;
+            hctx.stroke();
+
+            hctx.fillStyle = '#fde047';
+            hctx.beginPath();
+            hctx.arc(drawPciX, drawPciY, 2.6, 0, Math.PI * 2);
+            hctx.fill();
+
+            // Shrinking Timing Ring around Plate Target during incoming pitch
+            if (sim.phase === 'pitch' && sim.pitch) {
+              const targetPx = zr.cx + sim.pitch.endX * (zr.w * 0.5);
+              const targetPy = zr.cy + sim.pitch.endY * (zr.h * 0.5);
+              const p = Math.min(1.06, sim.t);
+              const ringR = Math.max(8, (1 - Math.min(1, p)) * 42 + 8);
+              const inWindow = p >= 0.82 && p <= 1.04;
+              hctx.strokeStyle = inWindow ? '#22c55e' : 'rgba(255,255,255,0.6)';
+              hctx.lineWidth = inWindow ? 2.6 : 1.4;
+              hctx.setLineDash([4, 3]);
+              hctx.beginPath();
+              hctx.arc(targetPx, targetPy, ringR, 0, Math.PI * 2);
+              hctx.stroke();
+              hctx.setLineDash([]);
+            }
+            hctx.restore();
+          }
+
+          // Contact Impact Flash
+          if (sim.flashTimer > 0) {
+            sim.flashTimer = Math.max(0, sim.flashTimer - dt * 4);
+            hctx.save();
+            hctx.strokeStyle = sim.flashColor;
+            hctx.globalAlpha = sim.flashTimer;
+            hctx.lineWidth = 3;
+            hctx.beginPath();
+            hctx.arc(zr.cx, zr.cy, (1 - sim.flashTimer) * 48 + 10, 0, Math.PI * 2);
+            hctx.stroke();
+            hctx.restore();
+          }
+
+          // Clean Broadcast Bat & Stadium Corner Tags
+          hctx.fillStyle = 'rgba(10, 18, 32, 0.82)';
+          hctx.fillRect(14, 12, 248, 28);
+          hctx.strokeStyle = bat.accentColor;
+          hctx.lineWidth = 1.4;
+          hctx.strokeRect(14, 12, 248, 28);
+          hctx.fillStyle = '#f8fafc';
+          hctx.font = '700 11px "Outfit", sans-serif';
+          hctx.textAlign = 'left';
+          hctx.fillText(`${bat.name.toUpperCase()}`, 24, 30);
+
+          hctx.fillStyle = 'rgba(10, 18, 32, 0.82)';
+          hctx.fillRect(LOG_W - 184, 12, 170, 28);
+          hctx.strokeStyle = 'rgba(255,255,255,0.22)';
+          hctx.strokeRect(LOG_W - 184, 12, 170, 28);
+          hctx.fillStyle = '#fde68a';
+          hctx.font = '700 10.5px "IBM Plex Mono", monospace';
+          hctx.textAlign = 'right';
+          hctx.fillText(`${st.name.toUpperCase()}`, LOG_W - 24, 30);
+
+          // Broadcast Outcome Banner
+          if (sim.calloutTimer > 0) {
+            sim.calloutTimer = Math.max(0, sim.calloutTimer - dt);
+            hctx.save();
+            hctx.globalAlpha = Math.min(1, sim.calloutTimer * 2);
+            hctx.fillStyle = 'rgba(10, 18, 32, 0.9)';
+            hctx.fillRect(LOG_W / 2 - 155, 48, 310, 44);
+            hctx.strokeStyle = sim.flashColor || '#38bdf8';
+            hctx.lineWidth = 1.6;
+            hctx.strokeRect(LOG_W / 2 - 155, 48, 310, 44);
+            hctx.fillStyle = sim.flashColor || '#38bdf8';
+            hctx.font = '700 14px "Outfit", sans-serif';
+            hctx.textAlign = 'center';
+            hctx.fillText(sim.calloutText, LOG_W / 2, 67);
+            hctx.fillStyle = '#e2e8f0';
+            hctx.font = '600 10.5px "IBM Plex Mono", monospace';
+            hctx.fillText(sim.calloutSub, LOG_W / 2, 83);
+            hctx.restore();
+          }
+        }
+
+        scheduleNextFrame();
+      }
+
+      // Pointer / Mouse / Touch PCI Aiming inside Canvas
+      function movePciFromEvent(clientX, clientY) {
+        const rect = cageCanvas.getBoundingClientRect();
+        const nx = ((clientX - rect.left) / rect.width) * LOG_W;
+        const ny = ((clientY - rect.top) / rect.height) * LOG_H;
+        const zr = getStrikeZoneHudRect();
+        pci.targetX = Math.max(-1.45, Math.min(1.45, (nx - zr.cx) / (zr.w * 0.5)));
+        pci.targetY = Math.max(-1.45, Math.min(1.45, (ny - zr.cy) / (zr.h * 0.5)));
+      }
+
+      cageCanvas.addEventListener('pointermove', (e) => {
+        cageEngaged = true;
+        if (!autoPciMode) movePciFromEvent(e.clientX, e.clientY);
+      });
+
+      cageCanvas.addEventListener('pointerdown', (e) => {
+        cageEngaged = true;
+        if (!autoPciMode) movePciFromEvent(e.clientX, e.clientY);
+        if (sim.phase === 'pitch') {
+          sim.swingTriggered = true;
+          resolveSwing();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (!cageEngaged) return;
+        keysDown.add(e.key);
+        if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          e.preventDefault();
+        }
+        if (e.key === ' ') {
+          if (sim.phase === 'pitch') {
+            sim.swingTriggered = true;
+            resolveSwing();
+          } else if (sim.phase === 'idle') {
+            launchPitch(false);
+          }
+        }
+      });
+      document.addEventListener('keyup', (e) => keysDown.delete(e.key));
+
+      if (batRack) {
+        batRack.onclick = (e) => {
+          const btn = e.target.closest('[data-bat]');
+          if (!btn) return;
+          cageEngaged = true;
+          activeBatId = btn.dataset.bat;
+          batRack.querySelectorAll('[data-bat]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          updateBatDom();
+        };
+      }
+
+      if (stadiumTabs) {
+        stadiumTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-stadium]');
+          if (!btn) return;
+          cageEngaged = true;
+          activeStadiumId = btn.dataset.stadium;
+          stadiumTabs.querySelectorAll('[data-stadium]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (engine3D) engine3D.setStadium(activeStadiumId);
+          drawSprayChart();
+        };
+      }
+
+      if (pitchTabs) {
+        pitchTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-pitch]');
+          if (!btn) return;
+          cageEngaged = true;
+          selectedPitchType = btn.dataset.pitch;
+          pitchTabs.querySelectorAll('[data-pitch]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        };
+      }
+
+      if (swingBtn) {
+        swingBtn.onclick = () => {
+          cageEngaged = true;
+          if (sim.phase === 'pitch') {
+            sim.swingTriggered = true;
+            resolveSwing();
+          } else {
+            launchPitch(false);
+          }
+        };
+      }
+
+      if (demoBtn) {
+        demoBtn.onclick = () => {
+          cageEngaged = true;
+          if (sim.phase === 'windup' || sim.phase === 'pitch') return;
+          launchPitch(true);
+        };
+      }
+
+      if (pciModeBtn) {
+        pciModeBtn.onclick = () => {
+          cageEngaged = true;
+          autoPciMode = !autoPciMode;
+          pciModeBtn.setAttribute('aria-pressed', String(autoPciMode));
+          pciModeBtn.textContent = autoPciMode ? 'PCI: Auto' : 'PCI: Manual';
+        };
+      }
+
+      if (soundBtn) {
+        soundBtn.onclick = () => {
+          soundOn = !soundOn;
+          soundBtn.setAttribute('aria-pressed', String(soundOn));
+          soundBtn.textContent = soundOn ? 'Sound: On' : 'Sound: Off';
+        };
+      }
+
+      if (sprayClearBtn) {
+        sprayClearBtn.onclick = () => {
+          session.sprays = [];
+          session.hits = 0;
+          session.hrs = 0;
+          session.balls = 0;
+          session.strikes = 0;
+          session.outs = 0;
+          updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, outcome: 'Chart Cleared', color: 'var(--accent)' });
+        };
+      }
+
+      updateBatDom();
+      updateSessionDom();
+      requestAnimationFrame(renderFrame);
     }
 
     // 4. Interactive 5-Expert Roster switcher
@@ -639,12 +1972,21 @@
       const q = searchBox ? searchBox.value.trim() : '';
       const sort = sortBy ? sortBy.value : 'az';
       const params = new URLSearchParams({ q, category: activeCategory, sort });
+      if (emptyEl) emptyEl.hidden = true;
+      if (!lastScenarios.length) {
+        listEl.innerHTML = '<li class="card" style="grid-column:1/-1;color:var(--text-secondary);">Loading plays...</li>';
+      }
       try {
         await refreshFavorites();
         const data = await api(`/api/scenarios?${params.toString()}`);
         lastScenarios = data.scenarios || [];
         renderGrid();
       } catch {
+        listEl.innerHTML = '';
+        if (emptyEl && emptyMsgEl) {
+          emptyMsgEl.textContent = 'Could not load plays right now. Please refresh the page.';
+          emptyEl.hidden = false;
+        }
         showToast('Could not load scenarios.');
       }
     }
@@ -954,8 +2296,15 @@
           }
         };
       }
-    } catch {
-      /* keep fallback */
+    } catch (err) {
+      const titleEl = document.getElementById('detail-title');
+      const sumEl = document.getElementById('detail-summary');
+      const ruleEl = document.getElementById('detail-key-rule');
+      if (titleEl) titleEl.textContent = 'Play not found';
+      if (sumEl) {
+        sumEl.innerHTML = `${escapeHtml(err.message || 'Could not load this play.')} <a href="scenarios.html">Return to Scenario Library</a>.`;
+      }
+      if (ruleEl) ruleEl.textContent = 'Pick any of the 8 plays from the Scenario Library.';
     }
   }
 
@@ -1391,9 +2740,21 @@
     const navToggle = document.getElementById('nav-toggle');
     const siteNav = document.getElementById('site-nav');
     if (navToggle && siteNav) {
+      const closeNav = (returnFocus = false) => {
+        if (!siteNav.classList.contains('is-open')) return;
+        siteNav.classList.remove('is-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+        if (returnFocus) navToggle.focus();
+      };
       navToggle.addEventListener('click', () => {
         const isOpen = siteNav.classList.toggle('is-open');
         navToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeNav(true);
+      });
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) closeNav(false);
       });
     }
 
