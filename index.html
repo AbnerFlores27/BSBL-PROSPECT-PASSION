@@ -12,6 +12,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three/build/three.module.js",
+    "three/addons/": "/vendor/three/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="stadium3d.js"></script>
 <script src="ui.js" defer></script>
 </head>
 <body>
@@ -109,63 +118,147 @@
     <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
     <div class="studio-topbar">
       <div>
-        <h2 id="studio-heading">Gameday Broadcast Studio</h2>
-        <p>Switch between the live Statcast Hit Lab and our featured play diagram.</p>
+        <h2 id="studio-heading">HitTrax Batting Cage &amp; Stadium Studio</h2>
+        <p>Pick a bat and stadium, track incoming pitches with your mini PCI, and launch real high-arc home runs.</p>
       </div>
       <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
-        <button type="button" class="segmented-btn" data-studio="hitlab" aria-pressed="true">Statcast Hit Lab</button>
+        <button type="button" class="segmented-btn" data-studio="hitlab" aria-pressed="true">HitTrax Cage</button>
         <button type="button" class="segmented-btn" data-studio="play" aria-pressed="false">Featured Play: Force vs. Tag</button>
       </div>
     </div>
 
     <div class="studio-body">
-      <div id="studio-panel-hitlab" class="hitlab-grid">
-        <div class="hitlab-stage">
-          <div id="hitlab-svg-wrap" aria-live="polite"></div>
-          <div class="hitlab-readout">
-            <div>
-              <div class="hitlab-stat-label">Projected Distance</div>
-              <div class="hitlab-stat-val" id="hitlab-dist">398 ft</div>
+      <div id="studio-panel-hitlab">
+        <div class="bat-rack" id="bat-rack" role="group" aria-label="Choose a baseball bat">
+          <button type="button" class="bat-btn" data-bat="baum-gold" aria-pressed="false">
+            <span class="bat-btn-top">
+              <span class="bat-swatch" style="background:linear-gradient(90deg,#1c140d 28%,#d49b4b 30%,#f3cb83 68%,#b87a2a 100%);"></span>
+              <span class="bat-btn-name">Baum Bat Gold</span>
+            </span>
+            <span class="bat-btn-meta">PermaWood Composite · -3</span>
+          </button>
+
+          <button type="button" class="bat-btn" data-bat="goods-2026" aria-pressed="true">
+            <span class="bat-btn-top">
+              <span class="bat-swatch" style="background:linear-gradient(90deg,#111827 28%,#ef4444 30%,#1f2937 56%,#2dd4bf 75%,#ef4444 100%);"></span>
+              <span class="bat-btn-name">2026 The Goods</span>
+            </span>
+            <span class="bat-btn-meta">Black/Red/Teal Hybrid · -3</span>
+          </button>
+
+          <button type="button" class="bat-btn" data-bat="goods-2022" aria-pressed="false">
+            <span class="bat-btn-top">
+              <span class="bat-swatch" style="background:linear-gradient(90deg,#18181b 28%,#dc2626 30%,#cbd5e1 44%,#f8fafc 78%,#dc2626 100%);"></span>
+              <span class="bat-btn-name">2022 The Goods</span>
+            </span>
+            <span class="bat-btn-meta">Chrome Silver/Red Hybrid · -3</span>
+          </button>
+
+          <button type="button" class="bat-btn" data-bat="combat-rodeo" aria-pressed="false">
+            <span class="bat-btn-top">
+              <span class="bat-swatch" style="background:linear-gradient(90deg,#854d0e 28%,#f3ead8 32%,#7f1d1d 68%,#ea580c 84%,#f3ead8 100%);"></span>
+              <span class="bat-btn-name">Combat Spec-A1 Rodeo</span>
+            </span>
+            <span class="bat-btn-meta">Cream/Maroon 1-Pc Alloy · -3</span>
+          </button>
+
+          <button type="button" class="bat-btn" data-bat="combat-blue" aria-pressed="false">
+            <span class="bat-btn-top">
+              <span class="bat-swatch" style="background:linear-gradient(90deg,#1e3a8a 28%,#7dd3fc 32%,#1d4ed8 72%,#facc15 84%,#bae6fd 100%);"></span>
+              <span class="bat-btn-name">Combat Members Club Blue</span>
+            </span>
+            <span class="bat-btn-meta">Powder Blue 1-Pc Alloy · -3</span>
+          </button>
+        </div>
+
+        <div class="studio-venue-bar">
+          <div class="venue-group">
+            <span class="venue-label">Stadium</span>
+            <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose a ballpark">
+              <button type="button" class="segmented-btn" data-stadium="fenway" aria-pressed="true">Fenway Park</button>
+              <button type="button" class="segmented-btn" data-stadium="wrigley" aria-pressed="false">Wrigley Field</button>
+              <button type="button" class="segmented-btn" data-stadium="dodger" aria-pressed="false">Dodger Stadium</button>
+              <button type="button" class="segmented-btn" data-stadium="cage" aria-pressed="false">Indoor Cage</button>
             </div>
-            <div>
-              <div class="hitlab-stat-label">Play Result</div>
-              <div class="hitlab-stat-val" id="hitlab-outcome">Barrel Home Run!</div>
-            </div>
-            <div>
-              <div class="hitlab-stat-label">Est. Batting Avg</div>
-              <div class="hitlab-stat-val" id="hitlab-xba">.640</div>
+          </div>
+
+          <div class="venue-group">
+            <span class="venue-label">Pitch</span>
+            <div class="segmented-group" id="pitch-tabs" role="group" aria-label="Choose pitch type">
+              <button type="button" class="segmented-btn" data-pitch="mix" aria-pressed="true">Mix</button>
+              <button type="button" class="segmented-btn" data-pitch="fastball" aria-pressed="false">Fastball</button>
+              <button type="button" class="segmented-btn" data-pitch="slider" aria-pressed="false">Slider</button>
+              <button type="button" class="segmented-btn" data-pitch="curve" aria-pressed="false">Curve</button>
+              <button type="button" class="segmented-btn" data-pitch="changeup" aria-pressed="false">Change</button>
             </div>
           </div>
         </div>
 
-        <div class="studio-controls-card">
-          <div class="form-stack">
-            <div class="slider-field">
-              <div class="slider-head">
-                <label for="velo-slider">Exit Velocity</label>
-                <span class="tabular-nums" id="velo-val" style="color:var(--accent);">104 mph</span>
-              </div>
-              <input type="range" id="velo-slider" min="65" max="115" value="104" step="1">
+        <div class="hitlab-grid">
+          <div class="hitlab-stage">
+            <div class="cage-canvas-wrap">
+              <canvas id="cage-canvas" role="img" aria-label="Interactive 3D batting cage and stadium simulator with pitch tracking and mini PCI"></canvas>
+              <canvas id="pci-hud-canvas" aria-hidden="true"></canvas>
             </div>
-
-            <div class="slider-field">
-              <div class="slider-head">
-                <label for="angle-slider">Launch Angle</label>
-                <span class="tabular-nums" id="angle-val" style="color:var(--accent);">27°</span>
+            <div class="cage-action-row">
+              <div style="display:flex;flex-wrap:wrap;gap:0.45rem;align-items:center;">
+                <button type="button" id="cage-swing-btn" class="btn btn-primary btn-sm">Throw Pitch</button>
+                <button type="button" id="cage-demo-btn" class="btn btn-secondary btn-sm">Demo High HR</button>
+                <button type="button" id="cage-pci-mode-btn" class="btn btn-secondary btn-sm" aria-pressed="false">PCI: Manual</button>
+                <button type="button" id="cage-sound-btn" class="btn btn-secondary btn-sm" aria-pressed="true">Sound: On</button>
               </div>
-              <input type="range" id="angle-slider" min="-10" max="55" value="27" step="1">
+              <span id="cage-pitch-note" class="tabular-nums" style="font-size:0.82rem;color:var(--text-secondary);">Aim PCI with mouse or WASD · Press Space to pitch &amp; swing</span>
+            </div>
+            <div class="hitlab-readout hitlab-readout--five">
+              <div>
+                <div class="hitlab-stat-label">Exit Velo</div>
+                <div class="hitlab-stat-val tabular-nums" id="hitlab-ev">-- mph</div>
+              </div>
+              <div>
+                <div class="hitlab-stat-label">Launch Angle</div>
+                <div class="hitlab-stat-val tabular-nums" id="hitlab-la">--°</div>
+              </div>
+              <div>
+                <div class="hitlab-stat-label">Distance</div>
+                <div class="hitlab-stat-val tabular-nums" id="hitlab-dist">-- ft</div>
+              </div>
+              <div>
+                <div class="hitlab-stat-label">Peak Height</div>
+                <div class="hitlab-stat-val tabular-nums" id="hitlab-apex">-- ft</div>
+              </div>
+              <div>
+                <div class="hitlab-stat-label">HitTrax Call</div>
+                <div class="hitlab-stat-val" id="hitlab-outcome">Step In Box</div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <div class="kicker-line">Quick Swing Presets</div>
-            <div class="segmented-group" id="hitlab-presets" style="width:100%;justify-content:space-between;margin-bottom:0.85rem;">
-              <button type="button" class="segmented-btn" data-velo="92" data-angle="-6" aria-pressed="false">Grounder</button>
-              <button type="button" class="segmented-btn" data-velo="98" data-angle="16" aria-pressed="false">Line Drive</button>
-              <button type="button" class="segmented-btn" data-velo="104" data-angle="27" aria-pressed="true">Barrel HR</button>
-              <button type="button" class="segmented-btn" data-velo="82" data-angle="48" aria-pressed="false">Pop-Up</button>
+          <div class="studio-controls-card">
+            <div class="bat-spec-box" id="bat-spec-box">
+              <div class="meta-line" id="bat-spec-meta" style="margin-bottom:0.25rem;">2-Piece Hybrid · Heavy End-Load · 2 5/8" Barrel</div>
+              <h3 id="bat-spec-name">2026 DeMarini The Goods</h3>
+              <div id="bat-preview-svg" class="bat-preview-wrap" aria-hidden="true"></div>
+              <p id="bat-spec-desc">X14 Alloy Barrel + 1375 Composite Handle + Tremor End Cap built for deep upper-deck power.</p>
             </div>
-            <a class="btn btn-secondary btn-sm" href="detail.html?id=launch-angle-exit-velo" style="width:100%;">Open Full Barrel Lesson</a>
+
+            <div class="hittrax-spray-box">
+              <div class="spray-head">
+                <div>
+                  <div class="kicker-line" style="margin-bottom:0.1rem;">HitTrax Spray Chart</div>
+                  <div id="spray-stadium-label" class="tabular-nums" style="font-size:0.8rem;color:var(--text-secondary);">Fenway Park · 310 LF · 420 CF · 302 RF</div>
+                </div>
+                <div style="text-align:right;">
+                  <div id="session-count-pill" class="tabular-nums" style="font-size:0.82rem;font-weight:700;color:var(--accent);">0 HR · 0 Hits</div>
+                  <button type="button" id="spray-clear-btn" class="btn-link-clear">Clear Chart</button>
+                </div>
+              </div>
+              <canvas id="hittrax-spray-canvas" width="320" height="205" aria-label="HitTrax field spray chart"></canvas>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center;justify-content:space-between;">
+              <span class="tabular-nums" id="count-readout" style="font-size:0.85rem;font-weight:600;color:var(--text-primary);">Count: 0-0 · Outs: 0</span>
+              <a class="btn btn-secondary btn-sm" href="detail.html?id=launch-angle-exit-velo">Open Barrel Lesson</a>
+            </div>
           </div>
         </div>
       </div>

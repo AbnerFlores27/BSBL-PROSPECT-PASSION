@@ -36,8 +36,8 @@ Every one of the 8 seeded scenarios includes tailored analysis from all five exp
 ├── server.js          # Express server, cookie auth, static hosting, REST API endpoints
 ├── db.js              # PostgreSQL schema init, 8-scenario seeder, scrypt auth, in-memory fallback
 ├── data.js            # Shared seed data (8 scenarios, 5 experts, fun facts, Opening Day ISO)
-├── app.js             # Client-side controller (theme, nav, SVG diagrams, filters, CRUD, auth)
-├── styles.css         # Grey + powder-blue light theme, navy-grey dark mode, 3-breakpoint grids
+├── ui.js              # Client-side controller (theme, nav, SVG diagrams, filters, CRUD, auth)
+├── styles.css         # Daylight ballpark theme, clean Night Mode, RGB LED accent strip, responsive grids
 ├── index.html         # View 1: Home / Dashboard
 ├── scenarios.html     # View 2: Scenario Library (search, filter, sort, pagination)
 ├── detail.html        # View 3: Scenario Deep-Dive (5 experts, meters, SVG diagram, rating, trivia)
@@ -110,8 +110,8 @@ When `process.env.DATABASE_URL` is set (Replit PostgreSQL), `db.js` initializes 
 
 ## 7. Theme, Accessibility & Responsive Design (`styles.css`)
 
-- **Light Theme:** Grey canvas (`#f4f6f8`), white surfaces (`#ffffff`), powder blue accents (`#a9c6e3` / `#e8f1fa`), WCAG AA primary accent ink (`#2c649c`), text (`#14202e` / `#475569`).
-- **Dark Theme (`[data-theme="dark"]`):** Deep navy-grey canvas (`#0d1520`), slate-navy surfaces (`#162232`), softened powder-blue accents (`#7cb6f2` / `#93c5fd`), persisted in `localStorage`.
+- **Light Theme (Default):** Clean white surfaces (`#ffffff`) on crisp canvas (`rgb(246, 248, 252)`), royal blue accent (`rgb(24, 78, 158)`), turf green, seam red, and a smooth moving rainbow RGB LED trim rail.
+- **Dark Theme (`[data-theme="dark"]`):** Deep stadium navy (`rgb(14, 20, 32)`), slate surfaces (`rgb(22, 31, 48)`), high-contrast sky blue accents (`rgb(88, 166, 255)`), persisted in `localStorage`.
 - **Breakpoints:**
   - Desktop (`>= 1024px`): 3×2 expert card grid (5 experts + Key Rule card), 2-column hero split, 4-card stats strip, side-by-side comparison.
   - Tablet (`768px–1023px`): 2-column flexbox/grid layout.

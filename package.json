@@ -6,14 +6,15 @@
   "scripts": {
     "dev": "PORT=5000 node server.js",
     "start": "node server.js",
-    "build": "node --check server.js && node --check db.js && node --check data.js && node --check ui.js",
-    "lint": "node --check server.js && node --check db.js && node --check data.js && node --check ui.js"
+    "build": "node --check server.js && node --check db.js && node --check data.js && node --check ui.js && node --check stadium3d.js",
+    "lint": "node --check server.js && node --check db.js && node --check data.js && node --check ui.js && node --check stadium3d.js"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "express": "^5.3.0",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "three": "^0.187.0"
   }
 }
