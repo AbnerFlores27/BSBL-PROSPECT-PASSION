@@ -39,6 +39,7 @@
     <nav id="site-nav" class="site-nav" aria-label="Main">
       <a href="index.html" aria-current="page">Home</a>
       <a href="scenarios.html">Scenarios</a>
+      <a href="training.html">Training Lab</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html">My Playbook</a>
       <a href="login.html">Log In</a>
@@ -67,6 +68,8 @@
         <p class="hero-lead">Skip confusing rulebooks. Test Statcast swing physics live, walk through real diamond plays step by step, and read five plain-English viewpoints on every play.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="scenarios.html">Explore All 8 Plays</a>
+          <a class="btn btn-secondary" href="onboarding.html">AI Player Checkup</a>
+          <a class="btn btn-secondary" href="training.html">Drill Videos &amp; 20-Q Quiz</a>
           <a class="btn btn-secondary" href="#gameday-studio" id="hero-open-hitlab">Open Broadcast Studio</a>
         </div>
       </div>
@@ -192,6 +195,25 @@
               <button type="button" class="segmented-btn" data-pitch="changeup" aria-pressed="false">Change</button>
             </div>
           </div>
+
+          <div class="venue-group">
+            <span class="venue-label">Wind</span>
+            <div class="segmented-group" id="wind-tabs" role="group" aria-label="Choose stadium wind">
+              <button type="button" class="segmented-btn" data-wind="calm" aria-pressed="true">Calm</button>
+              <button type="button" class="segmented-btn" data-wind="out10" aria-pressed="false">10 Out</button>
+              <button type="button" class="segmented-btn" data-wind="in12" aria-pressed="false">12 In</button>
+              <button type="button" class="segmented-btn" data-wind="cross8" aria-pressed="false">8 Cross</button>
+            </div>
+          </div>
+
+          <div class="venue-group">
+            <span class="venue-label">Camera</span>
+            <div class="segmented-group" id="camera-tabs" role="group" aria-label="Choose 3D camera view">
+              <button type="button" class="segmented-btn" data-cam="pov" aria-pressed="true">Catcher POV</button>
+              <button type="button" class="segmented-btn" data-cam="broadcast" aria-pressed="false">Broadcast</button>
+              <button type="button" class="segmented-btn" data-cam="side" aria-pressed="false">Swing Lab</button>
+            </div>
+          </div>
         </div>
 
         <div class="hitlab-grid">
@@ -209,7 +231,7 @@
               </div>
               <span id="cage-pitch-note" class="tabular-nums" style="font-size:0.82rem;color:var(--text-secondary);">Aim PCI with mouse or WASD · Press Space to pitch &amp; swing</span>
             </div>
-            <div class="hitlab-readout hitlab-readout--five">
+            <div class="hitlab-readout hitlab-readout--six">
               <div>
                 <div class="hitlab-stat-label">Exit Velo</div>
                 <div class="hitlab-stat-val tabular-nums" id="hitlab-ev">-- mph</div>
@@ -223,8 +245,12 @@
                 <div class="hitlab-stat-val tabular-nums" id="hitlab-dist">-- ft</div>
               </div>
               <div>
-                <div class="hitlab-stat-label">Peak Height</div>
+                <div class="hitlab-stat-label">Peak / Hang</div>
                 <div class="hitlab-stat-val tabular-nums" id="hitlab-apex">-- ft</div>
+              </div>
+              <div>
+                <div class="hitlab-stat-label">Spin RPM</div>
+                <div class="hitlab-stat-val tabular-nums" id="hitlab-spin">-- rpm</div>
               </div>
               <div>
                 <div class="hitlab-stat-label">HitTrax Call</div>
@@ -371,6 +397,18 @@
       <div class="bento-side-stack">
         <article class="card explore-card">
           <div>
+            <div class="meta-line">8 Videos · 20-Q Diagnosis</div>
+            <h3>Training Lab &amp; Flaw Quiz</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Watch side-by-side swing &amp; fielding fix videos and get custom drills from the 20-question quiz.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            <a class="btn btn-primary btn-sm" href="training.html">Watch Drills</a>
+            <a class="btn btn-secondary btn-sm" href="training.html#diagnostic-quiz-section">Take 20-Q Quiz</a>
+          </div>
+        </article>
+
+        <article class="card explore-card">
+          <div>
             <div class="meta-line">Side by Side</div>
             <h3>Compare Two Plays</h3>
             <p style="color:var(--text-secondary);margin-bottom:0;">Pick any two plays and compare skill level, tactical risk, and scoring impact.</p>
@@ -405,6 +443,7 @@
     <nav class="footer-nav" aria-label="Footer">
       <a href="index.html">Home</a>
       <a href="scenarios.html">Scenarios</a>
+      <a href="training.html">Training Lab</a>
       <a href="compare.html">Compare</a>
       <a href="playbook.html">My Playbook</a>
       <a href="login.html">Log In</a>

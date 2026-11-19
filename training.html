@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiamondIQ — Training Lab &amp; 20-Q Diagnostic Quiz</title>
+<meta name="description" content="Watch interactive hitting and fielding drill videos and take the 20-question mechanics diagnostic quiz for custom recommendations.">
+<script>
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="ui.js" defer></script>
+<script src="drills-quiz.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#training-lab">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect x="14" y="2.5" width="16.2" height="16.2" rx="2.5" transform="rotate(45 14 2.5)" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="14" cy="14" r="3" fill="currentColor"/>
+      </svg>
+      <span>DiamondIQ</span>
+    </a>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="training.html" aria-current="page">Training Lab</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
+      </button>
+      <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
+</header>
+
+<main id="training-lab" class="container">
+  <section class="subpage-masthead">
+    <div>
+      <div class="kicker-line">Biomechanics Studio · 8 Drill Clips + 20-Q Assessment</div>
+      <h1>Pro Drill Clinic &amp; 20-Q Flaw Quiz</h1>
+      <p class="page-lead">Compare real hitting and fielding flaws side-by-side against pro fundamentals with themed bats, then answer 20 quick questions to get your personal fix plan.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:0.65rem;margin-top:1.1rem;">
+        <a class="btn btn-primary btn-sm" href="#video-clinic-section">Open Video Clinic</a>
+        <a class="btn btn-secondary btn-sm" href="#diagnostic-quiz-section">Take 20-Q Diagnostic Quiz</a>
+      </div>
+    </div>
+    <div class="subpage-masthead-media">
+      <img src="/src/assets/images/baseball_night_batter_swing_1794856804641.jpg" alt="Baseball batter swinging through the zone under bright stadium floodlights" referrerpolicy="no-referrer">
+    </div>
+  </section>
+
+  <!-- SECTION 1: Interactive Biomechanical Video Clinic -->
+  <section id="video-clinic-section" class="section-block gameday-studio" aria-labelledby="clinic-heading">
+    <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
+    <div class="studio-topbar">
+      <div>
+        <h2 id="clinic-heading">Interactive Mechanics &amp; Drill Video Clinic</h2>
+        <p>Pick any hitting or fielding flaw below. Scrub frame by frame, toggle slow-motion, or switch between all 5 themed bats.</p>
+      </div>
+      <div class="segmented-group" id="clinic-domain-filter" role="group" aria-label="Filter tutorial category">
+        <button type="button" class="segmented-btn" data-domain="all" aria-pressed="true">All (8)</button>
+        <button type="button" class="segmented-btn" data-domain="hitting" aria-pressed="false">Hitting (4)</button>
+        <button type="button" class="segmented-btn" data-domain="fielding" aria-pressed="false">Fielding (4)</button>
+      </div>
+    </div>
+
+    <div class="clinic-layout">
+      <aside class="clinic-sidebar" aria-label="Select tutorial lesson">
+        <div class="kicker-line" style="margin-bottom:0.5rem;">Choose Breakdown</div>
+        <div id="clinic-video-list" class="clinic-video-list"></div>
+      </aside>
+
+      <div class="clinic-stage-col">
+        <div class="clinic-toolbar">
+          <div class="segmented-group" id="video-mode-tabs" role="group" aria-label="Video comparison mode">
+            <button type="button" class="segmented-btn" data-vmode="split" aria-pressed="true">Side-by-Side</button>
+            <button type="button" class="segmented-btn" data-vmode="pro" aria-pressed="false">Pro Fix</button>
+            <button type="button" class="segmented-btn" data-vmode="flaw" aria-pressed="false">Flaw Spotlight</button>
+          </div>
+
+          <div class="clinic-bat-picker">
+            <label for="clinic-bat-select">Swing Bat:</label>
+            <select id="clinic-bat-select" aria-label="Select themed bat for video">
+              <option value="baum-gold">Baum Bat Gold (-3)</option>
+              <option value="goods-2026" selected>2026 The Goods (-3)</option>
+              <option value="goods-2022">2022 The Goods Chrome (-3)</option>
+              <option value="combat-rodeo">Combat Spec-A1 Rodeo (-3)</option>
+              <option value="combat-blue">Combat Members Club Blue (-3)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="clinic-canvas-frame">
+          <canvas id="clinic-video-canvas" width="760" height="428" role="img" aria-label="Interactive biomechanical tutorial video comparing common flaw and pro fix"></canvas>
+        </div>
+
+        <div class="clinic-transport">
+          <div style="display:flex;flex-wrap:wrap;gap:0.45rem;align-items:center;">
+            <button type="button" id="video-play-btn" class="btn btn-primary btn-sm">Pause</button>
+            <button type="button" id="video-restart-btn" class="btn btn-secondary btn-sm">Restart</button>
+            <button type="button" id="video-speed-btn" class="btn btn-secondary btn-sm" aria-pressed="false">Speed: 1.0x Live</button>
+          </div>
+          <label class="clinic-scrubber-wrap">
+            <span class="sr-only">Scrub tutorial frame</span>
+            <input type="range" id="video-seek-bar" min="0" max="100" value="0" aria-label="Scrub video timeline">
+          </label>
+        </div>
+
+        <div id="video-chapter-tabs" class="segmented-group clinic-chapters" role="group" aria-label="Jump to swing or fielding stage"></div>
+
+        <div class="clinic-breakdown-card">
+          <div class="meta-line" id="clinic-active-meta">Hitting · Connection</div>
+          <h3 id="clinic-active-title" style="font-size:1.35rem;margin-bottom:0.35rem;">Fix Bat Drag &amp; Late Barrel</h3>
+          <p id="clinic-active-summary" style="color:var(--text-secondary);margin-bottom:0.9rem;"></p>
+          <div id="clinic-drills-wrap" class="clinic-drills-grid"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.65rem;margin-top:0.95rem;">
+            <button type="button" id="save-clinic-drill-btn" class="btn btn-primary btn-sm">Save Drill to My Playbook</button>
+            <a id="clinic-play-link" class="btn btn-secondary btn-sm" href="detail.html?id=launch-angle-exit-velo">Open Related Scenario</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: 20-Question Diagnostic Quiz & Personalized Recommendations -->
+  <section id="diagnostic-quiz-section" class="section-block" aria-labelledby="diag-heading">
+    <div class="section-head">
+      <div>
+        <div class="kicker-line">20-Question Diagnostic Assessment</div>
+        <h2 id="diag-heading">Find What’s Off in Your Swing or Fielding</h2>
+        <p class="section-subtitle">Answer all 20 quick real-game questions below. You’ll get a custom breakdown, video fixes, exact drills, and bat pairing.</p>
+      </div>
+      <div class="segmented-group" id="quiz-part-tabs" role="group" aria-label="Filter quiz sections">
+        <button type="button" class="segmented-btn" data-qpart="all" aria-pressed="true">All 20</button>
+        <button type="button" class="segmented-btn" data-qpart="hitting" aria-pressed="false">1–10: Hitting</button>
+        <button type="button" class="segmented-btn" data-qpart="fielding" aria-pressed="false">11–20: Fielding</button>
+      </div>
+    </div>
+
+    <div class="quiz-progress-card">
+      <div class="quiz-progress-top">
+        <span style="font-weight:600;">Assessment Progress</span>
+        <span id="quiz-progress-text" class="tabular-nums" style="font-weight:700;color:var(--accent);">0 / 20 answered</span>
+      </div>
+      <div class="quiz-progress-track">
+        <div id="quiz-progress-bar" class="quiz-progress-fill" style="width:0%;"></div>
+      </div>
+    </div>
+
+    <div id="diagnostic-quiz-list" class="quiz-grid"></div>
+
+    <div class="quiz-submit-bar">
+      <div style="display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center;">
+        <button type="button" id="quiz-analyze-btn" class="btn btn-primary">Analyze My 20 Answers &amp; Build Plan</button>
+        <button type="button" id="quiz-sample-btn" class="btn btn-secondary">Preview Sample Diagnosis</button>
+        <button type="button" id="quiz-clear-btn" class="btn btn-ghost">Clear Answers</button>
+      </div>
+    </div>
+    <div id="quiz-error-banner" class="feedback-banner" role="status" aria-live="polite"></div>
+
+    <!-- Custom Diagnosis & Recommendation Panel (populated after submit) -->
+    <section id="quiz-report-panel" class="section-block gameday-studio quiz-report-panel" aria-live="polite" hidden></section>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p style="margin:0;">DiamondIQ — Five Experts. One Pitch.</p>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="training.html">Training Lab</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

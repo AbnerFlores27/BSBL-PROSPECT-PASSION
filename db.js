@@ -28,23 +28,20 @@ function verifyPassword(password, storedHash) {
   return crypto.timingSafeEqual(keyBuf, derivedBuf);
 }
 
-function hashSessionToken(token) {
-  return crypto.createHash('sha256').update(token).digest('hex');
-}
-
 /* =========================================================
    Local Persistent Store (when DATABASE_URL is unset)
    ========================================================= */
 function createLocalStore() {
   let nextUserId = 1;
   let nextEntryId = 1;
-  let users = []; // { id, username, email, passwordHash, createdAt }
+  let users = []; // { id, username, email, passwordHash, authProvider, googleUid, createdAt }
   const sessions = new Map(); // token -> { token, userId, expiresAt }
   const scenarios = SCENARIOS.map((s) => ({ ...s }));
   let playbookEntries = []; // { id, userId, title, body, rating, createdAt, updatedAt }
   let favorites = []; // { userId, scenarioId, createdAt }
   let triviaMastered = []; // { userId, scenarioId, createdAt }
   let scenarioRatings = []; // { userId, scenarioId, stars, updatedAt }
+  let onboardingProfiles = []; // { userId, profile, updatedAt }
 
   function loadFromDisk() {
     try {
@@ -57,6 +54,7 @@ function createLocalStore() {
       if (Array.isArray(raw.favorites)) favorites = raw.favorites;
       if (Array.isArray(raw.triviaMastered)) triviaMastered = raw.triviaMastered;
       if (Array.isArray(raw.scenarioRatings)) scenarioRatings = raw.scenarioRatings;
+      if (Array.isArray(raw.onboardingProfiles)) onboardingProfiles = raw.onboardingProfiles;
       if (Array.isArray(raw.sessions)) {
         for (const s of raw.sessions) {
           if (s && s.token && s.expiresAt > Date.now()) sessions.set(s.token, s);
@@ -77,7 +75,8 @@ function createLocalStore() {
         playbookEntries,
         favorites,
         triviaMastered,
-        scenarioRatings
+        scenarioRatings,
+        onboardingProfiles
       };
       const tmpPath = `${LOCAL_STORE_PATH}.tmp`;
       fs.writeFileSync(tmpPath, JSON.stringify(payload, null, 2), 'utf8');
@@ -90,7 +89,30 @@ function createLocalStore() {
   loadFromDisk();
 
   function toPublicUser(u) {
-    return u ? { id: u.id, username: u.username, email: u.email, createdAt: u.createdAt } : null;
+    if (!u) return null;
+    const hasOnboarding = onboardingProfiles.some((p) => p.userId === u.id);
+    return {
+      id: u.id,
+      username: u.username,
+      email: u.email,
+      authProvider: u.authProvider || 'password',
+      hasOnboarding,
+      createdAt: u.createdAt
+    };
+  }
+
+  function makeUniqueUsername(preferred, fallbackEmail) {
+    const rawBase = String(preferred || fallbackEmail.split('@')[0] || 'player')
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 22);
+    const base = rawBase.length >= 3 ? rawBase : `player_${Date.now().toString().slice(-4)}`;
+    let candidate = base;
+    let suffix = 1;
+    while (users.some((u) => u.username.toLowerCase() === candidate.toLowerCase())) {
+      candidate = `${base.slice(0, 24)}_${suffix++}`;
+    }
+    return candidate;
   }
 
   return {
@@ -116,11 +138,44 @@ function createLocalStore() {
         username: username.trim(),
         email: normEmail,
         passwordHash: hashPassword(password),
+        authProvider: 'password',
+        googleUid: null,
         createdAt: new Date().toISOString()
       };
       users.push(user);
       saveToDisk();
       return toPublicUser(user);
+    },
+
+    async upsertGoogleUser({ uid, email, displayName }) {
+      const normEmail = String(email || '').trim().toLowerCase();
+      if (!uid || !normEmail) {
+        const err = new Error('Google account missing email or user ID.');
+        err.code = 'INVALID';
+        throw err;
+      }
+      let existing = users.find(
+        (u) => (u.googleUid && u.googleUid === uid) || u.email.toLowerCase() === normEmail
+      );
+      if (existing) {
+        if (!existing.googleUid) {
+          existing.googleUid = uid;
+          saveToDisk();
+        }
+        return { user: toPublicUser(existing), isNewUser: false };
+      }
+      const user = {
+        id: nextUserId++,
+        username: makeUniqueUsername(displayName, normEmail),
+        email: normEmail,
+        passwordHash: hashPassword(crypto.randomBytes(24).toString('hex')),
+        authProvider: 'google',
+        googleUid: uid,
+        createdAt: new Date().toISOString()
+      };
+      users.push(user);
+      saveToDisk();
+      return { user: toPublicUser(user), isNewUser: true };
     },
 
     async verifyUserCredentials(identifier, password) {
@@ -160,6 +215,22 @@ function createLocalStore() {
         sessions.delete(token);
         saveToDisk();
       }
+    },
+
+    async saveOnboardingProfile(userId, profile) {
+      const now = new Date().toISOString();
+      const idx = onboardingProfiles.findIndex((p) => p.userId === userId);
+      const record = { userId, profile, updatedAt: now };
+      if (idx >= 0) onboardingProfiles[idx] = record;
+      else onboardingProfiles.push(record);
+      saveToDisk();
+      return record;
+    },
+
+    async getOnboardingProfile(userId) {
+      if (!userId) return null;
+      const found = onboardingProfiles.find((p) => p.userId === userId);
+      return found || null;
     },
 
     async listScenarios({ q = '', category = 'all', sort = 'az', userId = null } = {}) {
@@ -347,17 +418,24 @@ function createPostgresStore(connectionString) {
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
-        username_normalized TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
-        email_normalized TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
+        auth_provider TEXT NOT NULL DEFAULT 'password',
+        google_uid TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT NOT NULL DEFAULT 'password';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS google_uid TEXT;
       CREATE TABLE IF NOT EXISTS sessions (
-        token_hash CHAR(64) PRIMARY KEY,
+        token TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         expires_at TIMESTAMPTZ NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS onboarding_profiles (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        profile_json JSONB NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
       CREATE TABLE IF NOT EXISTS scenarios (
         id TEXT PRIMARY KEY,
@@ -473,6 +551,21 @@ function createPostgresStore(connectionString) {
     };
   }
 
+  async function buildUniquePgUsername(preferred, email) {
+    const rawBase = String(preferred || email.split('@')[0] || 'player')
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 22);
+    const base = rawBase.length >= 3 ? rawBase : `player_${Date.now().toString().slice(-4)}`;
+    let candidate = base;
+    let suffix = 1;
+    while (true) {
+      const check = await pool.query('SELECT 1 FROM users WHERE LOWER(username) = LOWER($1)', [candidate]);
+      if (check.rows.length === 0) return candidate;
+      candidate = `${base.slice(0, 24)}_${suffix++}`;
+    }
+  }
+
   return {
     mode: 'postgres',
     async ensureReady() {
@@ -490,8 +583,8 @@ function createPostgresStore(connectionString) {
       const normEmail = email.trim().toLowerCase();
       const cleanUser = username.trim();
       const existing = await pool.query(
-        'SELECT username, email FROM users WHERE username_normalized = $1 OR email_normalized = $2',
-        [cleanUser.toLowerCase(), normEmail]
+        'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
+        [cleanUser, normEmail]
       );
       if (existing.rows.length > 0) {
         const field = existing.rows[0].email.toLowerCase() === normEmail ? 'email' : 'username';
@@ -500,27 +593,97 @@ function createPostgresStore(connectionString) {
         throw err;
       }
       const res = await pool.query(
-        `INSERT INTO users
-           (username, username_normalized, email, email_normalized, password_hash)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, username, email, created_at`,
-        [cleanUser, cleanUser.toLowerCase(), normEmail, normEmail, hashPassword(password)]
+        'INSERT INTO users (username, email, password_hash, auth_provider) VALUES ($1, $2, $3, $4) RETURNING id, username, email, auth_provider, created_at',
+        [cleanUser, normEmail, hashPassword(password), 'password']
       );
       const r = res.rows[0];
-      return { id: r.id, username: r.username, email: r.email, createdAt: r.created_at };
+      return {
+        id: r.id,
+        username: r.username,
+        email: r.email,
+        authProvider: r.auth_provider || 'password',
+        hasOnboarding: false,
+        createdAt: r.created_at
+      };
+    },
+
+    async upsertGoogleUser({ uid, email, displayName }) {
+      await this.ensureReady();
+      const normEmail = String(email || '').trim().toLowerCase();
+      if (!uid || !normEmail) {
+        const err = new Error('Google account missing email or user ID.');
+        err.code = 'INVALID';
+        throw err;
+      }
+      const existing = await pool.query(
+        `SELECT u.id, u.username, u.email, u.auth_provider, u.google_uid, u.created_at,
+                (op.user_id IS NOT NULL) AS has_onboarding
+         FROM users u
+         LEFT JOIN onboarding_profiles op ON op.user_id = u.id
+         WHERE u.google_uid = $1 OR LOWER(u.email) = LOWER($2)
+         LIMIT 1`,
+        [uid, normEmail]
+      );
+      if (existing.rows.length > 0) {
+        const r = existing.rows[0];
+        if (!r.google_uid) {
+          await pool.query('UPDATE users SET google_uid = $1 WHERE id = $2', [uid, r.id]);
+        }
+        return {
+          user: {
+            id: r.id,
+            username: r.username,
+            email: r.email,
+            authProvider: r.auth_provider || 'google',
+            hasOnboarding: Boolean(r.has_onboarding),
+            createdAt: r.created_at
+          },
+          isNewUser: false
+        };
+      }
+      const uniqueUsername = await buildUniquePgUsername(displayName, normEmail);
+      const res = await pool.query(
+        `INSERT INTO users (username, email, password_hash, auth_provider, google_uid)
+         VALUES ($1, $2, $3, 'google', $4)
+         RETURNING id, username, email, auth_provider, created_at`,
+        [uniqueUsername, normEmail, hashPassword(crypto.randomBytes(24).toString('hex')), uid]
+      );
+      const r = res.rows[0];
+      return {
+        user: {
+          id: r.id,
+          username: r.username,
+          email: r.email,
+          authProvider: r.auth_provider || 'google',
+          hasOnboarding: false,
+          createdAt: r.created_at
+        },
+        isNewUser: true
+      };
     },
 
     async verifyUserCredentials(identifier, password) {
       await this.ensureReady();
       const needle = identifier.trim().toLowerCase();
       const res = await pool.query(
-        'SELECT id, username, email, password_hash, created_at FROM users WHERE username_normalized = $1 OR email_normalized = $1',
+        `SELECT u.id, u.username, u.email, u.password_hash, u.auth_provider, u.created_at,
+                (op.user_id IS NOT NULL) AS has_onboarding
+         FROM users u
+         LEFT JOIN onboarding_profiles op ON op.user_id = u.id
+         WHERE LOWER(u.username) = $1 OR LOWER(u.email) = $1`,
         [needle]
       );
       if (res.rows.length === 0) return null;
       const row = res.rows[0];
       if (!verifyPassword(password, row.password_hash)) return null;
-      return { id: row.id, username: row.username, email: row.email, createdAt: row.created_at };
+      return {
+        id: row.id,
+        username: row.username,
+        email: row.email,
+        authProvider: row.auth_provider || 'password',
+        hasOnboarding: Boolean(row.has_onboarding),
+        createdAt: row.created_at
+      };
     },
 
     async createSession(userId) {
@@ -528,8 +691,8 @@ function createPostgresStore(connectionString) {
       const token = crypto.randomBytes(32).toString('hex');
       const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
       await pool.query(
-        'INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)',
-        [hashSessionToken(token), userId, expiresAt]
+        'INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3)',
+        [token, userId, expiresAt]
       );
       return token;
     },
@@ -538,25 +701,61 @@ function createPostgresStore(connectionString) {
       if (!token) return null;
       await this.ensureReady();
       const res = await pool.query(
-        `SELECT u.id, u.username, u.email, u.created_at, s.expires_at
+        `SELECT u.id, u.username, u.email, u.auth_provider, u.created_at, s.expires_at,
+                (op.user_id IS NOT NULL) AS has_onboarding
          FROM sessions s
          JOIN users u ON u.id = s.user_id
-         WHERE s.token_hash = $1`,
-        [hashSessionToken(token)]
+         LEFT JOIN onboarding_profiles op ON op.user_id = u.id
+         WHERE s.token = $1`,
+        [token]
       );
       if (res.rows.length === 0) return null;
       const row = res.rows[0];
       if (new Date(row.expires_at).getTime() < Date.now()) {
-        await pool.query('DELETE FROM sessions WHERE token_hash = $1', [hashSessionToken(token)]);
+        await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
         return null;
       }
-      return { id: row.id, username: row.username, email: row.email, createdAt: row.created_at };
+      return {
+        id: row.id,
+        username: row.username,
+        email: row.email,
+        authProvider: row.auth_provider || 'password',
+        hasOnboarding: Boolean(row.has_onboarding),
+        createdAt: row.created_at
+      };
     },
 
     async deleteSession(token) {
       if (!token) return;
       await this.ensureReady();
-      await pool.query('DELETE FROM sessions WHERE token_hash = $1', [hashSessionToken(token)]);
+      await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+    },
+
+    async saveOnboardingProfile(userId, profile) {
+      await this.ensureReady();
+      const res = await pool.query(
+        `INSERT INTO onboarding_profiles (user_id, profile_json, updated_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (user_id) DO UPDATE SET
+           profile_json = EXCLUDED.profile_json,
+           updated_at = NOW()
+         RETURNING user_id, profile_json, updated_at`,
+        [userId, JSON.stringify(profile)]
+      );
+      const r = res.rows[0];
+      return { userId: r.user_id, profile: r.profile_json, updatedAt: r.updated_at };
+    },
+
+    async getOnboardingProfile(userId) {
+      if (!userId) return null;
+      await this.ensureReady();
+      const res = await pool.query(
+        'SELECT user_id, profile_json, updated_at FROM onboarding_profiles WHERE user_id = $1',
+        [userId]
+      );
+      if (res.rows.length === 0) return null;
+      const r = res.rows[0];
+      return { userId: r.user_id, profile: r.profile_json, updatedAt: r.updated_at };
     },
 
     async listScenarios({ q = '', category = 'all', sort = 'az', userId = null } = {}) {

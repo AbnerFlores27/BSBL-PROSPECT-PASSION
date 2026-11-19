@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiamondIQ — AI Player Checkup &amp; Onboarding Quiz</title>
+<meta name="description" content="Tell DiamondIQ Coach AI your level, swing feel, and fielding habits to get a custom plan with slow-mo fix videos and bat recommendations.">
+<script>
+(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="ui.js" defer></script>
+<script src="onboarding.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#onboarding-main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect x="14" y="2.5" width="16.2" height="16.2" rx="2.5" transform="rotate(45 14 2.5)" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="14" cy="14" r="3" fill="currentColor"/>
+      </svg>
+      <span>DiamondIQ</span>
+    </a>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="training.html">Training Lab</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
+        <span>Night Mode</span>
+      </button>
+      <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="rgb-led-rail" aria-hidden="true"></div>
+</header>
+
+<main id="onboarding-main" class="container">
+  <section class="subpage-masthead">
+    <div>
+      <div class="kicker-line" id="onboarding-kicker">New Player Checkup · AI Scouting Report</div>
+      <h1>AI Player Checkup Quiz</h1>
+      <p class="page-lead">Answer a quick scouting checkup on your experience, swing feel, fielding habits, and baseball rules. Our AI coach pinpoints what to fix first and gives you clickable slow-mo fix videos and a cage bat match.</p>
+    </div>
+    <div class="subpage-masthead-media">
+      <img src="/src/assets/images/baseball_night_batter_swing_1794856804641.jpg" alt="Batter taking a full swing under stadium lights during batting practice" referrerpolicy="no-referrer">
+    </div>
+  </section>
+
+  <p id="onboarding-welcome-note" class="feedback-banner is-success" hidden style="margin-top:0;margin-bottom:1.25rem;">
+    Welcome to DiamondIQ! Complete this quick AI checkup so your account unlocks personalized training video links and a custom playbook plan.
+  </p>
+
+  <section id="onboarding-form-card" class="card card-led-top" aria-labelledby="onboarding-form-heading">
+    <div class="rgb-led-rail" aria-hidden="true"></div>
+    <div class="onboarding-head-row">
+      <div>
+        <h2 id="onboarding-form-heading" style="margin-bottom:0.2rem;">Step 1–3: Tell Coach AI About Your Game</h2>
+        <p style="margin-bottom:0;color:var(--text-secondary);">Takes under 60 seconds — get exact flaws, drills, video clinic links, and cage bat setup.</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+        <button type="button" id="onboarding-sample-btn" class="btn btn-secondary btn-sm">Fill Sample Player</button>
+        <a href="playbook.html" class="btn btn-ghost btn-sm">Skip to Playbook</a>
+      </div>
+    </div>
+
+    <form id="onboarding-form" class="onboarding-form-grid" onsubmit="return false;" novalidate>
+      <div class="card-subtle onboarding-step-box">
+        <div class="kicker-line">Step 1 · Background &amp; Spot</div>
+        <div class="field">
+          <label for="ob-exp">What is your current playing level?</label>
+          <select id="ob-exp" name="experienceLevel" required>
+            <option value="">Choose your level...</option>
+            <option value="Beginner (New to baseball / 1st season)">Beginner (New to baseball / 1st season)</option>
+            <option value="Rec / Little League (Learning core skills)">Rec / Little League (Learning core skills)</option>
+            <option value="Travel / High School (Facing faster pitching)">Travel / High School (Facing faster pitching)</option>
+            <option value="Varsity / College Prep (Polishing high-level mechanics)">Varsity / College Prep (Polishing high-level mechanics)</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-top:0.85rem;">
+          <label for="ob-pos">Primary position on the diamond</label>
+          <select id="ob-pos" name="primaryPosition" required>
+            <option value="">Choose your position...</option>
+            <option value="Middle Infield (SS / 2B)">Middle Infield (SS / 2B)</option>
+            <option value="Corner Infield (3B / 1B)">Corner Infield (3B / 1B)</option>
+            <option value="Outfield (LF / CF / RF)">Outfield (LF / CF / RF)</option>
+            <option value="Catcher (C)">Catcher (C)</option>
+            <option value="Pitcher / Two-Way">Pitcher / Two-Way</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card-subtle onboarding-step-box">
+        <div class="kicker-line">Step 2 · Swing &amp; Glove Feel</div>
+        <div class="field">
+          <label for="ob-hit">What happens most often when you hit?</label>
+          <select id="ob-hit" name="hittingSymptom" required>
+            <option value="">Choose closest swing feel...</option>
+            <option value="I feel late on fastballs and jam pitches off my hands (possible Bat Drag)">Late on fastballs / jammed off hands (Bat Drag check)</option>
+            <option value="My barrel loops wide around the ball and I foul balls off or chop weak flares (Casting)">Barrel loops wide around ball / weak flares (Casting check)</option>
+            <option value="I roll my wrists early and pull hard or weak grounders to 3rd/SS (Rolling Over)">Pulling weak ground balls / rolling wrists early (Roll-Over check)</option>
+            <option value="I drift onto my front foot early and whiff or chop breaking balls (Lunging)">Drifting at off-speed / whiffing breaking balls (Lunging check)</option>
+            <option value="I square the ball up well and want higher home-run launch angles">Solid contact — want higher carry &amp; home-run launch angles</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-top:0.85rem;">
+          <label for="ob-field">What happens most often when you field or throw?</label>
+          <select id="ob-field" name="fieldingSymptom" required>
+            <option value="">Choose closest fielding habit...</option>
+            <option value="Ground balls bounce off my palm or I stab downward at hops (Glove Stabbing)">Balls bounce off glove / stabbing down at hops (Glove Stab check)</option>
+            <option value="I wait back on my heels and rush throws to 1st (Flat Footwork)">Waiting back on heels / rushing throws (Footwork check)</option>
+            <option value="I curve around fly balls or misjudge deep overhead balls (Banana Route)">Curving around fly balls / misreading depth (Route check)</option>
+            <option value="My throws fade short or lack carry from deep in the hole / outfield (Crow Hop)">Throws tail short or lack carry (Crow Hop &amp; Alignment check)</option>
+            <option value="Clean glove and routes — working on faster transfers and IQ">Clean glove &amp; routes — polishing game IQ &amp; relays</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card-subtle onboarding-step-box onboarding-step-wide">
+        <div class="kicker-line">Step 3 · 3-Question Baseball IQ Check</div>
+        <div class="onboarding-iq-grid">
+          <fieldset class="onboarding-iq-item">
+            <legend>1. Runner on 1st only, 0 outs. Ground ball hit to shortstop. Fastest out at 2nd?</legend>
+            <label><input type="radio" name="iqForceAnswer" value="step-2b"> Step on 2nd base before the runner arrives (Force Out)</label>
+            <label><input type="radio" name="iqForceAnswer" value="chase-tag"> Chase the runner and tag them with the glove</label>
+            <label><input type="radio" name="iqForceAnswer" value="throw-home"> Throw straight to home plate</label>
+          </fieldset>
+
+          <fieldset class="onboarding-iq-item">
+            <legend>2. Runners on 1st &amp; 2nd, 1 out. Umpire calls "Infield Fly!" What is the rule?</legend>
+            <label><input type="radio" name="iqInfieldFlyAnswer" value="batter-out-runners-advance-at-risk"> Batter is automatically out, even if dropped; runners advance at their own risk</label>
+            <label><input type="radio" name="iqInfieldFlyAnswer" value="automatic-double-play"> All runners are forced to sprint to the next base</label>
+            <label><input type="radio" name="iqInfieldFlyAnswer" value="foul-ball"> The pitch is re-thrown as a dead foul ball</label>
+          </fieldset>
+
+          <fieldset class="onboarding-iq-item">
+            <legend>3. What exit speed and launch angle create true Statcast "Barrel" home runs?</legend>
+            <label><input type="radio" name="iqLaunchAngleAnswer" value="26-30-deg-98-mph"> 98+ mph exit velo and ~26°–30° elevated arc</label>
+            <label><input type="radio" name="iqLaunchAngleAnswer" value="5-deg-grounder"> 5° hard grounders into the dirt</label>
+            <label><input type="radio" name="iqLaunchAngleAnswer" value="55-deg-popup"> 55° sky-high pop-ups straight up</label>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="field onboarding-step-wide">
+        <label for="ob-notes">In your own words: what feels wrong with your swing, throw, or game awareness? (Optional)</label>
+        <textarea id="ob-notes" name="playerNotes" rows="3" maxlength="800" placeholder="Example: When pitch velocity jumps above 80 mph I pull my front shoulder early, hit rollover grounders to 3rd base, and rush my transfers from shortstop..."></textarea>
+      </div>
+
+      <div class="onboarding-actions-row onboarding-step-wide">
+        <button type="submit" id="onboarding-submit-btn" class="btn btn-primary">Analyze My Game with AI Coach</button>
+        <span id="onboarding-status-text" style="font-size:0.9rem;color:var(--text-secondary);"></span>
+      </div>
+      <p id="onboarding-error" class="feedback-banner onboarding-step-wide" role="alert"></p>
+    </form>
+  </section>
+
+  <section id="onboarding-report" class="card card-led-top onboarding-report-card" hidden aria-live="polite" style="margin-top:1.75rem;"></section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p style="margin:0;">DiamondIQ — Five Experts. One Pitch.</p>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="index.html">Home</a>
+      <a href="scenarios.html">Scenarios</a>
+      <a href="training.html">Training Lab</a>
+      <a href="compare.html">Compare</a>
+      <a href="playbook.html">My Playbook</a>
+      <a href="login.html">Log In</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "DiamondIQ",
+  "description": "Interactive 3D baseball simulator, biomechanical drill video clinic, 5-expert play breakdowns, and AI player diagnostic quiz.",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

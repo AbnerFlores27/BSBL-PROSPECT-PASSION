@@ -4,13 +4,76 @@
 
 const path = require('path');
 const express = require('express');
+const { GoogleGenAI, Type, ThinkingLevel } = require('@google/genai');
 const { store } = require('./db');
 const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
 
 const app = express();
-const PORT = Number(process.env.PORT) || 5000;
+const PORT = Number(process.env.PORT) || 3000;
 const COOKIE_NAME = 'diamondiq_sid';
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+const VALID_CLINICS = {
+  'bat-drag': {
+    title: 'Fix Bat Drag (Rear Elbow Getting Stuck)',
+    domain: 'Hitting Mechanics',
+    scenarioId: 'launch-angle-exit-velo'
+  },
+  casting: {
+    title: 'Stop Casting & Looping the Barrel',
+    domain: 'Hitting Mechanics',
+    scenarioId: 'launch-angle-exit-velo'
+  },
+  'rolling-over': {
+    title: 'Fix Rolling Over (Weak Pull-Side Grounders)',
+    domain: 'Hitting Mechanics',
+    scenarioId: 'xwoba-metrics'
+  },
+  lunging: {
+    title: 'Stop Lunging Forward at Off-Speed Pitches',
+    domain: 'Hitting Mechanics',
+    scenarioId: 'xwoba-metrics'
+  },
+  'glove-stab': {
+    title: 'Fix Glove Stabbing & Stiff Funneling',
+    domain: 'Fielding Mechanics',
+    scenarioId: 'force-vs-tag'
+  },
+  'footwork-cadence': {
+    title: 'Fix Flat-Footed Infield Approaches (Right-Left-Catch)',
+    domain: 'Fielding Mechanics',
+    scenarioId: 'stealing-second'
+  },
+  'banana-route': {
+    title: 'Fix "Banana" Routes on Outfield Fly Balls',
+    domain: 'Fielding Mechanics',
+    scenarioId: 'tagging-up'
+  },
+  'crow-hop': {
+    title: 'Fix Weak Off-Balance Throws (Crow Hop & Cutoff)',
+    domain: 'Fielding Mechanics',
+    scenarioId: 'relay-throw'
+  }
+};
+
+const VALID_BATS = {
+  'baum-gold': 'Baum Bat Gold (PermaWood Composite -3)',
+  'goods-2026': '2026 DeMarini The Goods (Black/Red/Teal Hybrid -3)',
+  'goods-2022': '2022 DeMarini The Goods (Chrome Silver/Red Hybrid -3)',
+  'combat-rodeo': 'Combat MFG Spec-A1 Rodeo (Cream/Maroon 1-Pc Alloy -3)',
+  'combat-blue': 'Combat Spec-A1 Members Club Blue (Powder Blue 1-Pc Alloy -3)'
+};
+
+const VALID_SCENARIOS = {
+  'force-vs-tag': 'Force Out vs. Tag Out',
+  'infield-fly': 'The Infield Fly Rule',
+  'stealing-second': 'Stealing 2nd Base',
+  'launch-angle-exit-velo': 'Launch Angle & Exit Velocity',
+  'catcher-framing': 'Catcher Framing & Strike Zone',
+  'relay-throw': 'Relay & Cutoff Throws',
+  'xwoba-metrics': 'xwOBA vs. Batting Average',
+  'tagging-up': 'Tagging Up on Fly Balls'
+};
 
 app.use(express.json({ limit: '100kb' }));
 
@@ -128,7 +191,7 @@ app.post('/api/auth/register', async (req, res, next) => {
     });
     const token = await store.createSession(user.id);
     setSessionCookie(res, token);
-    return res.status(201).json({ user });
+    return res.status(201).json({ user, isNewUser: true, needsOnboarding: true });
   } catch (err) {
     if (err.code === 'CONFLICT') {
       return res.status(409).json({ error: err.message });
@@ -157,7 +220,7 @@ app.post('/api/auth/login', async (req, res, next) => {
 
     const token = await store.createSession(user.id);
     setSessionCookie(res, token);
-    return res.json({ user });
+    return res.json({ user, needsOnboarding: !user.hasOnboarding });
   } catch (err) {
     return next(err);
   }
@@ -172,6 +235,253 @@ app.post('/api/auth/logout', async (req, res, next) => {
     return res.json({ ok: true });
   } catch (err) {
     return next(err);
+  }
+});
+
+/* =========================================================
+   AI First-Time Player Checkup Quiz & Onboarding Profile
+   ========================================================= */
+app.get('/api/onboarding/me', async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.json({ profile: null });
+    }
+    const record = await store.getOnboardingProfile(req.user.id);
+    return res.json({ profile: record ? record.profile : null, updatedAt: record ? record.updatedAt : null });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.post('/api/ai/onboarding-quiz', async (req, res) => {
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  if (!apiKey) {
+    return res.status(503).json({
+      error: 'Gemini AI Coach is not configured yet (missing GEMINI_API_KEY in environment).'
+    });
+  }
+
+  const body = req.body || {};
+  const experienceLevel = String(body.experienceLevel || '').trim();
+  const primaryPosition = String(body.primaryPosition || '').trim();
+  const hittingSymptom = String(body.hittingSymptom || '').trim();
+  const fieldingSymptom = String(body.fieldingSymptom || '').trim();
+  const iqForceAnswer = String(body.iqForceAnswer || '').trim();
+  const iqInfieldFlyAnswer = String(body.iqInfieldFlyAnswer || '').trim();
+  const iqLaunchAngleAnswer = String(body.iqLaunchAngleAnswer || '').trim();
+  const playerNotes = String(body.playerNotes || '').trim().slice(0, 800);
+
+  if (!experienceLevel || !primaryPosition || !hittingSymptom || !fieldingSymptom) {
+    return res.status(400).json({
+      error: 'Please select your experience level, position, swing feel, and fielding feel.'
+    });
+  }
+
+  // Deterministic Baseball IQ scoring on the 3 rule/stat questions
+  const iqChecks = [
+    {
+      label: 'Force Out vs. Tag Out',
+      correct: iqForceAnswer === 'step-2b',
+      answer: iqForceAnswer
+    },
+    {
+      label: 'Infield Fly Rule',
+      correct: iqInfieldFlyAnswer === 'batter-out-runners-advance-at-risk',
+      answer: iqInfieldFlyAnswer
+    },
+    {
+      label: 'Barrel Launch Angle & Exit Velo',
+      correct: iqLaunchAngleAnswer === '26-30-deg-98-mph',
+      answer: iqLaunchAngleAnswer
+    }
+  ];
+  const iqCorrectCount = iqChecks.filter((c) => c.correct).length;
+
+  const ai = new GoogleGenAI({
+    apiKey,
+    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
+  });
+
+  const clinicCatalogText = Object.entries(VALID_CLINICS)
+    .map(([id, info]) => `- "${id}": ${info.title} (${info.domain})`)
+    .join('\n');
+  const scenarioCatalogText = Object.entries(VALID_SCENARIOS)
+    .map(([id, title]) => `- "${id}": ${title}`)
+    .join('\n');
+  const batCatalogText = Object.entries(VALID_BATS)
+    .map(([id, label]) => `- "${id}": ${label}`)
+    .join('\n');
+
+  const promptText = `Analyze this baseball player's intake checkup and build a personalized, plain-English scouting report with recommended slow-mo video clinics and cage equipment.
+
+Player Profile:
+- Username: ${req.user ? req.user.username : 'Guest Player'}
+- Experience Level: ${experienceLevel}
+- Primary Position: ${primaryPosition}
+- Swing Symptom Reported: ${hittingSymptom}
+- Fielding Symptom Reported: ${fieldingSymptom}
+- Baseball IQ Check Score: ${iqCorrectCount}/3
+  * Q1 (Force Out on runner on 1B, ball hit to SS): ${iqForceAnswer || 'skipped'} (correct: step-2b)
+  * Q2 (Infield Fly Rule pop-up with 1B & 2B occupied, <2 outs): ${iqInfieldFlyAnswer || 'skipped'} (correct: batter-out-runners-advance-at-risk)
+  * Q3 (Statcast Barrel zone for elevated HRs): ${iqLaunchAngleAnswer || 'skipped'} (correct: 26-30-deg-98-mph)
+- Player's Own Words About Swing / Fielding Flaws & Goals: ${playerNotes || '(None typed)'}
+
+Available Playable Training Video Clinics (ONLY pick clinicId from this exact list):
+${clinicCatalogText}
+
+Available 5-Expert Rule/Statcast Scenario Lessons (ONLY pick scenarioId from this exact list):
+${scenarioCatalogText}
+
+Available 3D Batting Cage Bats (ONLY pick recommendedBatId from this exact list):
+${batCatalogText}
+
+Rules:
+- Keep language encouraging, crystal clear for a 9th-grade to varsity player, concrete, and accurate to real baseball mechanics & MLB/Statcast rules.
+- Pick 2 or 3 most relevant videoLinks matching their swing & fielding symptoms and playerNotes.
+- Pick 2 recommendedScenarios matching any IQ gaps or positional focus.
+- Pick the single best recommendedBatId matching their swing profile and experience level.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-4-hydrogen',
+      contents: promptText,
+      config: {
+        systemInstruction:
+          'You are Head Coach AI at DiamondIQ, an encouraging, ultra-clear MLB hitting and fielding biomechanics coach and sabermetrics educator.',
+        responseMimeType: 'application/json',
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            skillTier: {
+              type: Type.STRING,
+              enum: ['Beginner', 'Developing', 'Intermediate', 'Varsity / Advanced']
+            },
+            readinessScore: { type: Type.INTEGER },
+            headline: { type: Type.STRING },
+            summary: { type: Type.STRING },
+            swingDiagnosis: { type: Type.STRING },
+            fieldingDiagnosis: { type: Type.STRING },
+            iqBreakdown: { type: Type.STRING },
+            actionableTips: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            videoLinks: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  clinicId: {
+                    type: Type.STRING,
+                    enum: Object.keys(VALID_CLINICS)
+                  },
+                  reason: { type: Type.STRING }
+                },
+                required: ['clinicId', 'reason']
+              }
+            },
+            recommendedScenarios: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  scenarioId: {
+                    type: Type.STRING,
+                    enum: Object.keys(VALID_SCENARIOS)
+                  },
+                  reason: { type: Type.STRING }
+                },
+                required: ['scenarioId', 'reason']
+              }
+            },
+            recommendedBatId: {
+              type: Type.STRING,
+              enum: Object.keys(VALID_BATS)
+            },
+            batReason: { type: Type.STRING }
+          },
+          required: [
+            'skillTier',
+            'readinessScore',
+            'headline',
+            'summary',
+            'swingDiagnosis',
+            'fieldingDiagnosis',
+            'iqBreakdown',
+            'actionableTips',
+            'videoLinks',
+            'recommendedScenarios',
+            'recommendedBatId',
+            'batReason'
+          ]
+        }
+      }
+    });
+
+    const parsed = JSON.parse(response.text || '{}');
+    const chosenBatId = VALID_BATS[parsed.recommendedBatId] ? parsed.recommendedBatId : 'goods-2026';
+
+    const enrichedVideos = (Array.isArray(parsed.videoLinks) ? parsed.videoLinks : [])
+      .filter((v) => v && VALID_CLINICS[v.clinicId])
+      .slice(0, 3)
+      .map((v) => {
+        const meta = VALID_CLINICS[v.clinicId];
+        return {
+          clinicId: v.clinicId,
+          title: meta.title,
+          domain: meta.domain,
+          reason: String(v.reason || ''),
+          url: `training.html?clinic=${encodeURIComponent(v.clinicId)}&slow=1&bat=${encodeURIComponent(chosenBatId)}`
+        };
+      });
+
+    const enrichedScenarios = (Array.isArray(parsed.recommendedScenarios) ? parsed.recommendedScenarios : [])
+      .filter((s) => s && VALID_SCENARIOS[s.scenarioId])
+      .slice(0, 2)
+      .map((s) => ({
+        scenarioId: s.scenarioId,
+        title: VALID_SCENARIOS[s.scenarioId],
+        reason: String(s.reason || ''),
+        url: `detail.html?id=${encodeURIComponent(s.scenarioId)}`
+      }));
+
+    const finalProfile = {
+      createdAt: new Date().toISOString(),
+      inputs: {
+        experienceLevel,
+        primaryPosition,
+        hittingSymptom,
+        fieldingSymptom,
+        playerNotes
+      },
+      iqCorrectCount,
+      iqTotal: 3,
+      skillTier: parsed.skillTier || 'Developing',
+      readinessScore: Math.max(25, Math.min(99, Number(parsed.readinessScore) || 68)),
+      headline: String(parsed.headline || 'Personalized DiamondIQ Player Plan'),
+      summary: String(parsed.summary || ''),
+      swingDiagnosis: String(parsed.swingDiagnosis || ''),
+      fieldingDiagnosis: String(parsed.fieldingDiagnosis || ''),
+      iqBreakdown: String(parsed.iqBreakdown || ''),
+      actionableTips: Array.isArray(parsed.actionableTips) ? parsed.actionableTips.slice(0, 5) : [],
+      videoLinks: enrichedVideos,
+      recommendedScenarios: enrichedScenarios,
+      recommendedBatId: chosenBatId,
+      recommendedBatName: VALID_BATS[chosenBatId],
+      batReason: String(parsed.batReason || '')
+    };
+
+    if (req.user) {
+      await store.saveOnboardingProfile(req.user.id, finalProfile);
+    }
+
+    return res.json({ profile: finalProfile, saved: Boolean(req.user) });
+  } catch (err) {
+    console.error('Gemini Onboarding Quiz Error:', err);
+    return res.status(502).json({
+      error: `AI Coach request failed (${err.message || 'upstream error'}). Please try again.`
+    });
   }
 });
 

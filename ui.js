@@ -839,6 +839,8 @@
     const batRack = document.getElementById('bat-rack');
     const stadiumTabs = document.getElementById('stadium-tabs');
     const pitchTabs = document.getElementById('pitch-tabs');
+    const windTabs = document.getElementById('wind-tabs');
+    const cameraTabs = document.getElementById('camera-tabs');
     const swingBtn = document.getElementById('cage-swing-btn');
     const demoBtn = document.getElementById('cage-demo-btn');
     const pciModeBtn = document.getElementById('cage-pci-mode-btn');
@@ -848,6 +850,7 @@
     const laEl = document.getElementById('hitlab-la');
     const distEl = document.getElementById('hitlab-dist');
     const apexEl = document.getElementById('hitlab-apex');
+    const spinEl = document.getElementById('hitlab-spin');
     const outEl = document.getElementById('hitlab-outcome');
     const batSpecMeta = document.getElementById('bat-spec-meta');
     const batSpecName = document.getElementById('bat-spec-name');
@@ -927,14 +930,30 @@
       const LOG_W = 800;
       const LOG_H = 450;
 
-      let activeBatId = 'goods-2026';
+      const WIND_PRESETS = {
+        calm: { label: 'Calm 0 mph', vx: 0, vy: 0 },
+        out10: { label: '10 mph Out to CF', vx: 0, vy: 14.67 },
+        in12: { label: '12 mph In from CF', vx: 0, vy: -17.6 },
+        cross8: { label: '8 mph L->R Cross', vx: 11.73, vy: 2.0 }
+      };
+
+      const urlBat = new URLSearchParams(window.location.search).get('bat');
+      let activeBatId = urlBat && BATS[urlBat] ? urlBat : 'goods-2026';
       let activeStadiumId = 'fenway';
       let selectedPitchType = 'mix';
+      let activeWindId = 'calm';
+      let activeCameraMode = 'pov';
       let autoPciMode = false;
       let soundOn = true;
       let audioCtx = null;
       let cageEngaged = false;
       let engine3D = null;
+
+      if (batRack) {
+        batRack.querySelectorAll('[data-bat]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b.dataset.bat === activeBatId));
+        });
+      }
 
       // Session / Game State
       const session = {
@@ -971,6 +990,9 @@
         contactResolved: false,
         flashTimer: 0,
         flashColor: '#38bdf8',
+        impactBurstId: 0,
+        impactPos: null,
+        windVec: { x: 0, y: 0 },
         calloutText: '',
         calloutSub: '',
         calloutTimer: 0,
@@ -989,6 +1011,7 @@
           engine3D = window.createStadium3DEngine(cageCanvas, BATS, STADIUMS);
           engine3D.setStadium(activeStadiumId);
           engine3D.setBat(activeBatId);
+          engine3D.setCameraMode(activeCameraMode);
           const dpr = engine3D.isSoftwareGl ? Math.min(window.devicePixelRatio || 1, 1.25) : Math.min(window.devicePixelRatio || 1, 2);
           engine3D.resize(Math.round(LOG_W * dpr), Math.round(LOG_H * dpr));
         } catch (err) {
@@ -1000,45 +1023,153 @@
         window.addEventListener('diamondiq-3d-ready', tryInit3D, { once: true });
       }
 
-      function playBatAudio(kind) {
+      let noiseBuffer = null;
+      let masterBus = null;
+
+      function ensureAudioBus() {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        if (!audioCtx) audioCtx = new Ctx();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (!masterBus) {
+          const comp = audioCtx.createDynamicsCompressor();
+          comp.threshold.value = -12;
+          comp.knee.value = 14;
+          comp.ratio.value = 8;
+          comp.attack.value = 0.001;
+          comp.release.value = 0.14;
+          const master = audioCtx.createGain();
+          master.gain.value = 0.9;
+          comp.connect(master);
+          master.connect(audioCtx.destination);
+          masterBus = comp;
+        }
+        if (!noiseBuffer) {
+          const len = Math.floor(audioCtx.sampleRate * 2.2);
+          noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+          const data = noiseBuffer.getChannelData(0);
+          let b0 = 0;
+          let b1 = 0;
+          for (let i = 0; i < len; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.96 * b0 + white * 0.18;
+            b1 = 0.72 * b1 + white * 0.35;
+            data[i] = Math.max(-1, Math.min(1, white * 0.55 + b0 * 0.25 + b1 * 0.2));
+          }
+        }
+        return audioCtx;
+      }
+
+      function spawnNoiseBurst(ctx, dest, startTime, dur, filterType, freqStart, freqEnd, q, gainPeak) {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuffer;
+        src.loop = true;
+        const filt = ctx.createBiquadFilter();
+        filt.type = filterType;
+        filt.Q.value = q;
+        filt.frequency.setValueAtTime(freqStart, startTime);
+        if (freqEnd !== freqStart) {
+          filt.frequency.exponentialRampToValueAtTime(Math.max(40, freqEnd), startTime + dur);
+        }
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, startTime);
+        g.gain.linearRampToValueAtTime(gainPeak, startTime + Math.min(0.0025, dur * 0.15));
+        g.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
+        src.connect(filt);
+        filt.connect(g);
+        g.connect(dest);
+        src.start(startTime);
+        src.stop(startTime + dur + 0.02);
+      }
+
+      function spawnModalTone(ctx, dest, startTime, dur, type, freqStart, freqEnd, gainPeak) {
+        const osc = ctx.createOscillator();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freqStart, startTime);
+        if (freqEnd !== freqStart) {
+          osc.frequency.exponentialRampToValueAtTime(Math.max(30, freqEnd), startTime + dur);
+        }
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, startTime);
+        g.gain.linearRampToValueAtTime(gainPeak, startTime + 0.0015);
+        g.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
+        osc.connect(g);
+        g.connect(dest);
+        osc.start(startTime);
+        osc.stop(startTime + dur + 0.02);
+      }
+
+      function playBatAudio(kind, barrelFactor = 0.85, isHr = false) {
         if (!soundOn) return;
         try {
-          const Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx) return;
-          if (!audioCtx) audioCtx = new Ctx();
-          if (audioCtx.state === 'suspended') audioCtx.resume();
-          const now = audioCtx.currentTime;
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          if (kind === 'wood') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(240, now);
-            osc.frequency.exponentialRampToValueAtTime(70, now + 0.08);
-            gain.gain.setValueAtTime(0.45, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-          } else if (kind === 'combat') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(1080, now);
-            osc.frequency.exponentialRampToValueAtTime(760, now + 0.25);
-            gain.gain.setValueAtTime(0.28, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.27);
-          } else if (kind === 'whiff') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(190, now);
-            osc.frequency.exponentialRampToValueAtTime(110, now + 0.09);
-            gain.gain.setValueAtTime(0.16, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-          } else {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(610, now);
-            osc.frequency.exponentialRampToValueAtTime(420, now + 0.22);
-            gain.gain.setValueAtTime(0.32, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+          const ctx = ensureAudioBus();
+          if (!ctx || !masterBus) return;
+          const now = ctx.currentTime;
+          const power = Math.max(0.45, Math.min(1.15, 0.55 + barrelFactor * 0.55));
+
+          if (kind === 'whiff') {
+            // Clean bat wind whoosh + delayed catcher leather mitt pop
+            spawnNoiseBurst(ctx, masterBus, now, 0.12, 'bandpass', 320, 740, 2.2, 0.24);
+            spawnNoiseBurst(ctx, masterBus, now + 0.088, 0.04, 'bandpass', 1050, 480, 1.4, 0.36);
+            spawnModalTone(ctx, masterBus, now + 0.088, 0.055, 'triangle', 142, 62, 0.32);
+            return;
           }
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now);
-          osc.stop(now + 0.28);
+
+          if (kind === 'mitt') {
+            // Crisp catcher leather mitt pop without bat swing whoosh
+            spawnNoiseBurst(ctx, masterBus, now, 0.036, 'bandpass', 1120, 460, 1.35, 0.42);
+            spawnModalTone(ctx, masterBus, now, 0.055, 'triangle', 148, 58, 0.36);
+            return;
+          }
+
+          // 1. Sub-millisecond ball-on-barrel snap transient (every bat starts with a crisp physical crack)
+          spawnNoiseBurst(ctx, masterBus, now, 0.014, 'highpass', 1650, 950, 0.9, 0.85 * power);
+
+          if (kind === 'wood') {
+            // Solid PermaWood Baum Bat: dry, dense broadband crack + warm low wood thump + zero metal ring
+            spawnNoiseBurst(ctx, masterBus, now, 0.036, 'bandpass', 2450, 1180, 1.5, 0.95 * power);
+            spawnNoiseBurst(ctx, masterBus, now, 0.048, 'bandpass', 620, 290, 1.2, 0.65 * power);
+            spawnModalTone(ctx, masterBus, now, 0.026, 'triangle', 340, 112, 0.55 * power);
+            spawnModalTone(ctx, masterBus, now, 0.048, 'sine', 165, 74, 0.62 * power);
+            // Ballpark stadium slapback echo (wood crack echoing off stands)
+            spawnNoiseBurst(ctx, masterBus, now + 0.095, 0.055, 'bandpass', 1100, 620, 1.3, 0.22 * power);
+          } else if (kind === 'combat') {
+            // 1-Piece Alloy (Spec-A1): crisp crack transient + authentic hollow cylindrical hoop modes (2.18 kHz & 2.79 kHz)
+            spawnNoiseBurst(ctx, masterBus, now, 0.026, 'bandpass', 2600, 1400, 1.6, 0.72 * power);
+            spawnModalTone(ctx, masterBus, now, 0.045, 'sine', 155, 68, 0.52 * power);
+            spawnModalTone(ctx, masterBus, now + 0.001, 0.22, 'sine', 2185, 2145, 0.28 * power);
+            spawnModalTone(ctx, masterBus, now + 0.001, 0.17, 'sine', 2790, 2750, 0.16 * power);
+            spawnModalTone(ctx, masterBus, now + 0.002, 0.11, 'sine', 1435, 1410, 0.12 * power);
+            spawnNoiseBurst(ctx, masterBus, now + 0.09, 0.05, 'bandpass', 1600, 900, 1.6, 0.18 * power);
+          } else {
+            // 2-Piece Hybrid BBCOR (2026 & 2022 DeMarini The Goods): heavy alloy thwack + tight composite-damped hoop ring
+            spawnNoiseBurst(ctx, masterBus, now, 0.03, 'bandpass', 2150, 980, 1.4, 0.84 * power);
+            spawnModalTone(ctx, masterBus, now, 0.055, 'triangle', 148, 66, 0.65 * power);
+            spawnModalTone(ctx, masterBus, now + 0.001, 0.135, 'sine', 1940, 1900, 0.17 * power);
+            spawnModalTone(ctx, masterBus, now + 0.001, 0.105, 'sine', 2520, 2480, 0.1 * power);
+            spawnNoiseBurst(ctx, masterBus, now + 0.09, 0.05, 'bandpass', 1250, 740, 1.4, 0.2 * power);
+          }
+
+          // Distant stadium crowd swell on Home Runs!
+          if (isHr) {
+            const crowdSrc = ctx.createBufferSource();
+            crowdSrc.buffer = noiseBuffer;
+            crowdSrc.loop = true;
+            const crowdBand = ctx.createBiquadFilter();
+            crowdBand.type = 'bandpass';
+            crowdBand.frequency.setValueAtTime(620, now + 0.18);
+            crowdBand.frequency.linearRampToValueAtTime(980, now + 0.85);
+            crowdBand.Q.value = 0.75;
+            const crowdGain = ctx.createGain();
+            crowdGain.gain.setValueAtTime(0.0001, now + 0.16);
+            crowdGain.gain.linearRampToValueAtTime(0.24, now + 0.65);
+            crowdGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.15);
+            crowdSrc.connect(crowdBand);
+            crowdBand.connect(crowdGain);
+            crowdGain.connect(masterBus);
+            crowdSrc.start(now + 0.16);
+            crowdSrc.stop(now + 2.2);
+          }
         } catch {
           /* ignore */
         }
@@ -1058,7 +1189,20 @@
           if (evEl) evEl.textContent = hitInfo.exitVelo != null ? `${hitInfo.exitVelo} mph` : '-- mph';
           if (laEl) laEl.textContent = hitInfo.launchAngle != null ? `${hitInfo.launchAngle}°` : '--°';
           if (distEl) distEl.textContent = hitInfo.dist != null ? `${hitInfo.dist} ft` : '-- ft';
-          if (apexEl) apexEl.textContent = hitInfo.apex != null ? `${hitInfo.apex} ft` : '-- ft';
+          if (apexEl) {
+            if (hitInfo.apex != null && hitInfo.hangTime != null) {
+              apexEl.textContent = `${hitInfo.apex} ft · ${hitInfo.hangTime}s`;
+            } else {
+              apexEl.textContent = hitInfo.apex != null ? `${hitInfo.apex} ft` : '-- ft';
+            }
+          }
+          if (spinEl) {
+            if (hitInfo.backspinRpm != null) {
+              spinEl.textContent = `${hitInfo.backspinRpm >= 0 ? '+' : ''}${hitInfo.backspinRpm} rpm`;
+            } else {
+              spinEl.textContent = '-- rpm';
+            }
+          }
           if (outEl) {
             outEl.textContent = hitInfo.outcome || 'Pitch Ready';
             outEl.style.color = hitInfo.color || 'var(--accent)';
@@ -1173,48 +1317,101 @@
         });
       }
 
-      // Compute authentic 3D ball flight (ft, sub-stepped gravity + drag + Magnus backspin lift)
-      function simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg) {
+      // True 4th-Order Runge-Kutta (RK4) 120Hz Aerodynamics with Wind Vector, Drag, Magnus Lift/Swerve & Restitution
+      function simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg, backspinRpm = 1900, sidespinRpm = 0, startPos = null) {
         const st = STADIUMS[activeStadiumId] || STADIUMS.fenway;
-        const v0 = exitVelo * 1.46667;
+        const wind = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
+        const v0 = exitVelo * 1.46667; // mph -> ft/s
         const theta = (launchDeg * Math.PI) / 180;
         const phi = (sprayDeg * Math.PI) / 180;
 
-        let x = 0;
-        let y = 2.0;
-        let z = 3.0;
+        let x = startPos ? startPos.x : 0;
+        let y = startPos ? startPos.y : 1.4;
+        let z = startPos ? Math.max(1.2, startPos.z) : 2.65;
         let vx = v0 * Math.cos(theta) * Math.sin(phi);
         let vy = v0 * Math.cos(theta) * Math.cos(phi);
         let vz = v0 * Math.sin(theta);
 
-        const dt = 1 / 90;
+        // Air density by stadium environment (Fenway cooler night air, Dodger lighter dry evening air)
+        const airDensity = st.id === 'dodger' ? 0.96 : st.id === 'wrigley' ? 0.99 : st.id === 'fenway' ? 1.015 : 1.0;
+        const K = 0.00531 * airDensity;
+        let wx = (backspinRpm * 2 * Math.PI) / 60;
+        let wz = -(sidespinRpm * 2 * Math.PI) / 60;
+
+        const dt = 1 / 120;
         const points = [{ x, y, z, t: 0 }];
         let apex = z;
+        let apexTime = 0;
+        let apexPos = { x, y, z };
         let t = 0;
         let isHr = false;
         let wallHit = false;
+        let wallHitTime = null;
+        let hangTime = null;
         const fair = Math.abs(sprayDeg) <= 45;
 
-        for (let step = 0; step < 650; step++) {
+        const deriv = (cvx, cvy, cvz, cwx, cwz) => {
+          const rvx = cvx - wind.vx;
+          const rvy = cvy - wind.vy;
+          const rvz = cvz;
+          const rsp = Math.hypot(rvx, rvy, rvz);
+          if (rsp < 0.05) return { ax: 0, ay: 0, az: -32.174 };
+          const spinMag = Math.hypot(cwx, cwz);
+          const spinFactor = (0.12 * spinMag) / rsp;
+          const cd = 0.295 + 0.145 * Math.min(0.48, spinFactor);
+          const cl = spinFactor > 0.004 ? 1 / (2.32 + 0.4 / spinFactor) : 0;
+          const drag = K * cd * rsp;
+          const mag = spinMag > 0.1 ? (K * cl * rsp) / spinMag : 0;
+          return {
+            ax: -drag * rvx + mag * (-cwz * rvy),
+            ay: -drag * rvy + mag * (cwz * rvx - cwx * rvz),
+            az: -32.174 - drag * rvz + mag * (cwx * rvy)
+          };
+        };
+
+        for (let step = 0; step < 1020; step++) {
           t += dt;
-          const speed = Math.hypot(vx, vy, vz);
-          const drag = 0.00205 * speed;
-          const spinCarry = launchDeg > 8 && launchDeg < 45 ? 0.072 * speed : 0.025 * speed;
+          const sp = Math.hypot(vx, vy, vz);
+          if (sp < 1.8 && z <= 0.16) break;
 
-          const ax = -drag * vx;
-          const ay = -drag * vy;
-          const az = -32.174 - drag * vz + spinCarry;
+          if (z <= 0.15 && Math.abs(vz) < 3.5) {
+            const onDirt = Math.hypot(x, y) < 135;
+            const friction = onDirt ? 1.75 : 2.15;
+            vx *= Math.max(0, 1 - friction * dt);
+            vy *= Math.max(0, 1 - friction * dt);
+            vz = 0;
+            z = 0.12;
+            x += vx * dt;
+            y += vy * dt;
+          } else {
+            // 4th-Order Runge-Kutta Step
+            const k1 = deriv(vx, vy, vz, wx, wz);
+            const k2 = deriv(vx + 0.5 * dt * k1.ax, vy + 0.5 * dt * k1.ay, vz + 0.5 * dt * k1.az, wx, wz);
+            const k3 = deriv(vx + 0.5 * dt * k2.ax, vy + 0.5 * dt * k2.ay, vz + 0.5 * dt * k2.az, wx, wz);
+            const k4 = deriv(vx + dt * k3.ax, vy + dt * k3.ay, vz + dt * k3.az, wx, wz);
 
-          vx += ax * dt;
-          vy += ay * dt;
-          vz += az * dt;
+            const dx = vx + (dt / 6) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax) * 0.5;
+            const dy = vy + (dt / 6) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay) * 0.5;
+            const dz = vz + (dt / 6) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az) * 0.5;
 
-          x += vx * dt;
-          y += vy * dt;
-          z += vz * dt;
+            vx += (dt / 6) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax);
+            vy += (dt / 6) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay);
+            vz += (dt / 6) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az);
 
-          if (z > apex) apex = z;
-          if (step % 2 === 0) points.push({ x, y, z: Math.max(0, z), t });
+            x += dx * dt;
+            y += dy * dt;
+            z += dz * dt;
+
+            wx *= 1 - 0.055 * dt;
+            wz *= 1 - 0.055 * dt;
+          }
+
+          if (z > apex) {
+            apex = z;
+            apexTime = t;
+            apexPos = { x, y, z };
+          }
+          if (step % 2 === 0) points.push({ x, y, z: Math.max(0.12, z), t });
 
           const horiz = Math.hypot(x, y);
           const curPhi = Math.atan2(x, Math.max(1, y));
@@ -1222,25 +1419,52 @@
             const wDist = st.wallDist(curPhi);
             const wH = st.wallHeight(curPhi);
             if (horiz >= wDist) {
-              if (z > wH || st.id === 'cage') {
-                isHr = z > wH || (st.id === 'cage' && launchDeg >= 16);
+              if (z > wH || (st.id === 'cage' && launchDeg >= 14)) {
+                isHr = true;
               } else {
                 wallHit = true;
-                vy = -vy * 0.35;
-                vx = vx * 0.45;
-                vz = Math.max(4, vz * 0.4);
+                wallHitTime = t;
+                const nx = -x / Math.max(1, horiz);
+                const ny = -y / Math.max(1, horiz);
+                const vn = vx * nx + vy * ny;
+                if (vn < 0) {
+                  vx -= 1.46 * vn * nx;
+                  vy -= 1.46 * vn * ny;
+                }
+                vx *= 0.82;
+                vy *= 0.82;
+                vz = Math.max(2, vz * 0.5);
               }
             }
           }
 
-          if (z <= 0) {
-            if (!isHr && Math.abs(vz) > 18 && points.length < 280) {
-              z = 0.1;
-              vz = Math.abs(vz) * 0.34;
-              vx *= 0.68;
-              vy *= 0.68;
-            } else {
+          if (isHr && st.id !== 'cage') {
+            const curWall = st.wallDist(Math.max(-0.785, Math.min(0.785, curPhi)));
+            const pastWall = Math.max(0, horiz - curWall);
+            const bleacherFloor = Math.min(34, 8 + pastWall * 0.28);
+            if (pastWall > 14 && z <= bleacherFloor) {
+              z = bleacherFloor;
+              if (hangTime === null) hangTime = t;
+              points.push({ x, y, z, t });
               break;
+            }
+          }
+
+          if (z <= 0.12) {
+            if (hangTime === null) hangTime = t;
+            if (!isHr && Math.abs(vz) > 10 && points.length < 360) {
+              z = 0.14;
+              const onDirt = horiz < 135;
+              const eVert = onDirt ? 0.42 : 0.36;
+              vz = Math.abs(vz) * eVert;
+              const spinKick = backspinRpm < -200 ? 1.06 : backspinRpm > 1600 ? 0.72 : 0.85;
+              vx *= 0.78 * spinKick;
+              vy *= 0.78 * spinKick;
+              wx *= 0.35;
+              wz *= 0.4;
+            } else {
+              z = 0.12;
+              vz = 0;
             }
           }
         }
@@ -1248,6 +1472,7 @@
         const last = points[points.length - 1];
         const finalDist = Math.round(Math.hypot(last.x, last.y));
         const finalApex = Math.round(apex);
+        const finalHang = Number((hangTime != null ? hangTime : t).toFixed(2));
 
         let outcome = 'Out';
         let color = '#94a3b8';
@@ -1270,7 +1495,7 @@
           outcome = 'Infield Pop-Up';
           color = '#f87171';
         } else {
-          outcome = finalDist >= 320 ? 'Deep Warning-Track Fly' : 'Fly Out';
+          outcome = finalDist >= 325 ? 'Deep Warning-Track Fly' : 'Fly Out';
           color = '#fbbf24';
         }
 
@@ -1278,18 +1503,75 @@
           points,
           dist: finalDist,
           apex: finalApex,
+          apexTime,
+          apexPos,
+          hangTime: finalHang,
           exitVelo: Number(exitVelo.toFixed(1)),
           launchAngle: Math.round(launchDeg),
           sprayDeg: Math.round(sprayDeg),
+          backspinRpm: Math.round(backspinRpm),
+          sidespinRpm: Math.round(sidespinRpm),
           outcome,
           isHr: fair && isHr,
           wallHit,
+          wallHitTime,
+          wallThudPlayed: false,
           fair,
           color,
           endX: last.x,
           endY: last.y,
           totalTime: t
         };
+      }
+
+      // Precompute realistic RK4 pitched baseball path from mound (-55) across home plate (0)
+      function precomputePitchTrajectory(mph, typeKey, endX, endY, isDemo) {
+        const speedFtS = mph * 1.46667;
+        const targetX = endX * 0.88;
+        const targetY = 2.65 - endY * 1.0;
+        const dur = isDemo ? 0.68 : Math.max(0.54, Math.min(0.84, 57 / speedFtS));
+
+        // Realistic pitch spin axes: fastball rises against gravity (+vertical Magnus), curve drops hard (-vertical Magnus), slider sweeps (-X), changeup fades (+X)
+        let magX = 0;
+        let magY = 12; // ft/s^2 upward ride vs 32.174 gravity
+        if (typeKey === 'fastball') {
+          magX = isDemo ? 0 : 4.2;
+          magY = isDemo ? 16.5 : 15.8;
+        } else if (typeKey === 'slider') {
+          magX = -14.5;
+          magY = 2.5;
+        } else if (typeKey === 'curve') {
+          magX = -4.2;
+          magY = -11.5;
+        } else if (typeKey === 'changeup') {
+          magX = 11.2;
+          magY = 5.4;
+        }
+
+        // Solve initial velocity components so ball crosses exact (targetX, targetY, z=0) at t=dur
+        const startX = 0.85;
+        const startY = 6.12;
+        const startZ = -55.0;
+        const ayTotal = -32.174 + magY;
+        const axTotal = magX;
+        const vx0 = (targetX - startX - 0.5 * axTotal * dur * dur) / dur;
+        const vy0 = (targetY - startY - 0.5 * ayTotal * dur * dur) / dur;
+        const vz0 = (0 - startZ) / dur;
+
+        const samples = [];
+        const steps = 60;
+        for (let i = 0; i <= steps; i++) {
+          const p = (i / steps) * 1.06;
+          const t = p * dur;
+          // Aerodynamic drag slows pitch ~7% by plate while Magnus & gravity curve smoothly
+          const dragScale = 1 - 0.036 * t;
+          samples.push({
+            x: startX + vx0 * t * dragScale + 0.5 * axTotal * t * t,
+            y: Math.max(0.32, startY + vy0 * t + 0.5 * ayTotal * t * t),
+            z: startZ + vz0 * t * (1 - 0.025 * t)
+          });
+        }
+        return { dur, samples, targetX, targetY, descendDeg: Math.atan2(vy0 + ayTotal * dur, vz0) * (180 / Math.PI) };
       }
 
       function launchPitch(isDemoHr = false) {
@@ -1302,11 +1584,12 @@
             : selectedPitchType;
         const spec = PITCH_TYPES[chosenKey] || PITCH_TYPES.fastball;
         const mph = isDemoHr
-          ? 86
+          ? 89
           : Math.round(spec.mphMin + Math.random() * (spec.mphMax - spec.mphMin));
 
-        const endX = isDemoHr ? 0.04 : (Math.random() - 0.5) * 1.75;
-        const endY = isDemoHr ? 0.0 : (Math.random() - 0.5) * 1.65;
+        const endX = isDemoHr ? 0.03 : (Math.random() - 0.5) * 1.72;
+        const endY = isDemoHr ? 0.02 : (Math.random() - 0.5) * 1.62;
+        const traj = precomputePitchTrajectory(mph, chosenKey, endX, endY, isDemoHr);
 
         sim.phase = 'windup';
         sim.t = 0;
@@ -1322,11 +1605,11 @@
         sim.flightMaxIdx = 0;
         sim.pitch = {
           typeKey: chosenKey,
-          name: isDemoHr ? '86 mph Centerpiece Fastball' : `${mph} mph ${spec.name}`,
+          name: isDemoHr ? '89 mph Centerpiece 4-Seam' : `${mph} mph ${spec.name}`,
           mph,
-          dur: isDemoHr ? 0.72 : spec.dur,
-          dropFt: isDemoHr ? 0.75 : spec.dropFt,
-          breakX: isDemoHr ? 0.0 : spec.breakX,
+          dur: traj.dur,
+          samples: traj.samples,
+          descendDeg: traj.descendDeg,
           endX,
           endY
         };
@@ -1346,15 +1629,15 @@
         let curPciY = pci.y;
         if (sim.demoAutoSwing) {
           curPciX = sim.pitch.endX;
-          curPciY = sim.pitch.endY + 0.30; // PCI slightly BELOW ball -> 28° high-arc HR over wall!
+          curPciY = sim.pitch.endY + 0.28;
         } else if (autoPciMode) {
           curPciX = sim.pitch.endX + (Math.random() - 0.5) * 0.14;
           curPciY = sim.pitch.endY + 0.22 + (Math.random() - 0.5) * 0.16;
         }
 
         const dx = curPciX - sim.pitch.endX;
-        const underBallOffset = curPciY - sim.pitch.endY; // >0 means PCI is lower/under ball -> loft!
-        const distFromSweet = Math.hypot(dx * 0.9, underBallOffset);
+        const underBallOffset = curPciY - sim.pitch.endY; // >0 = PCI below ball -> loft & backspin
+        const distFromSweet = Math.hypot(dx * 0.92, underBallOffset);
 
         const maxReach = 0.95 * bat.sweetSpot;
         if (absTime > 0.23 || distFromSweet > maxReach) {
@@ -1370,28 +1653,50 @@
           sim.calloutText = call.toUpperCase();
           sim.calloutSub = absTime > 0.23 ? (timingErr < 0 ? 'Too Early' : 'Too Late') : 'Missed PCI';
           sim.calloutTimer = 1.3;
-          updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, outcome: call, color: '#f87171' });
+          updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, hangTime: null, backspinRpm: null, outcome: call, color: '#f87171' });
           if (swingBtn) swingBtn.textContent = 'Throw Pitch';
           return;
         }
 
-        const barrelFactor = Math.max(0.25, 1 - distFromSweet / maxReach) * Math.max(0.45, 1 - absTime * 2.2);
-        const swingMph = sim.demoAutoSwing ? 81 : 72 + barrelFactor * 10;
-        const exitVelo = 0.21 * sim.pitch.mph + 1.14 * bat.popMod * bat.weightMod * swingMph * (0.78 + 0.26 * barrelFactor);
+        // Physical Bat-Ball Collision: BBCOR / Wood COR (eA), radial sweet-spot loss, and attack plane vs pitch descent
+        const radialRatio = distFromSweet / maxReach;
+        const sweetSpotEff = Math.max(0.28, 1 - radialRatio * radialRatio * 0.72) * Math.max(0.45, 1 - absTime * 2.15);
+        const swingMph = sim.demoAutoSwing ? 80.5 : 71.5 + sweetSpotEff * 10.5;
+        const collisionQ = 0.206 * bat.popMod * (0.94 + 0.08 * sweetSpotEff);
+        const exitVelo = collisionQ * sim.pitch.mph + (1 + collisionQ) * (swingMph * bat.weightMod) * (0.79 + 0.23 * sweetSpotEff);
 
-        // Positive underBallOffset (PCI slightly below ball) produces realistic 26°-34° towering bombs!
-        let launchDeg = sim.demoAutoSwing ? 29 : 15 + underBallOffset * 44 + (Math.random() - 0.5) * 3;
+        // Oblique Bat-Ball Gear Effect: attack angle (~ +11 deg) + vertical offset drives launch angle & backspin RPM
+        const pitchDesc = sim.pitch.descendDeg || -7.5;
+        let launchDeg = sim.demoAutoSwing
+          ? 28
+          : 13.5 + (underBallOffset * 44) - pitchDesc * 0.22 + (Math.random() - 0.5) * 2.4;
         launchDeg = Math.max(-10, Math.min(56, launchDeg));
 
-        let sprayDeg = sim.demoAutoSwing ? -15 : timingErr * 155 + dx * 22;
+        // Vertical offset between bat centerline & ball center creates gear-effect spin (1 inch below center ~= +1500 rpm backspin!)
+        const backspinRpm = sim.demoAutoSwing
+          ? 2180
+          : Math.max(-1900, Math.min(3500, 1280 + underBallOffset * 2950 + (launchDeg - 15) * 26));
+
+        let sprayDeg = sim.demoAutoSwing ? -14 : timingErr * 155 + dx * 22;
         if (absTime > 0.16) {
           sprayDeg = timingErr < 0 ? -56 : 56;
         }
         sprayDeg = Math.max(-68, Math.min(68, sprayDeg));
 
-        playBatAudio(bat.soundType);
+        const sidespinRpm = Math.max(-1350, Math.min(1350, sprayDeg * 24 + dx * 420));
+
+        const contactStart = {
+          x: sim.pitch.endX * 0.88,
+          y: 1.5 - timingErr * 3.5,
+          z: 2.65 - sim.pitch.endY * 1.0
+        };
+
         sim.flashTimer = 1;
-        const flight = simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg);
+        sim.impactBurstId++;
+        sim.impactPos = { x: contactStart.x, y: contactStart.z, z: -contactStart.y };
+
+        const flight = simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg, backspinRpm, sidespinRpm, contactStart);
+        playBatAudio(bat.soundType, sweetSpotEff, flight.isHr);
         sim.flashColor = flight.color;
         sim.flight = { ...flight, playTime: 0 };
         sim.flightPoints = flight.points;
@@ -1405,7 +1710,7 @@
         if (!flight.fair) {
           if (session.strikes < 2) session.strikes++;
           sim.calloutText = 'FOUL BALL';
-          sim.calloutSub = `${flight.exitVelo} mph · ${flight.launchAngle}°`;
+          sim.calloutSub = `${flight.exitVelo} mph · ${flight.launchAngle}° · ${flight.backspinRpm} rpm`;
         } else {
           session.balls = 0;
           session.strikes = 0;
@@ -1435,10 +1740,15 @@
           launchAngle: flight.launchAngle,
           dist: flight.dist,
           apex: flight.apex,
+          hangTime: flight.hangTime,
+          backspinRpm: flight.backspinRpm,
           outcome: flight.outcome,
           color: flight.color
         });
-        if (pitchNote) pitchNote.textContent = `${flight.outcome} — ${flight.dist} ft (${flight.launchAngle}° launch, ${flight.apex} ft peak)`;
+        if (pitchNote) {
+          const spinWord = flight.backspinRpm >= 0 ? `${flight.backspinRpm} rpm backspin` : `${Math.abs(flight.backspinRpm)} rpm topspin`;
+          pitchNote.textContent = `${flight.outcome} — ${flight.dist} ft (${flight.launchAngle}° · ${spinWord})`;
+        }
         if (swingBtn) swingBtn.textContent = 'Throw Pitch';
       }
 
@@ -1494,20 +1804,23 @@
           }
         } else if (sim.phase === 'pitch' && sim.pitch) {
           sim.t += dt / sim.pitch.dur;
-          const p = Math.min(1.06, sim.t);
-          const easeP = Math.pow(p, 1.05);
-
-          // 3D world pitch trajectory from pitcher's release (0.9, 6.2, -55) to plate (px, py, 0)
-          const plateX = sim.pitch.endX * 0.88;
-          const plateY = 2.65 - sim.pitch.endY * 1.0; // strike zone center y=2.65 ft
-          const bx = 0.9 + (plateX - 0.9) * easeP - Math.sin(p * Math.PI * 0.65) * sim.pitch.breakX * 1.6 * (1 - p);
-          const by = 6.2 + (plateY - 6.2) * easeP + Math.sin(p * Math.PI) * sim.pitch.dropFt * 0.55;
-          const bz = -55 + 55 * easeP;
-          sim.pitchPos = { x: bx, y: Math.max(0.32, by), z: bz };
+          const pFrac = Math.min(1, sim.t / 1.06);
+          const samples = sim.pitch.samples;
+          if (samples && samples.length > 1) {
+            const fIdx = pFrac * (samples.length - 1);
+            const i0 = Math.floor(fIdx);
+            const i1 = Math.min(samples.length - 1, i0 + 1);
+            const alpha = fIdx - i0;
+            sim.pitchPos = {
+              x: samples[i0].x + (samples[i1].x - samples[i0].x) * alpha,
+              y: samples[i0].y + (samples[i1].y - samples[i0].y) * alpha,
+              z: samples[i0].z + (samples[i1].z - samples[i0].z) * alpha
+            };
+          }
 
           if (sim.demoAutoSwing || autoPciMode) {
             pci.targetX = sim.pitch.endX;
-            pci.targetY = sim.pitch.endY + (sim.demoAutoSwing ? 0.30 : 0.22);
+            pci.targetY = sim.pitch.endY + (sim.demoAutoSwing ? 0.28 : 0.22);
           }
 
           if (sim.demoAutoSwing && !sim.swingTriggered && sim.t >= 0.92) {
@@ -1522,6 +1835,7 @@
 
           if (sim.t >= 1.06 && sim.phase === 'pitch') {
             if (!sim.contactResolved) {
+              playBatAudio('mitt');
               const isStrike = Math.abs(sim.pitch.endX) <= 1.05 && Math.abs(sim.pitch.endY) <= 1.05;
               let call = isStrike ? 'Called Strike' : 'Ball';
               if (isStrike) {
@@ -1543,7 +1857,7 @@
               sim.calloutText = call.toUpperCase();
               sim.calloutSub = sim.pitch.name;
               sim.calloutTimer = 1.25;
-              updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, outcome: call, color: isStrike ? '#f87171' : '#38bdf8' });
+              updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, hangTime: null, backspinRpm: null, outcome: call, color: isStrike ? '#f87171' : '#38bdf8' });
               if (swingBtn) swingBtn.textContent = 'Throw Pitch';
             }
             sim.phase = 'idle';
@@ -1552,6 +1866,11 @@
           const fl = sim.flight;
           fl.playTime += dt * 1.05;
           sim.swingAngle = Math.min(0.95, sim.swingAngle + dt * 5.2);
+
+          if (fl.wallHit && !fl.wallThudPlayed && fl.wallHitTime && fl.playTime >= fl.wallHitTime) {
+            fl.wallThudPlayed = true;
+            playBatAudio('wood', 0.55, false);
+          }
 
           const progress = Math.min(1, fl.playTime / Math.max(0.8, fl.totalTime));
           const maxIdx = Math.max(1, Math.floor(progress * (fl.points.length - 1)));
@@ -1785,6 +2104,30 @@
           cageEngaged = true;
           selectedPitchType = btn.dataset.pitch;
           pitchTabs.querySelectorAll('[data-pitch]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        };
+      }
+
+      if (windTabs) {
+        windTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-wind]');
+          if (!btn) return;
+          cageEngaged = true;
+          activeWindId = btn.dataset.wind;
+          const wSpec = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
+          sim.windVec = { x: wSpec.vx, y: wSpec.vy };
+          windTabs.querySelectorAll('[data-wind]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (pitchNote) pitchNote.textContent = `Wind set to ${wSpec.label} · RK4 physics updated.`;
+        };
+      }
+
+      if (cameraTabs) {
+        cameraTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-cam]');
+          if (!btn) return;
+          cageEngaged = true;
+          activeCameraMode = btn.dataset.cam;
+          cameraTabs.querySelectorAll('[data-cam]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (engine3D && engine3D.setCameraMode) engine3D.setCameraMode(activeCameraMode);
         };
       }
 
@@ -2434,7 +2777,47 @@
       if (cancelBtn) cancelBtn.hidden = true;
     };
 
+    const aiCard = document.getElementById('playbook-ai-card');
+    const aiKicker = document.getElementById('pb-ai-kicker');
+    const aiHeading = document.getElementById('pb-ai-heading');
+    const aiSummary = document.getElementById('pb-ai-summary');
+    const aiLinksWrap = document.getElementById('pb-ai-links');
+
+    const loadAiProfile = async () => {
+      if (!aiCard) return;
+      try {
+        const data = await api('/api/onboarding/me');
+        const profile = data && data.profile;
+        if (!profile) {
+          aiCard.hidden = false;
+          if (aiKicker) aiKicker.textContent = 'New Feature · AI Player Checkup';
+          if (aiHeading) aiHeading.textContent = 'Get Your Personal Swing & Fielding Plan';
+          if (aiSummary) aiSummary.textContent = 'Take our 1-minute AI quiz to get tailored fix tips, slow-mo video links, and a matched 3D cage bat.';
+          if (aiLinksWrap) aiLinksWrap.innerHTML = '';
+          const retakeBtn = document.getElementById('pb-ai-retake-link');
+          if (retakeBtn) retakeBtn.textContent = 'Take AI Player Quiz';
+          return;
+        }
+        aiCard.hidden = false;
+        if (aiKicker) aiKicker.textContent = `${profile.skillTier} · Readiness ${profile.readinessScore}/100 · IQ ${profile.iqCorrectCount}/${profile.iqTotal}`;
+        if (aiHeading) aiHeading.textContent = profile.headline || 'Your AI Scouting Profile';
+        if (aiSummary) aiSummary.textContent = profile.summary || '';
+        if (aiLinksWrap) {
+          const vids = (profile.videoLinks || []).map(
+            (v) => `<a class="btn btn-secondary btn-sm" href="${escapeHtml(v.url)}">Video: ${escapeHtml(v.title)}</a>`
+          );
+          if (profile.recommendedBatId) {
+            vids.push(`<a class="btn btn-secondary btn-sm" href="index.html?bat=${encodeURIComponent(profile.recommendedBatId)}#gameday-studio">Test Bat: ${escapeHtml((profile.recommendedBatName || '').split(' (')[0])}</a>`);
+          }
+          aiLinksWrap.innerHTML = vids.join('');
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+
     if (!currentUser) {
+      if (aiCard) aiCard.hidden = true;
       if (loginNote) loginNote.hidden = false;
       if (userBadge) userBadge.hidden = true;
       if (entriesList) entriesList.innerHTML = '';
@@ -2648,7 +3031,7 @@
       };
     }
 
-    await Promise.all([loadEntries(), loadFavorites()]);
+    await Promise.all([loadEntries(), loadFavorites(), loadAiProfile()]);
   }
 
   /* =========================================================
@@ -2672,11 +3055,11 @@
           return;
         }
         try {
-          await api('/api/auth/login', {
+          const data = await api('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify({ identifier, password })
           });
-          window.location.href = 'playbook.html';
+          window.location.href = data && data.needsOnboarding ? 'onboarding.html?welcome=1' : 'playbook.html';
         } catch (err) {
           setBanner(errEl, 'error', err.message);
         }
@@ -2711,7 +3094,7 @@
             method: 'POST',
             body: JSON.stringify({ username, email, password })
           });
-          window.location.href = 'playbook.html';
+          window.location.href = 'onboarding.html?welcome=1';
         } catch (err) {
           setBanner(errEl, 'error', err.message);
         }

@@ -315,7 +315,7 @@ a:hover {
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 1.6rem;
+  gap: 1.25rem;
 }
 
 .site-nav a {
@@ -749,6 +749,10 @@ a:hover {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.hitlab-readout--six {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
 .cage-canvas-wrap {
   position: relative;
   border-radius: var(--radius-sm);
@@ -955,7 +959,8 @@ a:hover {
   .bat-rack {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .hitlab-readout--five {
+  .hitlab-readout--five,
+  .hitlab-readout--six {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -1965,6 +1970,542 @@ textarea:focus {
 }
 
 /* =========================================================
+   Training Lab: Video Clinic + 20-Question Diagnostic Quiz
+   ========================================================= */
+.clinic-layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 1.25rem;
+  padding: 1.25rem;
+  align-items: start;
+}
+
+.clinic-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.clinic-video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.clinic-item-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.clinic-item-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.clinic-item-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text-on);
+}
+
+.clinic-item-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.82;
+}
+
+.clinic-item-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.clinic-stage-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.clinic-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.clinic-bat-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clinic-bat-picker label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.clinic-bat-picker select {
+  min-height: 36px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.clinic-canvas-frame {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  background: #0b1526;
+}
+
+#clinic-video-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+.clinic-transport {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+}
+
+.clinic-scrubber-wrap {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+}
+
+.clinic-scrubber-wrap input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.clinic-chapters {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.clinic-breakdown-card {
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.clinic-drills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.drill-mini-card {
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.drill-mini-card h4 {
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+/* 20-Question Diagnostic Quiz */
+.quiz-progress-card {
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.quiz-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.55rem;
+}
+
+.quiz-progress-track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--accent);
+  transition: width 220ms var(--ease);
+}
+
+.quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.quiz-q-card {
+  margin: 0;
+  padding: 1.15rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.quiz-q-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-primary);
+  padding: 0;
+  margin-bottom: 0.25rem;
+}
+
+.quiz-q-num {
+  color: var(--accent);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.quiz-q-meta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.quiz-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.quiz-opt-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.quiz-opt-label:hover,
+.quiz-opt-label.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.quiz-opt-label input {
+  margin-top: 0.22rem;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.quiz-submit-bar {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Personalized Scouting Report */
+.quiz-report-panel {
+  overflow: hidden;
+}
+
+.report-head {
+  padding: 1.35rem 1.45rem 0.95rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-pillars-grid {
+  padding: 1.15rem 1.45rem 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.pillar-card {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+}
+
+.pillar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.pillar-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pillar-val {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.pillar-track {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.pillar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.report-cards-grid {
+  padding: 1rem 1.45rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.report-drill-box {
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  font-size: 0.9rem;
+}
+
+.report-bottom-grid {
+  padding: 0 1.45rem 1.45rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+/* =========================================================
+   AI Onboarding Checkup & Playbook AI Summary
+   ========================================================= */
+.onboarding-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.onboarding-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.onboarding-step-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.onboarding-step-wide {
+  grid-column: 1 / -1;
+}
+
+.onboarding-iq-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.onboarding-iq-item {
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.onboarding-iq-item legend {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  padding: 0 0.25rem;
+  margin-bottom: 0.45rem;
+}
+
+.onboarding-iq-item label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.onboarding-iq-item input[type="radio"] {
+  margin-top: 0.2rem;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.onboarding-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.onboarding-report-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.ob-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  padding: 1rem 1.45rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.ob-tips-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: var(--text-secondary);
+  font-size: 0.94rem;
+}
+
+.ob-video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.95rem;
+}
+
+.ob-scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.95rem;
+}
+
+.playbook-ai-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pb-ai-links-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.btn-google {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.68rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease), transform 150ms var(--ease);
+}
+
+.btn-google:hover {
+  border-color: var(--accent);
+  background: var(--bg-subtle);
+}
+
+/* =========================================================
    Responsive Breakpoints
    ========================================================= */
 @media (max-width: 1023px) {
@@ -1975,7 +2516,24 @@ textarea:focus {
   .playbook-layout,
   .auth-split,
   .subpage-masthead,
-  .bento-feature {
+  .bento-feature,
+  .clinic-layout,
+  .report-cards-grid,
+  .quiz-grid,
+  .onboarding-form-grid,
+  .onboarding-iq-grid,
+  .ob-video-grid,
+  .ob-scenario-grid,
+  .pb-ai-links-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-pillars-grid,
+  .ob-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-bottom-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2045,12 +2603,17 @@ textarea:focus {
   .hero-metrics,
   .hitlab-readout,
   .hitlab-readout--five,
+  .hitlab-readout--six,
   .card-grid,
   .expert-grid,
   .meters-grid,
   .trivia-options,
   .compare-controls,
-  .bento-side-stack {
+  .bento-side-stack,
+  .clinic-drills-grid,
+  .clinic-chapters,
+  .report-pillars-grid,
+  .ob-summary-strip {
     grid-template-columns: 1fr;
   }
 
