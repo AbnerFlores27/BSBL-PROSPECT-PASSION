@@ -28,6 +28,10 @@ function verifyPassword(password, storedHash) {
   return crypto.timingSafeEqual(keyBuf, derivedBuf);
 }
 
+function hashSessionToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 /* =========================================================
    Local Persistent Store (when DATABASE_URL is unset)
    ========================================================= */
@@ -343,12 +347,14 @@ function createPostgresStore(connectionString) {
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
+        username_normalized TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
+        email_normalized TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
       CREATE TABLE IF NOT EXISTS sessions (
-        token TEXT PRIMARY KEY,
+        token_hash CHAR(64) PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         expires_at TIMESTAMPTZ NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -484,8 +490,8 @@ function createPostgresStore(connectionString) {
       const normEmail = email.trim().toLowerCase();
       const cleanUser = username.trim();
       const existing = await pool.query(
-        'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
-        [cleanUser, normEmail]
+        'SELECT username, email FROM users WHERE username_normalized = $1 OR email_normalized = $2',
+        [cleanUser.toLowerCase(), normEmail]
       );
       if (existing.rows.length > 0) {
         const field = existing.rows[0].email.toLowerCase() === normEmail ? 'email' : 'username';
@@ -494,8 +500,11 @@ function createPostgresStore(connectionString) {
         throw err;
       }
       const res = await pool.query(
-        'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
-        [cleanUser, normEmail, hashPassword(password)]
+        `INSERT INTO users
+           (username, username_normalized, email, email_normalized, password_hash)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, username, email, created_at`,
+        [cleanUser, cleanUser.toLowerCase(), normEmail, normEmail, hashPassword(password)]
       );
       const r = res.rows[0];
       return { id: r.id, username: r.username, email: r.email, createdAt: r.created_at };
@@ -505,7 +514,7 @@ function createPostgresStore(connectionString) {
       await this.ensureReady();
       const needle = identifier.trim().toLowerCase();
       const res = await pool.query(
-        'SELECT id, username, email, password_hash, created_at FROM users WHERE LOWER(username) = $1 OR LOWER(email) = $1',
+        'SELECT id, username, email, password_hash, created_at FROM users WHERE username_normalized = $1 OR email_normalized = $1',
         [needle]
       );
       if (res.rows.length === 0) return null;
@@ -519,8 +528,8 @@ function createPostgresStore(connectionString) {
       const token = crypto.randomBytes(32).toString('hex');
       const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
       await pool.query(
-        'INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3)',
-        [token, userId, expiresAt]
+        'INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)',
+        [hashSessionToken(token), userId, expiresAt]
       );
       return token;
     },
@@ -532,13 +541,13 @@ function createPostgresStore(connectionString) {
         `SELECT u.id, u.username, u.email, u.created_at, s.expires_at
          FROM sessions s
          JOIN users u ON u.id = s.user_id
-         WHERE s.token = $1`,
-        [token]
+         WHERE s.token_hash = $1`,
+        [hashSessionToken(token)]
       );
       if (res.rows.length === 0) return null;
       const row = res.rows[0];
       if (new Date(row.expires_at).getTime() < Date.now()) {
-        await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+        await pool.query('DELETE FROM sessions WHERE token_hash = $1', [hashSessionToken(token)]);
         return null;
       }
       return { id: row.id, username: row.username, email: row.email, createdAt: row.created_at };
@@ -547,7 +556,7 @@ function createPostgresStore(connectionString) {
     async deleteSession(token) {
       if (!token) return;
       await this.ensureReady();
-      await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+      await pool.query('DELETE FROM sessions WHERE token_hash = $1', [hashSessionToken(token)]);
     },
 
     async listScenarios({ q = '', category = 'all', sort = 'az', userId = null } = {}) {

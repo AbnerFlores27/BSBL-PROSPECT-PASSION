@@ -132,6 +132,9 @@ app.post('/api/auth/register', async (req, res, next) => {
     if (err.code === 'CONFLICT') {
       return res.status(409).json({ error: err.message });
     }
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'That username or email is already taken.' });
+    }
     return next(err);
   }
 });
@@ -391,7 +394,7 @@ app.get('/favicon.ico', (_req, res) => res.status(204).end());
 app.use(express.static(__dirname));
 
 app.use('/api', (err, _req, res, _next) => {
-  console.error('API Error:', err);
+  console.error('API Error:', { code: err.code || 'UNKNOWN', message: err.message || 'Unknown error' });
   res.status(500).json({ error: 'Something went wrong on the server. Please try again.' });
 });
 

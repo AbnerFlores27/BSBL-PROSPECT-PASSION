@@ -71,11 +71,11 @@
       <form id="login-form" class="form-stack" method="post" action="/api/auth/login" onsubmit="return false;" novalidate>
         <div class="field">
           <label for="login-user">Username or email</label>
-          <input type="text" id="login-user" name="identifier" placeholder="Enter username or email" required>
+          <input type="text" id="login-user" name="identifier" placeholder="Enter username or email" autocomplete="username" required>
         </div>
         <div class="field">
           <label for="login-pass">Password</label>
-          <input type="password" id="login-pass" name="password" placeholder="At least 8 characters" required minlength="8">
+          <input type="password" id="login-pass" name="password" placeholder="At least 8 characters" autocomplete="current-password" required minlength="8">
         </div>
         <button type="submit" class="btn btn-primary">Log In</button>
         <p id="login-error" class="feedback-banner" role="alert"></p>
