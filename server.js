@@ -10,7 +10,7 @@ const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
 
 const app = express();
 app.set('trust proxy', 1);
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 5000;
 const COOKIE_NAME = 'diamondiq_sid';
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
