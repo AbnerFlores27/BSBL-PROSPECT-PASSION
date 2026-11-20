@@ -77,50 +77,64 @@ function makeDirtTexture(maxAniso, hexA = '#b27140', hexB = '#8a5027') {
   return tex;
 }
 
-function makeCrowdSeatsTexture(seatPrimary, seatAccent, nightDensity, maxAniso) {
+function makeEmptyStadiumSeatsTexture(concreteHex, seatHex, trimHex, maxAniso) {
   const c = document.createElement('canvas');
   c.width = 512;
   c.height = 256;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = seatPrimary;
+  ctx.fillStyle = concreteHex;
   ctx.fillRect(0, 0, 512, 256);
 
-  // Tiered stadium seat rows
-  const rows = 14;
+  // Realistic 100% EMPTY Tiered College Stadium Chair-Backs + Concrete Aisles + Handrails (Zero crowd blobs!)
+  const rows = 12;
   const rowH = c.height / rows;
-  const cols = 48;
+  const cols = 32;
   const colW = c.width / cols;
-  const jerseyColors = ['#f8fafc', '#cbd5e1', seatAccent, '#ef4444', '#fde047', '#38bdf8', '#1e293b'];
 
   for (let r = 0; r < rows; r++) {
     const y = r * rowH;
-    // Row concrete riser shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.34)';
-    ctx.fillRect(0, y, 512, 3);
-    // Concrete aisle steps every 16 seats
+    // Concrete step riser & ambient occlusion crease
+    const riserGrad = ctx.createLinearGradient(0, y, 0, y + rowH);
+    riserGrad.addColorStop(0, 'rgba(0,0,0,0.42)');
+    riserGrad.addColorStop(0.22, concreteHex);
+    riserGrad.addColorStop(1, 'rgba(0,0,0,0.18)');
+    ctx.fillStyle = riserGrad;
+    ctx.fillRect(0, y, 512, rowH);
+
     for (let col = 0; col < cols; col++) {
       const x = col * colW;
       if (col % 16 === 0) {
-        ctx.fillStyle = '#64748b';
+        // Brushed concrete staircase aisle + safety step stripe + yellow center rail
+        ctx.fillStyle = '#475569';
         ctx.fillRect(x, y, colW, rowH);
+        ctx.fillStyle = trimHex;
+        ctx.fillRect(x + 1, y + rowH - 3, colW - 2, 2);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(x + colW * 0.44, y, 2, rowH);
         continue;
       }
-      // Seat back
-      ctx.fillStyle = seatAccent;
-      ctx.globalAlpha = 0.55;
-      ctx.fillRect(x + 1, y + 3, colW - 2, rowH - 4);
-      ctx.globalAlpha = 1;
 
-      // Spectator silhouette in ~72% of seats
-      const hash = (r * 37 + col * 73) % 100;
-      if (hash < nightDensity) {
-        ctx.fillStyle = jerseyColors[(r + col * 3) % jerseyColors.length];
-        ctx.fillRect(x + 2, y + 5, colW - 4, rowH - 5);
-        ctx.fillStyle = '#e2b58f';
-        ctx.beginPath();
-        ctx.arc(x + colW * 0.5, y + 5, 2.3, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      // Contoured empty folding stadium chair-back (subtle top highlight + bottom seat pan shadow)
+      const sx = x + 1.5;
+      const sw = colW - 3;
+      const sh = rowH - 6;
+      const sy = y + 4;
+      ctx.fillStyle = seatHex;
+      ctx.beginPath();
+      ctx.roundRect(sx, sy, sw, sh, 2.5);
+      ctx.fill();
+
+      // Seat cushion highlight top edge + folded pan crease
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
+      ctx.fillRect(sx + 1, sy + 1, sw - 2, 2.2);
+      ctx.fillStyle = 'rgba(0,0,0,0.34)';
+      ctx.fillRect(sx + 1, sy + sh - 3.5, sw - 2, 3);
+    }
+
+    // Subtle anodized aluminum row safety rail every 4 rows
+    if (r % 4 === 0) {
+      ctx.fillStyle = 'rgba(203, 213, 225, 0.35)';
+      ctx.fillRect(0, y + 1, 512, 1.5);
     }
   }
 
@@ -128,7 +142,7 @@ function makeCrowdSeatsTexture(seatPrimary, seatAccent, nightDensity, maxAniso) 
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(9, 2);
+  tex.repeat.set(10, 2.2);
   tex.anisotropy = maxAniso;
   return tex;
 }
@@ -177,159 +191,42 @@ function makeBaseballTexture(maxAniso) {
   return tex;
 }
 
-function makeFenwayContinuousWallTexture(maxAniso) {
+function makeOmahaWallTexture(maxAniso) {
   const c = document.createElement('canvas');
   c.width = 2048;
-  c.height = 512;
-  const ctx = c.getContext('2d');
-
-  // Authentic Fenway Green (#1e543d) steel plates with vertical tin seams
-  ctx.fillStyle = '#1d523c';
-  ctx.fillRect(0, 0, 2048, 512);
-
-  // Subtle horizontal & vertical metal plate seams on Monster portion (left 44% of arc)
-  for (let x = 0; x < 920; x += 48) {
-    ctx.strokeStyle = 'rgba(8, 28, 19, 0.45)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 512);
-    ctx.stroke();
-  }
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-  ctx.lineWidth = 2;
-  for (let y = 80; y < 512; y += 96) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(2048, y);
-    ctx.stroke();
-  }
-
-  // Green Monster Hand-Operated Scoreboard (left field Monster lower panel)
-  ctx.fillStyle = '#0e3324';
-  ctx.fillRect(210, 210, 390, 275);
-  ctx.strokeStyle = '#a7f3d0';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(210, 210, 390, 275);
-
-  ctx.fillStyle = '#f8fafc';
-  ctx.font = 'bold 24px monospace';
-  ctx.fillText('1  2  3  4  5  6  7  8  9   R  H  E', 228, 250);
-  ctx.fillStyle = '#fde68a';
-  ctx.font = 'bold 28px monospace';
-  ctx.fillText('NYY 0  1  0  0  1  0  0  0  0   2  6  0', 224, 304);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('BOS 1  0  2  0  0  1  0  0  X   4  9  0', 224, 356);
-
-  // Vintage AL/NL Out-of-Town Scores strip below
-  ctx.fillStyle = '#154230';
-  ctx.fillRect(224, 384, 362, 82);
-  ctx.fillStyle = '#d1fae5';
-  ctx.font = 'bold 20px monospace';
-  ctx.fillText('BAL 3  TOR 2    TB 4  CLE 1', 236, 416);
-  ctx.fillText('LAD 5  SF  2    CHC 4 STL 3', 236, 452);
-
-  // Yellow "Jimmy Fund / Red Sox" Ribbon Accent + Wall Distance Markers
-  ctx.fillStyle = '#fde047';
-  ctx.font = 'bold 42px sans-serif';
-  ctx.fillText('310', 34, 446);
-  ctx.fillText('379', 790, 446);
-  ctx.fillText('420', 1020, 446);
-  ctx.fillText('380', 1420, 446);
-  ctx.fillText('302', 1935, 446);
-
-  // Dark Red Line & Red Sox CF triangle accents
-  ctx.fillStyle = '#b91c1c';
-  ctx.fillRect(920, 0, 1128, 28);
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = maxAniso;
-  return tex;
-}
-
-function makeWrigleyIvyWallTexture(maxAniso) {
-  const c = document.createElement('canvas');
-  c.width = 1024;
   c.height = 256;
   const ctx = c.getContext('2d');
 
-  // Authentic Chicago Red-Brick Masonry behind Boston Ivy
-  ctx.fillStyle = '#73281f';
-  ctx.fillRect(0, 0, 1024, 256);
-  for (let row = 0; row < 20; row++) {
-    const off = (row % 2) * 14;
-    for (let col = -1; col < 38; col++) {
-      const shade = (row * 7 + col * 11) % 3;
-      ctx.fillStyle = shade === 0 ? '#8c3328' : shade === 1 ? '#9e4133' : '#6c251c';
-      ctx.fillRect(col * 28 + off + 2, row * 13 + 2, 24, 10);
-    }
-  }
-
-  // Dense multi-tone creeping Boston Ivy vines & leaf clusters
-  const shades = ['#14532d', '#166534', '#15803d', '#22c55e', '#1e4620', '#2d6a32'];
-  for (let i = 0; i < 4200; i++) {
-    const x = (i * 83) % 1024;
-    const clusterY = 18 + ((i * 59 + Math.sin(i * 0.35) * 44 + 256) % 232);
-    // Slightly thinner near top brick coping and door gaps
-    if (clusterY > 18 && (x < 940 || x > 980)) {
-      ctx.fillStyle = shades[i % shades.length];
-      ctx.beginPath();
-      ctx.ellipse(x, clusterY, 6.5 + (i % 5), 4.5 + (i % 4), (i % 6) * 0.52, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  // Wrigley White/Yellow Wall Distances painted clearly onto pads
-  ctx.fillStyle = '#f8fafc';
-  ctx.font = 'bold 34px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('355', 56, 210);
-  ctx.fillText('368', 290, 210);
-  ctx.fillText('400', 512, 210);
-  ctx.fillText('368', 735, 210);
-  ctx.fillText('353', 968, 210);
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = maxAniso;
-  return tex;
-}
-
-function makeDodgerWallTexture(maxAniso) {
-  const c = document.createElement('canvas');
-  c.width = 1024;
-  c.height = 256;
-  const ctx = c.getContext('2d');
-
-  // Authentic Dodger Blue outfield wall with padded rib lines
-  ctx.fillStyle = '#0f4799';
-  ctx.fillRect(0, 0, 1024, 256);
-
+  // Authentic Charles Schwab Field Omaha Navy Padded Wall + Yellow HR Trim
+  ctx.fillStyle = '#0f284e';
+  ctx.fillRect(0, 0, 2048, 256);
   ctx.strokeStyle = 'rgba(255,255,255,0.08)';
   ctx.lineWidth = 3;
-  for (let x = 0; x < 1024; x += 32) {
+  for (let x = 0; x < 2048; x += 48) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, 256);
     ctx.stroke();
   }
 
-  // Crisp White Top Stripe + Distance Numbers (330 / 375 / 395 / 375 / 330)
-  ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(0, 18, 1024, 10);
-  ctx.font = 'bold 36px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('330', 54, 150);
-  ctx.fillText('375', 280, 150);
-  ctx.fillText('395', 512, 150);
-  ctx.fillText('375', 744, 150);
-  ctx.fillText('330', 970, 150);
+  ctx.fillStyle = '#facc15';
+  ctx.fillRect(0, 0, 2048, 16);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 212, 2048, 6);
 
-  // Subtle Dodgers Stadium Banner Strip
-  ctx.fillStyle = '#ef4444';
-  ctx.font = 'bold 22px sans-serif';
-  ctx.fillText('DODGER STADIUM · CHAVEZ RAVINE', 512, 218);
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 42px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('335', 75, 145);
+  ctx.fillText('375', 520, 145);
+  ctx.fillText('408', 1024, 145);
+  ctx.fillText('375', 1528, 145);
+  ctx.fillText('335', 1973, 145);
+
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = 'bold 26px sans-serif';
+  ctx.fillText("NCAA MEN'S COLLEGE WORLD SERIES", 520, 74);
+  ctx.fillText('CHARLES SCHWAB FIELD OMAHA', 1528, 74);
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -337,51 +234,44 @@ function makeDodgerWallTexture(maxAniso) {
   return tex;
 }
 
-function makeWrigleyArtDecoScoreboardTexture(maxAniso) {
+function makeLsuWallTexture(maxAniso) {
   const c = document.createElement('canvas');
-  c.width = 512;
-  c.height = 320;
+  c.width = 2048;
+  c.height = 256;
   const ctx = c.getContext('2d');
 
-  ctx.fillStyle = '#15472a';
-  ctx.fillRect(0, 0, 512, 320);
-  ctx.strokeStyle = '#f8fafc';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(10, 10, 492, 300);
+  // Authentic Alex Box Stadium LSU Deep Purple & Championship Gold Padding
+  ctx.fillStyle = '#3b156b';
+  ctx.fillRect(0, 0, 2048, 256);
+  ctx.strokeStyle = 'rgba(253,208,35,0.14)';
+  ctx.lineWidth = 3;
+  for (let x = 0; x < 2048; x += 52) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, 256);
+    ctx.stroke();
+  }
 
-  // Top Header
-  ctx.fillStyle = '#fde68a';
-  ctx.font = 'bold 32px serif';
+  ctx.fillStyle = '#fdd023';
+  ctx.fillRect(0, 0, 2048, 18);
+  ctx.fillRect(0, 214, 2048, 8);
+
+  ctx.fillStyle = '#fdd023';
+  ctx.font = 'bold 42px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('WRIGLEY FIELD', 256, 56);
+  ctx.fillText('330', 75, 148);
+  ctx.fillText('365', 512, 148);
+  ctx.fillText('405', 1024, 148);
+  ctx.fillText('365', 1536, 148);
+  ctx.fillText('330', 1973, 148);
 
-  // Center Analog Longines Clock Face
-  ctx.beginPath();
-  ctx.arc(256, 118, 36, 0, Math.PI * 2);
-  ctx.fillStyle = '#f8fafc';
-  ctx.fill();
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = '#0f291a';
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(256, 118);
-  ctx.lineTo(256, 92);
-  ctx.moveTo(256, 118);
-  ctx.lineTo(276, 128);
-  ctx.stroke();
-
-  // Manual Innings Grid
-  ctx.fillStyle = '#0c2918';
-  ctx.fillRect(36, 168, 440, 116);
-  ctx.strokeStyle = '#94a3b8';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(36, 168, 440, 116);
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText('VISITORS  0 1 0 0 2 0 0   3  7  0', 54, 214);
-  ctx.fillStyle = '#fde047';
-  ctx.fillText('CUBS      1 0 2 0 1 1 X   5 10  0', 54, 256);
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText('ALEX BOX STADIUM · SKIP BERTMAN FIELD', 1024, 72);
+  ctx.fillStyle = '#fde68a';
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillText('THE INTIMIDATOR · BATON ROUGE, LA', 512, 72);
+  ctx.fillText('NATIONAL CHAMPIONS', 1536, 72);
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -389,26 +279,77 @@ function makeWrigleyArtDecoScoreboardTexture(maxAniso) {
   return tex;
 }
 
-function makeDodgerVisionTexture(title, sub, maxAniso) {
+function makeMissStWallTexture(maxAniso) {
+  const c = document.createElement('canvas');
+  c.width = 2048;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+
+  // Authentic Dude Noble Field Maroon Wall + Brick Knee Wall Base
+  ctx.fillStyle = '#5d1725';
+  ctx.fillRect(0, 0, 2048, 196);
+  ctx.fillStyle = '#7c2d23';
+  ctx.fillRect(0, 196, 2048, 60);
+  for (let row = 0; row < 5; row++) {
+    for (let col = 0; col < 64; col++) {
+      ctx.fillStyle = (row + col) % 2 === 0 ? '#8c3328' : '#6c251c';
+      ctx.fillRect(col * 32 + (row % 2) * 16 + 2, 198 + row * 12, 28, 9);
+    }
+  }
+
+  ctx.fillStyle = '#facc15';
+  ctx.fillRect(0, 0, 2048, 14);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 186, 2048, 8);
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 40px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('330', 75, 134);
+  ctx.fillText('374', 512, 134);
+  ctx.fillText('390', 1024, 134);
+  ctx.fillText('374', 1536, 134);
+  ctx.fillText('330', 1973, 134);
+
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = 'bold 26px sans-serif';
+  ctx.fillText('DUDE NOBLE FIELD · LEFT FIELD LOUNGE', 520, 68);
+  ctx.fillText('POLK-DEMENT STADIUM · STARKVILLE', 1528, 68);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = maxAniso;
+  return tex;
+}
+
+function makeCollegeVideoboardTexture(title, sub1, sub2, bgHex, accentHex, maxAniso) {
   const c = document.createElement('canvas');
   c.width = 512;
   c.height = 256;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#0a1e47';
+  ctx.fillStyle = bgHex;
   ctx.fillRect(0, 0, 512, 256);
-  ctx.strokeStyle = '#38bdf8';
+  ctx.strokeStyle = accentHex;
   ctx.lineWidth = 8;
   ctx.strokeRect(10, 10, 492, 236);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 34px sans-serif';
+
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(26, 26, 460, 54);
+  ctx.fillStyle = accentHex;
+  ctx.font = 'bold 26px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(title, 256, 94);
-  ctx.fillStyle = '#fde68a';
-  ctx.font = 'bold 25px monospace';
-  ctx.fillText(sub, 256, 152);
-  ctx.fillStyle = '#7dd3fc';
-  ctx.font = 'bold 20px monospace';
-  ctx.fillText('THINK BLUE · LOS ANGELES', 256, 204);
+  ctx.fillText(title, 256, 62);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 28px monospace';
+  ctx.fillText(sub1, 256, 134);
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = 'bold 19px monospace';
+  ctx.fillText(sub2, 256, 186);
+
+  ctx.fillStyle = accentHex;
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText('RAPSODO HITTING 2.0 · D1 TELEMETRY ENABLED', 256, 224);
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -484,8 +425,8 @@ function makeBatWrapTexture(batId, maxAniso) {
     ctx.fillStyle = bg;
     ctx.fillRect(0, startY, 512, endY - startY);
     ctx.strokeStyle = stripe;
-    ctx.lineWidth = 9;
-    for (let y = startY - 120; y < endY + 120; y += 30) {
+    ctx.lineWidth = 8;
+    for (let y = startY - 120; y < endY + 120; y += 28) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(512, y + 104);
@@ -494,231 +435,352 @@ function makeBatWrapTexture(batId, maxAniso) {
   };
 
   if (batId === 'baum-gold') {
-    // Authentic Glazed Maple Wood Grain + Metallic Gold & Black Crest
-    const woodGrad = ctx.createLinearGradient(0, 0, 512, 0);
-    woodGrad.addColorStop(0, '#c68a38');
-    woodGrad.addColorStop(0.45, '#f0cb84');
-    woodGrad.addColorStop(1, '#b87a2a');
-    ctx.fillStyle = woodGrad;
+    // Photo 1: Baum Bat Gold — High-gloss SOLID JET-BLACK lacquer barrel & handle,
+    // signature METALLIC GOLD oval with serif "Baum" on taper, and small gold BBCOR .50 AAA PRO MAPLE stamp.
+    const blackLacquer = ctx.createLinearGradient(0, 0, 512, 0);
+    blackLacquer.addColorStop(0, '#07080a');
+    blackLacquer.addColorStop(0.28, '#1b1e25');
+    blackLacquer.addColorStop(0.54, '#0c0d11');
+    blackLacquer.addColorStop(0.82, '#21252f');
+    blackLacquer.addColorStop(1, '#07080a');
+    ctx.fillStyle = blackLacquer;
     ctx.fillRect(0, 0, 512, 1024);
 
-    // Natural Flame Temper Maple Wood Grain
-    for (let i = 0; i < 140; i++) {
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(116, 56, 12, 0.22)' : 'rgba(255, 244, 210, 0.2)';
-      const gx = (i * 19 + Math.sin(i) * 8) % 512;
-      ctx.fillRect(gx, 24, 2 + (i % 4), 660);
-    }
-
-    // Black Perforated Wrap Grip + Gold Tape
-    paintSpiralGrip('#16100a', '#78350f', 676, 988);
-    ctx.fillStyle = '#eab308';
-    ctx.fillRect(0, 668, 512, 12);
-    ctx.fillStyle = '#0c0805';
+    // Subtle black grip & knob
+    paintSpiralGrip('#090a0d', '#1c1f27', 676, 988);
+    ctx.fillStyle = '#07080a';
     ctx.fillRect(0, 988, 512, 36);
+    ctx.fillRect(0, 0, 512, 18);
 
-    // Classic Black & Metallic Gold Baum Center Band + Crest Seal
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 412, 512, 34);
-    ctx.fillStyle = '#facc15';
-    ctx.fillRect(0, 400, 512, 12);
-    ctx.fillRect(0, 446, 512, 12);
-    ctx.fillRect(0, 74, 512, 14);
+    const ovalGrad = ctx.createLinearGradient(0, 380, 0, 560);
+    ovalGrad.addColorStop(0, '#ca8a04');
+    ovalGrad.addColorStop(0.45, '#fef08a');
+    ovalGrad.addColorStop(1, '#d97706');
 
-    // Cupped Natural Wood Barrel End
-    ctx.fillStyle = '#45250c';
-    ctx.fillRect(0, 0, 512, 24);
-
-    // Stamp Crest & Bold Lettering on Both Sides of Barrel
-    [138, 378].forEach((cx) => {
+    // Gold "Baum" Oval on taper + small BBCOR .50 gold stamp on mid-barrel (both faces)
+    [136, 376].forEach((cx) => {
       ctx.save();
-      ctx.translate(cx, 248);
+      ctx.translate(cx, 482);
+      ctx.fillStyle = ovalGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 52, 108, 0, 0, Math.PI * 2);
+      ctx.fill();
       ctx.rotate(-Math.PI / 2);
-      ctx.fillStyle = '#181007';
-      ctx.font = 'bold 46px serif';
+      ctx.fillStyle = '#0b0c10';
+      ctx.font = 'bold 56px Georgia, serif';
       ctx.textAlign = 'center';
-      ctx.fillText('BAUM BAT', 0, 6);
-      ctx.fillStyle = '#78350f';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.fillText('PERMAWOOD · GOLD EDITION', 0, 34);
+      ctx.fillText('Baum', 0, 17);
+      ctx.restore();
+
+      // Tiny gold "GOLD EDITION · BBCOR .50 · AAA PRO MAPLE" stamp
+      ctx.save();
+      ctx.translate(cx, 290);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#eab308';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GOLD EDITION', 0, -14);
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-34, -8, 68, 22);
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText('BBCOR .50', 0, 8);
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText('AAA PRO MAPLE', 0, 28);
       ctx.restore();
     });
   } else if (batId === 'goods-2026') {
-    // Authentic 2026 DeMarini The Goods: Matte Obsidian Black/Charcoal Barrel + Red/Teal Geometry
-    ctx.fillStyle = '#141923';
-    ctx.fillRect(0, 0, 512, 1024);
+    // Photo 2: 2026 DeMarini The Goods —
+    // Pale Ice-Blue/Aqua (#a2ebe5) X14 alloy barrel & taper + Flat Black composite handle & grip
+    // + Crimson Red chevron arrows & stencil "GOODS" + White "THE GOODS" + Charcoal "DEMARINI" & D icon.
+    const iceBlueGrad = ctx.createLinearGradient(0, 0, 512, 0);
+    iceBlueGrad.addColorStop(0, '#7cd9d2');
+    iceBlueGrad.addColorStop(0.28, '#c6f6f2');
+    iceBlueGrad.addColorStop(0.55, '#9beae4');
+    iceBlueGrad.addColorStop(0.84, '#bdf4ef');
+    iceBlueGrad.addColorStop(1, '#78d4cd');
+    ctx.fillStyle = iceBlueGrad;
+    ctx.fillRect(0, 0, 512, 558);
 
-    // Carbon Composite Handle Fiber Micro-Weave below Taper
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    for (let y = 550; y < 988; y += 10) {
-      for (let x = y % 20 === 0 ? 0 : 5; x < 512; x += 10) {
-        ctx.fillRect(x, y, 4, 4);
-      }
-    }
-
-    // Diamond-Tex Handle Grip with Teal & Red Accents
-    paintSpiralGrip('#090f1c', '#2dd4bf', 672, 986);
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(0, 986, 512, 38);
-
-    // Direct Connection Red/Teal Collar Region Graphic
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(0, 540, 512, 66);
-    ctx.fillStyle = '#2dd4bf';
-    ctx.fillRect(0, 526, 512, 14);
-    ctx.fillRect(0, 606, 512, 10);
-
-    // Angular 2026 Red + Electric Teal Barrel Slash Graphics
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(0, 386, 512, 26);
-    ctx.fillStyle = '#2dd4bf';
-    ctx.fillRect(0, 368, 512, 16);
-    ctx.fillRect(0, 60, 512, 22);
-    ctx.fillStyle = '#090d14';
-    ctx.fillRect(0, 0, 512, 42);
-
-    [136, 376].forEach((cx) => {
-      ctx.save();
-      ctx.translate(cx, 225);
-      ctx.rotate(-Math.PI / 2);
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = 'bold 46px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('THE GOODS', 0, 6);
-      ctx.fillStyle = '#2dd4bf';
-      ctx.font = 'bold 21px monospace';
-      ctx.fillText('2026 DEMARINI · X14', 0, 34);
-      ctx.restore();
-    });
-  } else if (batId === 'goods-2022') {
-    // Authentic 2022 DeMarini The Goods: Iconic Brushed Chrome Silver Barrel + Flat Black Paraflex Handle + Crimson Red Graphics
-    const silverGrad = ctx.createLinearGradient(0, 0, 512, 0);
-    silverGrad.addColorStop(0, '#94a3b8');
-    silverGrad.addColorStop(0.28, '#f8fafc');
-    silverGrad.addColorStop(0.55, '#cbd5e1');
-    silverGrad.addColorStop(0.84, '#f1f5f9');
-    silverGrad.addColorStop(1, '#94a3b8');
-    ctx.fillStyle = silverGrad;
-    ctx.fillRect(0, 0, 512, 560);
-
-    // Fine circumferential brushed alloy grain lines
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.06)';
-    for (let y = 38; y < 550; y += 7) ctx.fillRect(0, y, 512, 2);
-
-    // Flat black composite lower handle half
-    ctx.fillStyle = '#18181b';
-    ctx.fillRect(0, 560, 512, 464);
-    paintSpiralGrip('#18181b', '#dc2626', 672, 986);
-
-    // Classic Red Half+Half Band & Stripes
-    ctx.fillStyle = '#dc2626';
-    ctx.fillRect(0, 540, 512, 64);
-    ctx.fillRect(0, 392, 512, 24);
-    ctx.fillRect(0, 72, 512, 18);
-    ctx.fillStyle = '#0f172a';
+    // Flat Black composite handle + black diamond-tex grip + black knob
+    ctx.fillStyle = '#111318';
+    ctx.fillRect(0, 558, 512, 466);
+    paintSpiralGrip('#0c0e13', '#272b36', 674, 986);
+    ctx.fillStyle = '#090b0f';
     ctx.fillRect(0, 0, 512, 34);
-
-    [136, 376].forEach((cx) => {
-      ctx.save();
-      ctx.translate(cx, 232);
-      ctx.rotate(-Math.PI / 2);
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 46px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('THE GOODS', 0, 6);
-      ctx.fillStyle = '#dc2626';
-      ctx.font = 'bold 21px monospace';
-      ctx.fillText('2022 HALF+HALF · X14', 0, 34);
-      ctx.restore();
-    });
-  } else if (batId === 'combat-rodeo') {
-    // Authentic Combat MFG Spec-A1 Rodeo: Warm Cream Gloss Barrel + Burnt Orange / Maroon Western Stripes + Clinch Tan Grip
-    ctx.fillStyle = '#f3ead8';
-    ctx.fillRect(0, 0, 512, 675);
-
-    // Subtle cream parchment sheen
-    paintSpiralGrip('#9a5b1e', '#d97706', 672, 986);
-    ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(0, 986, 512, 38);
 
-    // Western Saddle/Navajo Stripe Bands
-    ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(0, 418, 512, 42);
-    ctx.fillRect(0, 68, 512, 24);
-    ctx.fillStyle = '#ea580c';
-    ctx.fillRect(0, 398, 512, 18);
-    ctx.fillRect(0, 94, 512, 14);
-    ctx.fillStyle = '#fef3c7';
-    for (let dx = 22; dx < 512; dx += 44) {
-      ctx.save();
-      ctx.translate(dx, 439);
-      ctx.rotate(Math.PI / 4);
-      ctx.fillRect(-7, -7, 14, 14);
-      ctx.restore();
-    }
-    ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(0, 0, 512, 26);
+    // Front face (cx=136): White "THE GOODS" + bold crimson red stencil "GOODS" + charcoal D logo
+    ctx.save();
+    ctx.translate(136, 198);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('THE GOODS', 0, -24);
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '900 58px sans-serif';
+    ctx.fillText('GOODS', 0, 26);
+    ctx.restore();
 
-    [136, 376].forEach((cx) => {
-      ctx.save();
-      ctx.translate(cx, 246);
-      ctx.rotate(-Math.PI / 2);
-      ctx.fillStyle = '#7f1d1d';
-      ctx.font = 'bold 42px serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('COMBAT RODEO', 0, 6);
-      ctx.fillStyle = '#c2410c';
-      ctx.font = 'bold 20px monospace';
-      ctx.fillText('SPEC-A1 LIMITED · -3', 0, 34);
-      ctx.restore();
-    });
-  } else {
-    // Authentic Combat Spec-A1 Members Club Blue: Powder Sky-Blue Gloss Barrel + Gold Cursive + Navy/Gold Country Club Blazer Stripes + Argyle Grip
-    ctx.fillStyle = '#72c8f8';
-    ctx.fillRect(0, 0, 512, 675);
+    // Charcoal DeMarini "D" arrow mark lower on barrel
+    ctx.save();
+    ctx.translate(136, 405);
+    ctx.fillStyle = '#181a20';
+    ctx.fillRect(-32, -26, 64, 52);
+    ctx.fillStyle = '#a2ebe5';
+    ctx.beginPath();
+    ctx.arc(0, 0, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
-    // Country Club Argyle Navy/Sky/Gold Handle Grip
-    paintSpiralGrip('#172554', '#bae6fd', 672, 986);
-    ctx.strokeStyle = 'rgba(250, 204, 21, 0.85)';
-    ctx.lineWidth = 5;
-    for (let y = 660; y < 990; y += 30) {
+    // Back face (cx=376): Charcoal "DEMARINI" + crimson red chevron arrows + "HUGE SWEET SPOT"
+    ctx.save();
+    ctx.translate(376, 224);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#ef4444';
+    for (let ax = -125; ax <= 55; ax += 72) {
       ctx.beginPath();
-      ctx.moveTo(512, y);
-      ctx.lineTo(0, y + 104);
-      ctx.stroke();
+      ctx.moveTo(ax, -44);
+      ctx.lineTo(ax + 44, -44);
+      ctx.lineTo(ax + 58, -32);
+      ctx.lineTo(ax + 44, -20);
+      ctx.lineTo(ax, -20);
+      ctx.lineTo(ax + 14, -32);
+      ctx.closePath();
+      ctx.fill();
     }
+    for (let ax = -45; ax <= 95; ax += 72) {
+      ctx.beginPath();
+      ctx.moveTo(ax, 18);
+      ctx.lineTo(ax + 44, 18);
+      ctx.lineTo(ax + 58, 30);
+      ctx.lineTo(ax + 44, 42);
+      ctx.lineTo(ax, 42);
+      ctx.lineTo(ax + 14, 30);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = '#1e222a';
+    ctx.font = '900 48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('DEMARINI', 0, 14);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('HUGE SWEET SPOT   ·   BUILT IN THE U.S.A.', 0, 56);
+    ctx.restore();
 
-    ctx.fillStyle = '#172554';
+    // Small BBCOR / stamp box on taper
+    ctx.save();
+    ctx.translate(376, 465);
+    ctx.rotate(-Math.PI / 2);
+    ctx.strokeStyle = '#1e222a';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(-26, -15, 52, 30);
+    ctx.fillStyle = '#1e222a';
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('BBCOR .50', 0, 5);
+    ctx.restore();
+  } else if (batId === 'goods-2022') {
+    // Photo 3: 2022 DeMarini The Goods —
+    // Brushed metallic Chrome Silver X14 Alloy barrel + Flat Black composite handle +
+    // Monochromatic SOLID BLACK graphics (no red!) + black notched end cap & knob.
+    const silverGrad = ctx.createLinearGradient(0, 0, 512, 0);
+    silverGrad.addColorStop(0, '#8d99a8');
+    silverGrad.addColorStop(0.28, '#f8fafc');
+    silverGrad.addColorStop(0.55, '#c8d1dc');
+    silverGrad.addColorStop(0.84, '#f1f5f9');
+    silverGrad.addColorStop(1, '#8c97a6');
+    ctx.fillStyle = silverGrad;
+    ctx.fillRect(0, 0, 512, 558);
+
+    // Fine circumferential brushed alloy grain
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+    for (let y = 36; y < 552; y += 5) ctx.fillRect(0, y, 512, 1.5);
+
+    // Flat Black Paraflex composite handle & black diamond-tex grip
+    ctx.fillStyle = '#14151a';
+    ctx.fillRect(0, 558, 512, 466);
+    paintSpiralGrip('#0e1015', '#272a33', 674, 986);
+    ctx.fillStyle = '#0b0d12';
+    ctx.fillRect(0, 0, 512, 34);
     ctx.fillRect(0, 986, 512, 38);
-    ctx.fillRect(0, 412, 512, 36);
-    ctx.fillRect(0, 72, 512, 22);
+
+    // Front face (cx=136): Black "The GOODS" near cap, circular black club stamp, black D logo
+    ctx.save();
+    ctx.translate(136, 178);
+    ctx.fillStyle = '#111318';
+    ctx.beginPath();
+    ctx.arc(0, 42, 36, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('BUILT IN', 0, 38);
+    ctx.fillText('U.S.A.', 0, 52);
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(136, 98);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#0f1217';
+    ctx.font = 'italic bold 20px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('The', -46, -24);
+    ctx.font = '900 32px sans-serif';
+    ctx.fillText('GOODS', 8, 2);
+    ctx.restore();
+
+    // Solid black D logo lower barrel
+    ctx.save();
+    ctx.translate(136, 396);
+    ctx.fillStyle = '#111318';
+    ctx.fillRect(-32, -26, 64, 52);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.beginPath();
+    ctx.arc(0, 0, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Back face (cx=376): Monochromatic Black BBCOR .50 + X-14 spec strip
+    ctx.save();
+    ctx.translate(376, 290);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#111318';
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('BBCOR .50  ·  X-14 ALLOY BARREL  ·  2 5/8" DIA', 0, 5);
+    ctx.restore();
+  } else if (batId === 'combat-rodeo') {
+    // Photo 4: Combat MFG Spec-A1 "NOT MY FIRST RODEO!" —
+    // Warm vintage buttercream barrel AND handle + Crimson RED perforated grip & flared knob
+    // + Crimson/burgundy red tilted "NOT MY FIRST RODEO!" & western bronco stamp.
+    const creamGrad = ctx.createLinearGradient(0, 0, 512, 0);
+    creamGrad.addColorStop(0, '#dfd0a8');
+    creamGrad.addColorStop(0.32, '#fbf4df');
+    creamGrad.addColorStop(0.66, '#f2e3be');
+    creamGrad.addColorStop(1, '#dac89b');
+    ctx.fillStyle = creamGrad;
+    ctx.fillRect(0, 0, 512, 670);
+
+    // Crimson RED perforated leather grip + bright red grip collar + deep red knob
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(0, 656, 512, 18);
+    paintSpiralGrip('#991b1b', '#7f1d1d', 674, 986);
+    ctx.fillStyle = '#88131d';
+    ctx.fillRect(0, 986, 512, 38);
+
+    // Front face (cx=136): Bold tilted crimson "NOT MY FIRST RODEO!"
+    ctx.save();
+    ctx.translate(136, 250);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#991b1b';
+    ctx.font = '900 34px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NOT MY FIRST RODEO!', 0, 10);
+    ctx.fillStyle = '#b45309';
+    ctx.font = 'bold 12px monospace';
+    ctx.fillText('BBCOR .50  ·  LIMITED EDITION  ·  -3', 0, 34);
+    ctx.restore();
+
+    // Back face (cx=376): "COMBAT RODEO / ESTD. 2025" + red western bronco silhouette + "SPEC A1 (-3)"
+    ctx.save();
+    ctx.translate(376, 185);
+    ctx.fillStyle = '#7f1d1d';
+    ctx.font = 'bold 26px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('COMBAT', 0, -76);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('ESTD. 2025', 0, -56);
+    // Stylized western bucking bronco emblem
+    ctx.fillStyle = '#991b1b';
+    ctx.beginPath();
+    ctx.ellipse(0, 10, 36, 22, -0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.arc(0, 145, 22, 0, Math.PI * 2);
+    ctx.strokeStyle = '#991b1b';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.fillStyle = '#7f1d1d';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('SPEC A1', 0, 114);
+    ctx.font = 'bold 22px serif';
+    ctx.fillText('-3', 0, 152);
+    ctx.restore();
+  } else {
+    // Photo 5: Combat MFG Spec-A1 Members Club Blue —
+    // Powder sky-blue barrel AND sky-blue handle AND sky-blue perforated grip
+    // + Deep Royal/Navy Blue flared knob & end cap + thin gold/navy pinstripes
+    // + Royal/Gold Lion Shield Country Club Crest & serif italic "Members Only".
+    const skyGrad = ctx.createLinearGradient(0, 0, 512, 0);
+    skyGrad.addColorStop(0, '#62ccf3');
+    skyGrad.addColorStop(0.32, '#c5f0fe');
+    skyGrad.addColorStop(0.66, '#87defb');
+    skyGrad.addColorStop(1, '#58c3ec');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, 512, 675);
+
+    // Matching powder sky-blue perforated grip with subtle white spiral + Royal Navy flared knob & end cap
+    paintSpiralGrip('#96e4fc', '#b9eefe', 675, 986);
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(0, 986, 512, 38);
+    ctx.fillRect(0, 0, 512, 24);
+
+    // Thin Royal Blue + Gold Pinstripe Rings near Barrel Tip and Lower Taper
+    ctx.fillStyle = '#d4af37';
+    ctx.fillRect(0, 34, 512, 6);
+    ctx.fillRect(0, 444, 512, 5);
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(0, 44, 512, 5);
+    ctx.fillRect(0, 453, 512, 4);
+
+    // Front face (cx=136): Royal Blue serif italic '"Members Only"'
+    ctx.save();
+    ctx.translate(136, 248);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'italic bold 38px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('“Members Only”', 0, 12);
+    ctx.restore();
+
+    // Back face (cx=376): Royal Blue & Gold Country Club Lion Shield + "Swing Easy, Hit Hard"
+    ctx.save();
+    ctx.translate(376, 215);
+    ctx.fillStyle = '#1e3a8a';
+    ctx.beginPath();
+    ctx.moveTo(-42, -48);
+    ctx.lineTo(42, -48);
+    ctx.lineTo(42, 12);
+    ctx.lineTo(0, 54);
+    ctx.lineTo(-42, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
     ctx.fillStyle = '#facc15';
-    ctx.fillRect(0, 396, 512, 14);
-    ctx.fillRect(0, 448, 512, 10);
-    ctx.fillRect(0, 94, 512, 12);
-    ctx.fillStyle = '#172554';
-    ctx.fillRect(0, 0, 512, 28);
+    ctx.font = 'bold 17px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Spec A1', 0, -18);
+    ctx.beginPath();
+    ctx.arc(0, 14, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 15px serif';
+    ctx.fillText('CCC', 0, 19);
 
-    // Gold Country Club Diamond Emblems
-    [136, 376].forEach((cx) => {
-      ctx.fillStyle = '#facc15';
-      ctx.save();
-      ctx.translate(cx, 430);
-      ctx.rotate(Math.PI / 4);
-      ctx.fillRect(-10, -10, 20, 20);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(cx, 242);
-      ctx.rotate(-Math.PI / 2);
-      ctx.fillStyle = '#172554';
-      ctx.font = 'bold 42px serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('MEMBERS CLUB', 0, 6);
-      ctx.fillStyle = '#b45309';
-      ctx.font = 'bold 20px monospace';
-      ctx.fillText('COMBAT SPEC-A1 · -3', 0, 34);
-      ctx.restore();
-    });
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 18px serif';
+    ctx.fillText('COUNTRY CLUB', 0, -68);
+    ctx.fillStyle = '#b45309';
+    ctx.font = 'italic bold 14px Georgia, serif';
+    ctx.fillText('Swing Easy,', 0, 82);
+    ctx.fillText('Hit Hard', 0, 100);
+    ctx.restore();
   }
 
   const tex = new THREE.CanvasTexture(c);
@@ -736,11 +798,11 @@ function buildCompositeBatGroup(batConfig, tex) {
   const is2Pc = batConfig.construction === '2pc';
   const isMetal = batConfig.id === 'goods-2022';
   const isWood = batConfig.id === 'baum-gold';
-  const isGloss = batConfig.id === 'combat-rodeo' || batConfig.id === 'combat-blue';
-  const isMatte = batConfig.id === 'goods-2026';
+  const isGloss = batConfig.id === 'combat-rodeo' || batConfig.id === 'combat-blue' || batConfig.id === 'baum-gold';
+  const isAnodized = batConfig.id === 'goods-2026';
 
   // Main Sculpted Pro Lathe Profile (Knob -> Tapered Handle -> Barrel -> Tip)
-  const knobFlareR = batConfig.capStyle === 'flared' ? 0.155 : 0.146;
+  const knobFlareR = batConfig.capStyle === 'flared' ? 0.156 : 0.146;
   const pts = [
     new THREE.Vector2(0.0, 0.0),
     new THREE.Vector2(knobFlareR, 0.025),
@@ -760,10 +822,10 @@ function buildCompositeBatGroup(batConfig, tex) {
   const mainGeom = new THREE.LatheGeometry(pts, 36);
   const mainMat = new THREE.MeshPhysicalMaterial({
     map: tex,
-    roughness: isMetal ? 0.18 : isMatte ? 0.44 : isWood ? 0.28 : 0.22,
-    metalness: isMetal ? 0.9 : isMatte ? 0.34 : isWood ? 0.04 : 0.38,
-    clearcoat: isWood || isGloss ? 0.85 : isMetal ? 0.5 : 0.16,
-    clearcoatRoughness: isGloss ? 0.12 : 0.24
+    roughness: isMetal ? 0.18 : isAnodized ? 0.28 : isWood ? 0.14 : 0.2,
+    metalness: isMetal ? 0.9 : isAnodized ? 0.28 : isWood ? 0.06 : 0.26,
+    clearcoat: isGloss ? 0.92 : isMetal ? 0.52 : 0.32,
+    clearcoatRoughness: isGloss ? 0.08 : 0.2
   });
 
   const bodyMesh = new THREE.Mesh(mainGeom, mainMat);
@@ -774,18 +836,18 @@ function buildCompositeBatGroup(batConfig, tex) {
   // Subtle Knob Weight/Model Sticker Medallion on Bottom of Knob
   const knobCap = new THREE.Mesh(
     new THREE.CylinderGeometry(0.105, 0.105, 0.015, 20),
-    new THREE.MeshStandardMaterial({ color: batConfig.trimColor || '#0f172a', roughness: 0.35, metalness: 0.4 })
+    new THREE.MeshStandardMaterial({ color: batConfig.knobColor || batConfig.trimColor || '#0f172a', roughness: 0.35, metalness: 0.35 })
   );
   knobCap.position.y = 0.005;
   group.add(knobCap);
 
-  // Physical Protruding 3D Direct-Connection Cuff Collar for 2-Piece DeMarini Hybrids!
+  // Physical Protruding 3D Direct-Connection Cuff Collar for 2-Piece DeMarini Hybrids (Black charcoal per photos)
   if (is2Pc) {
     const cuffMat = new THREE.MeshPhysicalMaterial({
-      color: batConfig.cuffColor || '#ef4444',
-      roughness: 0.32,
-      metalness: 0.35,
-      clearcoat: 0.55
+      color: batConfig.cuffColor || '#181a20',
+      roughness: 0.34,
+      metalness: 0.32,
+      clearcoat: 0.4
     });
     const cuffMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.116, 0.102, 0.24, 24), cuffMat);
     cuffMesh.position.y = 1.54;
@@ -793,9 +855,9 @@ function buildCompositeBatGroup(batConfig, tex) {
     group.add(cuffMesh);
 
     const ringMat = new THREE.MeshStandardMaterial({
-      color: batConfig.cuffTrim || '#2dd4bf',
-      roughness: 0.3,
-      metalness: 0.5
+      color: batConfig.cuffTrim || '#334155',
+      roughness: 0.35,
+      metalness: 0.45
     });
     const topRing = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.011, 8, 24), ringMat);
     topRing.rotation.x = Math.PI / 2;
@@ -806,17 +868,17 @@ function buildCompositeBatGroup(batConfig, tex) {
     group.add(topRing, botRing);
   }
 
-  // Authentic 3D End Cap Features
-  if (batConfig.capStyle === 'tremor') {
-    // 2026 DeMarini Tremor End Cap: Notched perimeter teeth around tip
-    const toothMat = new THREE.MeshStandardMaterial({ color: '#090d14', roughness: 0.35, metalness: 0.4 });
-    const tealRing = new THREE.Mesh(
-      new THREE.TorusGeometry(barrelR * 0.72, 0.012, 8, 24),
-      new THREE.MeshStandardMaterial({ color: '#2dd4bf', roughness: 0.3, metalness: 0.5 })
+  // Authentic 3D End Cap Features matching uploaded photos
+  if (batConfig.capStyle === 'tremor' || batConfig.capStyle === 'dish') {
+    // 2026 & 2022 DeMarini Notched Black Composite End Cap
+    const toothMat = new THREE.MeshStandardMaterial({ color: '#090b10', roughness: 0.35, metalness: 0.3 });
+    const baseCapRing = new THREE.Mesh(
+      new THREE.TorusGeometry(barrelR * 0.78, 0.014, 8, 24),
+      toothMat
     );
-    tealRing.rotation.x = Math.PI / 2;
-    tealRing.position.y = 3.635;
-    group.add(tealRing);
+    baseCapRing.rotation.x = Math.PI / 2;
+    baseCapRing.position.y = 3.635;
+    group.add(baseCapRing);
 
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
@@ -826,19 +888,19 @@ function buildCompositeBatGroup(batConfig, tex) {
       group.add(tooth);
     }
   } else if (batConfig.capStyle === 'cupped') {
-    // Authentic Wood Bat Recessed Cupped Center Rim
+    // Photo 1: Baum Gold sleek solid black cupped rim
     const cupRim = new THREE.Mesh(
-      new THREE.TorusGeometry(0.11, 0.022, 8, 24),
-      new THREE.MeshStandardMaterial({ color: '#d97706', roughness: 0.4 })
+      new THREE.TorusGeometry(0.11, 0.02, 8, 24),
+      new THREE.MeshStandardMaterial({ color: '#111318', roughness: 0.25 })
     );
     cupRim.rotation.x = Math.PI / 2;
     cupRim.position.y = 3.61;
     group.add(cupRim);
   } else if (batConfig.capStyle === 'flared') {
-    // Combat Flared Pommel Cuff + Precision Recessed Dish End Cap
+    // Photo 4 & 5: Combat Flared Pommel Cuff + Matching Knob/Cap Accent
     const pommel = new THREE.Mesh(
       new THREE.TorusGeometry(0.128, 0.022, 10, 24),
-      new THREE.MeshStandardMaterial({ color: batConfig.handleColor, roughness: 0.55 })
+      new THREE.MeshStandardMaterial({ color: batConfig.knobColor || batConfig.capColor, roughness: 0.45 })
     );
     pommel.rotation.x = Math.PI / 2;
     pommel.position.y = 0.095;
@@ -1092,41 +1154,116 @@ function buildCaliforniaPalmTree(height, curveOffsetX, curveOffsetZ) {
   return grp;
 }
 
+function makeRoundedRectShape(w, h, r) {
+  const s = new THREE.Shape();
+  const hw = w * 0.5;
+  const hh = h * 0.5;
+  const rad = Math.min(r, hw * 0.45, hh * 0.45);
+  s.moveTo(-hw + rad, -hh);
+  s.lineTo(hw - rad, -hh);
+  s.quadraticCurveTo(hw, -hh, hw, -hh + rad);
+  s.lineTo(hw, hh - rad);
+  s.quadraticCurveTo(hw, hh, hw - rad, hh);
+  s.lineTo(-hw + rad, hh);
+  s.quadraticCurveTo(-hw, hh, -hw, hh - rad);
+  s.lineTo(-hw, -hh + rad);
+  s.quadraticCurveTo(-hw, -hh, -hw + rad, -hh);
+  return s;
+}
+
+function makeSculptedLimbGeom(rTop, rBot, len) {
+  // Smooth organic LatheGeometry limb profile (slight muscular calf/bicep swell + rounded joint caps)
+  const pts = [
+    new THREE.Vector2(0.0, 0.0),
+    new THREE.Vector2(rTop * 0.88, -len * 0.06),
+    new THREE.Vector2(rTop * 1.08, -len * 0.28),
+    new THREE.Vector2((rTop + rBot) * 0.52, -len * 0.58),
+    new THREE.Vector2(rBot * 0.96, -len * 0.92),
+    new THREE.Vector2(0.0, -len)
+  ];
+  return new THREE.LatheGeometry(pts, 18);
+}
+
+function makeSculptedTorsoGeom(height, chestR, waistR, hipR) {
+  const h = height;
+  const pts = [
+    new THREE.Vector2(0.0, -h * 0.5),
+    new THREE.Vector2(hipR * 0.85, -h * 0.46),
+    new THREE.Vector2(hipR, -h * 0.34),
+    new THREE.Vector2(waistR, -h * 0.06),
+    new THREE.Vector2(chestR, h * 0.26),
+    new THREE.Vector2(chestR * 0.92, h * 0.44),
+    new THREE.Vector2(chestR * 0.32, h * 0.5),
+    new THREE.Vector2(0.0, h * 0.5)
+  ];
+  return new THREE.LatheGeometry(pts, 24);
+}
+
+function makeSculptedCleatMesh(mat, scale = 1.0) {
+  const grp = new THREE.Group();
+  const shoe = new THREE.Mesh(new THREE.CapsuleGeometry(0.145 * scale, 0.36 * scale, 6, 12), mat);
+  shoe.rotation.x = Math.PI / 2;
+  shoe.scale.set(1.0, 1.0, 0.68);
+  shoe.position.set(0, -1.33, 0.14 * scale);
+  const ankleCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.135 * scale, 0.15 * scale, 0.16 * scale, 14), mat);
+  ankleCollar.position.set(0, -1.24, 0.01);
+  grp.add(shoe, ankleCollar);
+  return grp;
+}
+
 function buildStadiumLightTowers(stSpec, towerAngles, concreteMat, steelMat) {
   const grp = new THREE.Group();
   const bulbMat = new THREE.MeshBasicMaterial({ color: '#f8fafc' });
-  const frameMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.5, metalness: 0.5 });
+  const frameMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.46, metalness: 0.52 });
 
-  // Single instanced draw call for all LED floodlight bulbs across all towers
   const colsPerBank = 6;
   const rowsPerBank = 3;
   const totalBulbs = towerAngles.length * colsPerBank * rowsPerBank;
-  const bulbs = new THREE.InstancedMesh(new THREE.SphereGeometry(0.95, 8, 6), bulbMat, totalBulbs);
+  const bulbs = new THREE.InstancedMesh(new THREE.SphereGeometry(0.95, 10, 8), bulbMat, totalBulbs);
   const dummy = new THREE.Object3D();
   let bulbIdx = 0;
 
+  // Tapered LatheGeometry architectural concrete-steel stanchion tower
+  const towerProfile = [
+    new THREE.Vector2(2.6, 0),
+    new THREE.Vector2(2.3, 18),
+    new THREE.Vector2(1.6, 68),
+    new THREE.Vector2(1.05, 124),
+    new THREE.Vector2(1.3, 127),
+    new THREE.Vector2(0, 128)
+  ];
+  const poleGeom = new THREE.LatheGeometry(towerProfile, 16);
+  const housingGeom = new THREE.ExtrudeGeometry(makeRoundedRectShape(24.5, 11.2, 2.2), {
+    depth: 1.5,
+    bevelEnabled: true,
+    bevelThickness: 0.35,
+    bevelSize: 0.35,
+    bevelSegments: 2
+  });
+
   for (const phi of towerAngles) {
-    const d = stSpec.wallDist(phi) + 84;
+    const d = stSpec.wallDist(phi) + 86;
     const tx = Math.sin(phi) * d;
     const tz = -Math.cos(phi) * d;
 
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 2.1, 126, 10), steelMat);
-    pole.position.set(tx, 63, tz);
+    const pole = new THREE.Mesh(poleGeom, steelMat);
+    pole.position.set(tx, 0, tz);
     grp.add(pole);
 
-    // Angled Steel Crossbar + Light Bank Housing facing Home Plate
     const headGrp = new THREE.Group();
     headGrp.position.set(tx, 126, tz);
     headGrp.lookAt(0, 12, 0);
 
-    const backing = new THREE.Mesh(new THREE.BoxGeometry(24, 10.5, 1.4), frameMat);
-    backing.position.set(0, 0, -0.8);
+    const backing = new THREE.Mesh(housingGeom, frameMat);
+    backing.position.set(0, 0, -1.6);
     headGrp.add(backing);
 
-    const stanchionArm = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.7, 5, 8), concreteMat);
-    stanchionArm.rotation.x = Math.PI * 0.35;
-    stanchionArm.position.set(0, -3.5, -2.5);
-    headGrp.add(stanchionArm);
+    const armCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, -6, -4.5),
+      new THREE.Vector3(0, -3, -2.5),
+      new THREE.Vector3(0, 0, -1.0)
+    ]);
+    headGrp.add(new THREE.Mesh(new THREE.TubeGeometry(armCurve, 8, 0.72, 10, false), concreteMat));
     grp.add(headGrp);
 
     headGrp.updateMatrixWorld(true);
@@ -1134,212 +1271,413 @@ function buildStadiumLightTowers(stSpec, towerAngles, concreteMat, steelMat) {
       for (let c = 0; c < colsPerBank; c++) {
         const lx = -9.5 + c * 3.8;
         const ly = -3.0 + r * 3.0;
-        dummy.position.set(lx, ly, 0.25);
+        dummy.position.set(lx, ly, 0.35);
         dummy.position.applyMatrix4(headGrp.matrixWorld);
         dummy.updateMatrix();
         bulbs.setMatrixAt(bulbIdx++, dummy.matrix);
       }
     }
+
+    const coneGeom = new THREE.ConeGeometry(34, 155, 18, 1, true);
+    coneGeom.translate(0, -77.5, 0);
+    coneGeom.rotateX(-Math.PI / 2);
+    const beamCone = new THREE.Mesh(
+      coneGeom,
+      new THREE.MeshBasicMaterial({
+        color: '#e0f2fe',
+        transparent: true,
+        opacity: 0.032,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    beamCone.position.set(0, 0, 1.5);
+    headGrp.add(beamCone);
   }
   bulbs.instanceMatrix.needsUpdate = true;
+  bulbs.computeBoundingSphere();
   grp.add(bulbs);
   return grp;
 }
 
 /* =========================================================
-   Composite 6.0-ft Pitcher + Hand-Held Release Baseball
+   Sculpted 6.0-ft Pitcher + Smooth Lathe Torso & Capsule Limbs
    ========================================================= */
+function makePlayerShadowDisc(radius = 0.95) {
+  const m = new THREE.Mesh(
+    new THREE.CircleGeometry(radius, 22),
+    new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.36, depthWrite: false })
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.position.y = 0.035;
+  return m;
+}
+
 function buildCompositePitcher(maxAniso, ballTex) {
   const root = new THREE.Group();
   root.position.set(0, 0.83, -60.5);
+  root.add(makePlayerShadowDisc(1.2));
 
   const pantsMat = new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.72 });
-  const jerseyTex = makeJerseyFrontTexture('#1e40af', '#ef4444', '24', maxAniso);
-  const jerseyMat = new THREE.MeshStandardMaterial({ map: jerseyTex, roughness: 0.6 });
-  const sleeveMat = new THREE.MeshStandardMaterial({ color: '#1e40af', roughness: 0.65 });
-  const skinMat = new THREE.MeshStandardMaterial({ color: '#d99b72', roughness: 0.68 });
-  const navyMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.6 });
-  const gloveMat = new THREE.MeshStandardMaterial({ color: '#92400e', roughness: 0.55 });
+  const stirrupMat = new THREE.MeshStandardMaterial({ color: '#b91c1c', roughness: 0.65 });
+  const jerseyTex = makeJerseyFrontTexture('#1e3a8a', '#ef4444', '24', maxAniso);
+  const jerseyMat = new THREE.MeshStandardMaterial({ map: jerseyTex, roughness: 0.56 });
+  const sleeveMat = new THREE.MeshStandardMaterial({ color: '#1e3a8a', roughness: 0.62 });
+  const undershirtMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.7 });
+  const skinMat = new THREE.MeshStandardMaterial({ color: '#d99b72', roughness: 0.62 });
+  const navyMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.5 });
+  const gloveMat = new THREE.MeshStandardMaterial({ color: '#854d0e', roughness: 0.48 });
 
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.5, 1.85, 14), jerseyMat);
-  torso.position.set(0, 3.95, 0);
+  const bodyPivot = new THREE.Group();
+  root.add(bodyPivot);
+
+  const pelvis = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.24, 6, 16), pantsMat);
+  pelvis.rotation.z = Math.PI / 2;
+  pelvis.scale.set(0.85, 0.65, 0.75);
+  pelvis.position.set(0, 2.86, 0);
+  bodyPivot.add(pelvis);
+
+  const belt = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.06, 8, 22), navyMat);
+  belt.rotation.x = Math.PI / 2;
+  belt.scale.set(1.06, 0.84, 1);
+  belt.position.set(0, 3.04, 0);
+  const buckle = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), new THREE.MeshStandardMaterial({ color: '#cbd5e1', metalness: 0.78, roughness: 0.22 }));
+  buckle.scale.set(1.2, 0.8, 0.45);
+  buckle.position.set(0, 3.04, 0.42);
+  bodyPivot.add(belt, buckle);
+
+  // Smooth Contoured Anatomical Torso
+  const torsoPivot = new THREE.Group();
+  torsoPivot.position.set(0, 3.06, 0);
+  bodyPivot.add(torsoPivot);
+
+  const torso = new THREE.Mesh(makeSculptedTorsoGeom(1.88, 0.68, 0.48, 0.53), jerseyMat);
+  torso.position.set(0, 0.94, 0);
+  torso.scale.set(1.05, 1.0, 0.8);
   torso.castShadow = true;
-  root.add(torso);
+  torsoPivot.add(torso);
 
-  const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.16, 14), navyMat);
-  belt.position.set(0, 3.02, 0);
-  root.add(belt);
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.04, 8, 18), stirrupMat);
+  collar.rotation.x = Math.PI / 2;
+  collar.position.set(0, 1.85, 0);
+  const neck = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.18, 6, 12), skinMat);
+  neck.position.set(0, 1.98, 0);
+  torsoPivot.add(collar, neck);
 
+  // Sculpted Head + Fitted Curved Baseball Cap
   const headGroup = new THREE.Group();
-  headGroup.position.set(0, 5.28, 0);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 12), skinMat);
-  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.45, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.56), navyMat);
-  cap.position.y = 0.08;
-  const brim = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.06, 0.45), navyMat);
-  brim.position.set(0, 0.1, 0.36);
-  headGroup.add(head, cap, brim);
-  root.add(headGroup);
+  headGroup.position.set(0, 2.28, 0);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.39, 18, 14), skinMat);
+  head.scale.set(0.9, 1.06, 0.96);
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.42, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.56), navyMat);
+  cap.position.y = 0.07;
+  const capBtn = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), stirrupMat);
+  capBtn.position.set(0, 0.49, 0);
+  const visorCurve = new THREE.ExtrudeGeometry(makeRoundedRectShape(0.68, 0.46, 0.22), {
+    depth: 0.045,
+    bevelEnabled: true,
+    bevelThickness: 0.015,
+    bevelSize: 0.02,
+    bevelSegments: 2
+  });
+  const visor = new THREE.Mesh(visorCurve, navyMat);
+  visor.rotation.x = Math.PI / 2 - 0.14;
+  visor.position.set(0, 0.14, 0.34);
+  headGroup.add(head, cap, capBtn, visor);
+  torsoPivot.add(headGroup);
 
-  const legGeom = new THREE.CylinderGeometry(0.24, 0.17, 2.75, 10);
-  legGeom.translate(0, -1.38, 0);
-  const cleatGeom = new THREE.BoxGeometry(0.32, 0.24, 0.62);
-  cleatGeom.translate(0, -2.75, 0.12);
+  // Smooth Organic Legs (Lathe thigh/calf + stirrup sock + Capsule cleat)
+  const thighGeom = makeSculptedLimbGeom(0.245, 0.185, 1.4);
+  const calfGeom = makeSculptedLimbGeom(0.185, 0.13, 1.24);
+  const sockGeom = makeSculptedLimbGeom(0.168, 0.134, 0.68);
+  sockGeom.translate(0, -0.5, 0);
 
-  const rightLegPivot = new THREE.Group();
-  rightLegPivot.position.set(-0.32, 2.95, 0);
-  rightLegPivot.add(new THREE.Mesh(legGeom, pantsMat), new THREE.Mesh(cleatGeom, navyMat));
+  const makeLeg = (xPos) => {
+    const hip = new THREE.Group();
+    hip.position.set(xPos, 2.86, 0);
+    hip.add(new THREE.Mesh(thighGeom, pantsMat));
+    const knee = new THREE.Group();
+    knee.position.set(0, -1.36, 0);
+    const calf = new THREE.Mesh(calfGeom, pantsMat);
+    const stirrup = new THREE.Mesh(sockGeom, stirrupMat);
+    const shoe = makeSculptedCleatMesh(navyMat, 1.0);
+    knee.add(calf, stirrup, shoe);
+    hip.add(knee);
+    return { hip, knee };
+  };
 
-  const leftLegPivot = new THREE.Group();
-  leftLegPivot.position.set(0.32, 2.95, 0);
-  leftLegPivot.add(new THREE.Mesh(legGeom, pantsMat), new THREE.Mesh(cleatGeom, navyMat));
-  root.add(rightLegPivot, leftLegPivot);
+  const rLeg = makeLeg(-0.3);
+  const lLeg = makeLeg(0.3);
+  root.add(rLeg.hip, lLeg.hip);
 
-  const armGeom = new THREE.CylinderGeometry(0.15, 0.12, 1.9, 10);
-  armGeom.translate(0, -0.92, 0);
+  // Smooth Articulated Arms
+  const upperArmGeom = makeSculptedLimbGeom(0.175, 0.135, 0.92);
+  const foreArmGeom = makeSculptedLimbGeom(0.13, 0.095, 0.94);
 
   const gloveArmPivot = new THREE.Group();
-  gloveArmPivot.position.set(0.75, 4.7, 0);
-  gloveArmPivot.add(new THREE.Mesh(armGeom, sleeveMat));
-  const glove = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), gloveMat);
-  glove.scale.set(0.85, 1.15, 1.0);
-  glove.position.set(0, -1.9, 0.12);
-  gloveArmPivot.add(glove);
-  root.add(gloveArmPivot);
+  gloveArmPivot.position.set(0.68, 1.7, 0);
+  gloveArmPivot.add(new THREE.Mesh(new THREE.SphereGeometry(0.21, 12, 10), sleeveMat));
+  gloveArmPivot.add(new THREE.Mesh(upperArmGeom, sleeveMat));
+  const gloveElbowPivot = new THREE.Group();
+  gloveElbowPivot.position.set(0, -0.88, 0);
+  gloveElbowPivot.add(new THREE.Mesh(new THREE.SphereGeometry(0.125, 10, 8), undershirtMat));
+  gloveElbowPivot.add(new THREE.Mesh(foreArmGeom, undershirtMat));
+  const gloveShell = new THREE.Mesh(new THREE.SphereGeometry(0.29, 14, 12), gloveMat);
+  gloveShell.scale.set(0.76, 1.18, 1.06);
+  gloveShell.position.set(0, -1.04, 0.1);
+  const gloveWeb = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.045, 8, 14), new THREE.MeshStandardMaterial({ color: '#451a03', roughness: 0.7 }));
+  gloveWeb.position.set(-0.08, -1.06, 0.19);
+  gloveElbowPivot.add(gloveShell, gloveWeb);
+  gloveArmPivot.add(gloveElbowPivot);
+  torsoPivot.add(gloveArmPivot);
 
   const throwArmPivot = new THREE.Group();
-  throwArmPivot.position.set(-0.75, 4.7, 0);
-  throwArmPivot.add(new THREE.Mesh(armGeom, sleeveMat));
-  const hand = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), skinMat);
-  hand.position.set(0, -1.9, 0);
+  throwArmPivot.position.set(-0.68, 1.7, 0);
+  throwArmPivot.add(new THREE.Mesh(new THREE.SphereGeometry(0.21, 12, 10), sleeveMat));
+  throwArmPivot.add(new THREE.Mesh(upperArmGeom, sleeveMat));
+  const throwElbowPivot = new THREE.Group();
+  throwElbowPivot.position.set(0, -0.88, 0);
+  throwElbowPivot.add(new THREE.Mesh(new THREE.SphereGeometry(0.125, 10, 8), undershirtMat));
+  throwElbowPivot.add(new THREE.Mesh(foreArmGeom, undershirtMat));
+  const hand = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 10), skinMat);
+  hand.position.set(0, -0.96, 0);
   const handBall = new THREE.Mesh(
-    new THREE.SphereGeometry(0.22, 12, 10),
+    new THREE.SphereGeometry(0.22, 14, 12),
     new THREE.MeshStandardMaterial({ map: ballTex, roughness: 0.4 })
   );
-  handBall.position.set(0, -1.98, 0.14);
-  throwArmPivot.add(hand, handBall);
-  root.add(throwArmPivot);
+  handBall.position.set(0, -1.06, 0.14);
+  throwElbowPivot.add(hand, handBall);
+  throwArmPivot.add(throwElbowPivot);
+  torsoPivot.add(throwArmPivot);
 
-  return { root, leftLegPivot, rightLegPivot, gloveArmPivot, throwArmPivot, handBall };
+  return {
+    root,
+    torsoPivot,
+    leftLegPivot: lLeg.hip,
+    leftKneePivot: lLeg.knee,
+    rightLegPivot: rLeg.hip,
+    rightKneePivot: rLeg.knee,
+    gloveArmPivot,
+    gloveElbowPivot,
+    throwArmPivot,
+    throwElbowPivot,
+    handBall
+  };
 }
 
 /* =========================================================
-   Composite 6.0-ft Articulated RH Batter + Grip Hands
+   Sculpted 6.0-ft RH Batter + Contoured C-Flap Helmet & Tapered Anatomy
    ========================================================= */
 function buildCompositeBatter(maxAniso) {
   const root = new THREE.Group();
   root.position.set(-2.55, 0.05, 0.25);
+  root.add(makePlayerShadowDisc(1.2));
 
-  const pantsMat = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.72 });
+  const pantsMat = new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.72 });
+  const stirrupMat = new THREE.MeshStandardMaterial({ color: '#0284c7', roughness: 0.65 });
   const jerseyTex = makeJerseyFrontTexture('#0f172a', '#38bdf8', '17', maxAniso);
-  const jerseyMat = new THREE.MeshStandardMaterial({ map: jerseyTex, roughness: 0.58 });
-  const sleeveMat = new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.65 });
-  const helmetMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.35, metalness: 0.25 });
-  const skinMat = new THREE.MeshStandardMaterial({ color: '#d99b72', roughness: 0.68 });
-  const gloveMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.6 });
-  const cleatMat = new THREE.MeshStandardMaterial({ color: '#090d14', roughness: 0.65 });
+  const jerseyMat = new THREE.MeshStandardMaterial({ map: jerseyTex, roughness: 0.56 });
+  const sleeveMat = new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.62 });
+  const helmetMat = new THREE.MeshPhysicalMaterial({ color: '#0f172a', roughness: 0.22, metalness: 0.22, clearcoat: 0.78 });
+  const skinMat = new THREE.MeshStandardMaterial({ color: '#d99b72', roughness: 0.64 });
+  const gloveMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.48 });
+  const cleatMat = new THREE.MeshStandardMaterial({ color: '#090d14', roughness: 0.52 });
 
-  const legGeom = new THREE.CylinderGeometry(0.23, 0.16, 2.7, 10);
-  legGeom.translate(0, -1.35, 0);
-  const cleatGeom = new THREE.BoxGeometry(0.32, 0.22, 0.58);
-  cleatGeom.translate(0.08, -2.7, 0);
+  const thighGeom = makeSculptedLimbGeom(0.235, 0.18, 1.38);
+  const calfGeom = makeSculptedLimbGeom(0.18, 0.128, 1.24);
+  const sockGeom = makeSculptedLimbGeom(0.165, 0.132, 0.66);
+  sockGeom.translate(0, -0.5, 0);
 
-  const backLeg = new THREE.Group();
-  backLeg.position.set(0, 2.8, 0.55);
-  backLeg.rotation.z = -0.06;
-  backLeg.add(new THREE.Mesh(legGeom, pantsMat), new THREE.Mesh(cleatGeom, cleatMat));
+  const makeBatterLeg = (zOffset, tiltZ) => {
+    const hip = new THREE.Group();
+    hip.position.set(0.02, 2.8, zOffset);
+    hip.rotation.z = tiltZ;
+    hip.add(new THREE.Mesh(thighGeom, pantsMat));
+    const knee = new THREE.Group();
+    knee.position.set(0, -1.34, 0);
+    const shoe = makeSculptedCleatMesh(cleatMat, 1.0);
+    shoe.rotation.y = Math.PI / 2;
+    knee.add(
+      new THREE.Mesh(calfGeom, pantsMat),
+      new THREE.Mesh(sockGeom, stirrupMat),
+      shoe
+    );
+    hip.add(knee);
+    return { hip, knee };
+  };
 
-  const strideLegPivot = new THREE.Group();
-  strideLegPivot.position.set(0.06, 2.8, -0.55);
-  strideLegPivot.rotation.z = 0.06;
-  strideLegPivot.add(new THREE.Mesh(legGeom, pantsMat), new THREE.Mesh(cleatGeom, cleatMat));
-  root.add(backLeg, strideLegPivot);
+  const backLeg = makeBatterLeg(0.56, -0.06);
+  const strideLeg = makeBatterLeg(-0.56, 0.06);
+  root.add(backLeg.hip, strideLeg.hip);
 
   const torsoPivot = new THREE.Group();
   torsoPivot.position.set(0, 2.85, 0);
   root.add(torsoPivot);
 
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.48, 1.85, 14), jerseyMat);
-  torso.position.set(0, 1.0, 0);
+  const belt = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.06, 8, 22), cleatMat);
+  belt.rotation.x = Math.PI / 2;
+  belt.scale.set(0.84, 1.05, 1);
+  belt.position.set(0, 0.08, 0);
+  torsoPivot.add(belt);
+
+  const torso = new THREE.Mesh(makeSculptedTorsoGeom(1.86, 0.64, 0.46, 0.51), jerseyMat);
+  torso.position.set(0, 1.02, 0);
   torso.rotation.y = Math.PI * 0.5;
+  torso.scale.set(0.84, 1.0, 1.05);
   torso.castShadow = true;
   torsoPivot.add(torso);
 
-  const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.15, 14), cleatMat);
-  belt.position.set(0, 0.06, 0);
-  torsoPivot.add(belt);
+  const shoulderL = new THREE.Mesh(new THREE.SphereGeometry(0.21, 12, 10), sleeveMat);
+  shoulderL.position.set(0.18, 1.76, 0.52);
+  const shoulderR = shoulderL.clone();
+  shoulderR.position.z = -0.52;
+  const neck = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.16, 6, 12), skinMat);
+  neck.position.set(0.06, 2.02, 0);
+  torsoPivot.add(shoulderL, shoulderR, neck);
 
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 14, 12), skinMat);
-  head.position.set(0.1, 2.32, 0);
-  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.45, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), helmetMat);
-  helmet.position.set(0.1, 2.38, 0);
-  const brim = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.07, 0.34), helmetMat);
-  brim.position.set(0.35, 2.42, -0.2);
-  brim.rotation.y = -0.3;
-  torsoPivot.add(head, helmet, brim);
+  // Smooth Contoured C-Flap Batting Helmet
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.39, 18, 14), skinMat);
+  head.position.set(0.1, 2.34, 0);
+  head.scale.set(0.95, 1.05, 0.92);
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.44, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), helmetMat);
+  helmet.position.set(0.1, 2.4, 0);
 
-  const armGeom = new THREE.CylinderGeometry(0.13, 0.11, 1.65, 10);
-  armGeom.translate(0, -0.82, 0);
-  const topArm = new THREE.Mesh(armGeom, sleeveMat);
-  topArm.position.set(0.25, 1.75, 0.48);
-  topArm.rotation.z = 0.72;
-  topArm.rotation.x = -0.4;
-  const bottomArm = new THREE.Mesh(armGeom, sleeveMat);
-  bottomArm.position.set(0.32, 1.72, -0.45);
-  bottomArm.rotation.z = 0.85;
-  bottomArm.rotation.x = 0.42;
+  const flapShape = makeRoundedRectShape(0.32, 0.34, 0.1);
+  const earFlap = new THREE.Mesh(new THREE.ExtrudeGeometry(flapShape, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 }), helmetMat);
+  earFlap.position.set(0.12, 2.26, -0.44);
+  const cFlapShape = makeRoundedRectShape(0.26, 0.19, 0.07);
+  const cFlap = new THREE.Mesh(new THREE.ExtrudeGeometry(cFlapShape, { depth: 0.07, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 }), helmetMat);
+  cFlap.position.set(0.34, 2.18, -0.37);
+  cFlap.rotation.y = -0.38;
 
-  const hands = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 10), gloveMat);
-  hands.position.set(0.65, 1.25, 0.12);
-  torsoPivot.add(topArm, bottomArm, hands);
+  const visorShape = makeRoundedRectShape(0.66, 0.4, 0.18);
+  const visor = new THREE.Mesh(new THREE.ExtrudeGeometry(visorShape, { depth: 0.04, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.015, bevelSegments: 2 }), helmetMat);
+  visor.rotation.x = Math.PI / 2 - 0.12;
+  visor.rotation.z = -Math.PI * 0.5 + 0.4;
+  visor.position.set(0.32, 2.44, -0.18);
+  torsoPivot.add(head, helmet, earFlap, cFlap, visor);
 
-  return { root, strideLegPivot, torsoPivot };
+  const upperArmGeom = makeSculptedLimbGeom(0.145, 0.115, 0.86);
+  const foreArmGeom = makeSculptedLimbGeom(0.115, 0.085, 0.82);
+
+  const topArm = new THREE.Group();
+  topArm.position.set(0.22, 1.76, 0.5);
+  topArm.rotation.set(-0.35, 0, 0.72);
+  topArm.add(new THREE.Mesh(upperArmGeom, sleeveMat));
+  const topFore = new THREE.Mesh(foreArmGeom, skinMat);
+  topFore.position.set(0, -0.82, 0);
+  topFore.rotation.z = 0.55;
+  topArm.add(topFore);
+
+  const bottomArm = new THREE.Group();
+  bottomArm.position.set(0.28, 1.72, -0.46);
+  bottomArm.rotation.set(0.38, 0, 0.84);
+  bottomArm.add(new THREE.Mesh(upperArmGeom, sleeveMat));
+  const botFore = new THREE.Mesh(foreArmGeom, skinMat);
+  botFore.position.set(0, -0.82, 0);
+  botFore.rotation.z = 0.48;
+  bottomArm.add(botFore);
+
+  const handsGroup = new THREE.Group();
+  handsGroup.position.set(0.62, 1.32, 0.12);
+  const topHand = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 10), gloveMat);
+  topHand.position.set(0, 0.08, 0);
+  const botHand = new THREE.Mesh(new THREE.SphereGeometry(0.155, 12, 10), gloveMat);
+  botHand.position.set(0, -0.1, 0);
+  handsGroup.add(topHand, botHand);
+  torsoPivot.add(topArm, bottomArm, handsGroup);
+
+  return {
+    root,
+    strideLegPivot: strideLeg.hip,
+    strideKneePivot: strideLeg.knee,
+    backKneePivot: backLeg.knee,
+    torsoPivot,
+    handsGroup
+  };
 }
 
 /* =========================================================
-   3D Catcher (with Tracking Mitt) & Home Plate Umpire
+   Sculpted 3D Catcher (Smooth Armor & Wire Mask) & Home Plate Umpire
    ========================================================= */
 function buildCatcherAndUmpire() {
   const grp = new THREE.Group();
-  const gearMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.5 });
-  const padMat = new THREE.MeshStandardMaterial({ color: '#334155', roughness: 0.55 });
-  const umpShirtMat = new THREE.MeshStandardMaterial({ color: '#38bdf8', roughness: 0.7 });
-  const umpPantMat = new THREE.MeshStandardMaterial({ color: '#475569', roughness: 0.75 });
-  const mittMat = new THREE.MeshStandardMaterial({ color: '#92400e', roughness: 0.55 });
+  const gearMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.42, metalness: 0.22 });
+  const padMat = new THREE.MeshStandardMaterial({ color: '#334155', roughness: 0.48 });
+  const ribAccentMat = new THREE.MeshStandardMaterial({ color: '#0284c7', roughness: 0.42 });
+  const umpShirtMat = new THREE.MeshStandardMaterial({ color: '#38bdf8', roughness: 0.65 });
+  const umpPantMat = new THREE.MeshStandardMaterial({ color: '#475569', roughness: 0.72 });
+  const mittMat = new THREE.MeshStandardMaterial({ color: '#854d0e', roughness: 0.48 });
+  const maskMetalMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', metalness: 0.82, roughness: 0.25 });
 
   const catcher = new THREE.Group();
   catcher.position.set(0.05, 0, 4.4);
-  const cBody = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.48, 1.45, 12), gearMat);
+  catcher.add(makePlayerShadowDisc(1.2));
+
+  const cBody = new THREE.Mesh(makeSculptedTorsoGeom(1.48, 0.56, 0.48, 0.5), gearMat);
   cBody.position.set(0, 2.0, 0);
   cBody.rotation.x = -0.18;
-  const cProtector = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.44, 1.15, 12), padMat);
-  cProtector.position.set(0, 2.05, -0.24);
+  const cProtector = new THREE.Mesh(makeSculptedTorsoGeom(1.16, 0.48, 0.44, 0.42), padMat);
+  cProtector.position.set(0, 2.04, -0.22);
   cProtector.rotation.x = -0.18;
-  const cMask = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 10), gearMat);
-  cMask.position.set(0, 3.02, -0.1);
-  const shinL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.16, 1.45, 10), padMat);
-  shinL.position.set(-0.46, 0.75, -0.15);
-  shinL.rotation.x = -0.3;
-  const shinR = shinL.clone();
-  shinR.position.x = 0.46;
-  catcher.add(cBody, cProtector, cMask, shinL, shinR);
+  catcher.add(cBody, cProtector);
 
-  const mitt = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 10), mittMat);
-  mitt.scale.set(1.05, 1.15, 0.52);
+  for (let r = 0; r < 4; r++) {
+    const rib = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.54 - r * 0.04, 6, 10), ribAccentMat);
+    rib.rotation.z = Math.PI / 2;
+    rib.position.set(0, 2.45 - r * 0.26, -0.58 + r * 0.04);
+    rib.rotation.x = -0.18;
+    catcher.add(rib);
+  }
+
+  // Hockey-style Catcher Helmet + Smooth Torus Cage Bars + Rounded Throat Guard
+  const cHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.43, 18, 14), gearMat);
+  cHelmet.position.set(0, 3.04, -0.06);
+  const cCage = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.028, 8, 18), maskMetalMat);
+  cCage.position.set(0, 3.0, -0.44);
+  const cBar = new THREE.Mesh(new THREE.CapsuleGeometry(0.02, 0.36, 4, 8), maskMetalMat);
+  cBar.rotation.z = Math.PI / 2;
+  cBar.position.set(0, 3.0, -0.46);
+  const cThroat = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.14, 6, 10), gearMat);
+  cThroat.rotation.z = Math.PI / 2;
+  cThroat.position.set(0, 2.66, -0.44);
+  catcher.add(cHelmet, cCage, cBar, cThroat);
+
+  [-0.46, 0.46].forEach((sx) => {
+    const thighC = new THREE.Mesh(new THREE.CapsuleGeometry(0.21, 0.88, 6, 14), gearMat);
+    thighC.position.set(sx, 1.48, 0.16);
+    thighC.rotation.x = 0.65;
+    const shin = new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 1.1, 6, 14), padMat);
+    shin.position.set(sx, 0.74, -0.16);
+    shin.rotation.x = -0.28;
+    const kneeCap = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), ribAccentMat);
+    kneeCap.position.set(sx, 1.38, -0.32);
+    catcher.add(thighC, shin, kneeCap);
+  });
+
+  const mitt = new THREE.Mesh(new THREE.SphereGeometry(0.43, 16, 14), mittMat);
+  mitt.scale.set(1.06, 1.16, 0.52);
   mitt.position.set(0, 2.45, -1.15);
   catcher.add(mitt);
   grp.add(catcher);
 
   const ump = new THREE.Group();
   ump.position.set(-0.78, 0, 7.6);
-  const uLegL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.16, 2.6, 10), umpPantMat);
-  uLegL.position.set(-0.28, 1.3, 0);
+  ump.add(makePlayerShadowDisc(1.1));
+  const uLegL = new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 2.32, 6, 14), umpPantMat);
+  uLegL.position.set(-0.28, 1.32, 0);
   const uLegR = uLegL.clone();
   uLegR.position.x = 0.28;
-  const uTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.52, 1.8, 12), umpShirtMat);
+  const uTorso = new THREE.Mesh(makeSculptedTorsoGeom(1.88, 0.62, 0.52, 0.56), umpShirtMat);
   uTorso.position.set(0, 3.45, 0);
-  const uHead = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 10), gearMat);
+  const uBallBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.28, 6, 10), gearMat);
+  uBallBag.position.set(-0.56, 2.75, 0);
+  const uHead = new THREE.Mesh(new THREE.SphereGeometry(0.39, 16, 14), gearMat);
   uHead.position.set(0, 4.72, 0);
-  ump.add(uLegL, uLegR, uTorso, uHead);
+  const uMask = new THREE.Mesh(new THREE.TorusGeometry(0.23, 0.025, 8, 18), maskMetalMat);
+  uMask.position.set(0, 4.68, -0.38);
+  ump.add(uLegL, uLegR, uTorso, uBallBag, uHead, uMask);
   grp.add(ump);
 
   return { grp, catcher, mitt };
@@ -1399,19 +1737,20 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   rimLight.position.set(-140, 80, -240);
   scene.add(rimLight);
 
-  // Shared High-Res Textures
+  // Shared High-Res College Park Textures
   const turfTex = makeMowedTurfTexture(maxAniso);
   const dirtTex = makeDirtTexture(maxAniso);
   const ballTex = makeBaseballTexture(maxAniso);
-  const fenwayWallTex = makeFenwayContinuousWallTexture(maxAniso);
-  const wrigleyWallTex = makeWrigleyIvyWallTexture(maxAniso);
-  const dodgerWallTex = makeDodgerWallTexture(maxAniso);
+  const omahaWallTex = makeOmahaWallTexture(maxAniso);
+  const lsuWallTex = makeLsuWallTexture(maxAniso);
+  const missStWallTex = makeMissStWallTexture(maxAniso);
   const cageNetTex = makeCageNetTexture(maxAniso);
-  const wrigleyBoardTex = makeWrigleyArtDecoScoreboardTexture(maxAniso);
-  const dodgerBoardTex = makeDodgerVisionTexture('DODGER VISION', 'LAD 6   SF 2 · BOT 7TH', maxAniso);
-  const fenwayCrowdTex = makeCrowdSeatsTexture('#122036', '#b91c1c', 78, maxAniso);
-  const wrigleyCrowdTex = makeCrowdSeatsTexture('#102819', '#1e40af', 84, maxAniso);
-  const dodgerCrowdTex = makeCrowdSeatsTexture('#0f2347', '#0284c7', 74, maxAniso);
+  const omahaBoardTex = makeCollegeVideoboardTexture('CHARLES SCHWAB FIELD OMAHA', 'NCAA COLLEGE WORLD SERIES', 'OMAHA, NEBRASKA · ELEV 1,040 FT', '#0c1f3f', '#facc15', maxAniso);
+  const lsuBoardTex = makeCollegeVideoboardTexture('ALEX BOX STADIUM', 'LSU TIGERS BASEBALL', 'SKIP BERTMAN FIELD · BATON ROUGE', '#280d4a', '#fdd023', maxAniso);
+  const missStBoardTex = makeCollegeVideoboardTexture('DUDE NOBLE FIELD', 'LEFT FIELD LOUNGE · STARKVILLE', 'POLK-DEMENT STADIUM · MISS. STATE', '#3a0e17', '#f8fafc', maxAniso);
+  const omahaSeatsTex = makeEmptyStadiumSeatsTexture('#1e293b', '#1d4ed8', '#facc15', maxAniso);
+  const lsuSeatsTex = makeEmptyStadiumSeatsTexture('#1b162e', '#581c87', '#fdd023', maxAniso);
+  const missStSeatsTex = makeEmptyStadiumSeatsTexture('#23181b', '#6b1829', '#e2e8f0', maxAniso);
 
   // Sky Gradient Dome
   const skyCanvas = document.createElement('canvas');
@@ -1480,13 +1819,25 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   homeDirt.receiveShadow = true;
   fieldGroup.add(homeDirt);
 
-  const moundMesh = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 9.2, 0.83, 28), dirtMat);
-  moundMesh.position.set(0, 0.415, -60.5);
+  // Contoured Bell-Curve Pitcher's Mound (LatheGeometry — zero sharp cylinder frustum)
+  const moundPts = [
+    new THREE.Vector2(0.0, 0.83),
+    new THREE.Vector2(2.8, 0.82),
+    new THREE.Vector2(5.4, 0.56),
+    new THREE.Vector2(8.0, 0.22),
+    new THREE.Vector2(9.6, 0.01)
+  ];
+  const moundMesh = new THREE.Mesh(new THREE.LatheGeometry(moundPts, 36), dirtMat);
+  moundMesh.position.set(0, 0, -60.5);
   moundMesh.receiveShadow = true;
   fieldGroup.add(moundMesh);
 
-  const rubber = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.08, 0.5), baseMat);
-  rubber.position.set(0, 0.84, -60.5);
+  const rubber = new THREE.Mesh(
+    new THREE.ExtrudeGeometry(makeRoundedRectShape(2.0, 0.5, 0.08), { depth: 0.07, bevelEnabled: false }),
+    baseMat
+  );
+  rubber.rotation.x = -Math.PI / 2;
+  rubber.position.set(0, 0.82, -60.5);
   fieldGroup.add(rubber);
 
   const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.07, 5), baseMat);
@@ -1494,16 +1845,39 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   plate.rotation.y = Math.PI;
   fieldGroup.add(plate);
 
+  const bagGeom = new THREE.ExtrudeGeometry(makeRoundedRectShape(1.5, 1.5, 0.22), {
+    depth: 0.2,
+    bevelEnabled: true,
+    bevelThickness: 0.04,
+    bevelSize: 0.04,
+    bevelSegments: 2
+  });
   const makeBase = (x, z) => {
-    const b = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.24, 1.65), baseMat);
-    b.position.set(x, 0.14, z);
-    b.rotation.y = Math.PI / 4;
+    const b = new THREE.Mesh(bagGeom, baseMat);
+    b.rotation.x = -Math.PI / 2;
+    b.rotation.z = Math.PI / 4;
+    b.position.set(x, 0.04, z);
     b.castShadow = true;
     fieldGroup.add(b);
   };
   makeBase(63.64, -63.64);
   makeBase(0, -127.28);
   makeBase(-63.64, -63.64);
+
+  const dugoutRoofGeom = new THREE.ExtrudeGeometry(makeRoundedRectShape(37, 8.6, 1.4), {
+    depth: 0.9,
+    bevelEnabled: true,
+    bevelThickness: 0.25,
+    bevelSize: 0.25,
+    bevelSegments: 3
+  });
+  const dugoutWallGeom = new THREE.ExtrudeGeometry(makeRoundedRectShape(36, 5.8, 0.8), {
+    depth: 0.85,
+    bevelEnabled: true,
+    bevelThickness: 0.15,
+    bevelSize: 0.15,
+    bevelSegments: 2
+  });
 
   [-1, 1].forEach((side) => {
     const lineLen = 355;
@@ -1514,23 +1888,25 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     chalk.position.set(-side * mid * Math.SQRT1_2, 0.05, -mid * Math.SQRT1_2);
     fieldGroup.add(chalk);
 
-    // 1B & 3B Dugout Shelters + Curved Top Fascia
+    // Sculpted Architectural 1B & 3B Dugout Shells with Curved Roof & Safety Rail
     const dug = new THREE.Group();
     dug.position.set(side * 68, 0, -28);
     dug.rotation.y = side * (Math.PI / 4);
-    const roof = new THREE.Mesh(new THREE.BoxGeometry(36, 1.0, 8), dugoutRoofMat);
+    const roof = new THREE.Mesh(dugoutRoofGeom, dugoutRoofMat);
+    roof.rotation.x = -Math.PI / 2;
     roof.position.set(0, 6.2, 0);
-    const backWall = new THREE.Mesh(new THREE.BoxGeometry(36, 6.2, 1), dugoutRoofMat);
+    const backWall = new THREE.Mesh(dugoutWallGeom, dugoutRoofMat);
     backWall.position.set(0, 3.1, side * 3.5);
-    const trim = new THREE.Mesh(new THREE.BoxGeometry(36, 0.65, 0.4), dugoutTrimMat);
-    trim.position.set(0, 6.5, -side * 3.9);
-    const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 35, 8), baseMat);
+    const trim = new THREE.Mesh(new THREE.CapsuleGeometry(0.32, 35.5, 6, 10), dugoutTrimMat);
+    trim.rotation.z = Math.PI / 2;
+    trim.position.set(0, 6.35, -side * 3.9);
+    const rail = new THREE.Mesh(new THREE.CapsuleGeometry(0.14, 34.5, 6, 10), baseMat);
     rail.rotation.z = Math.PI / 2;
     rail.position.set(0, 2.5, -side * 3.8);
     dug.add(roof, backWall, trim, rail);
     fieldGroup.add(dug);
 
-    const onDeck = new THREE.Mesh(new THREE.RingGeometry(2.2, 2.6, 24), chalkMat);
+    const onDeck = new THREE.Mesh(new THREE.RingGeometry(2.2, 2.6, 28), chalkMat);
     onDeck.rotation.x = -Math.PI / 2;
     onDeck.position.set(side * 16, 0.055, 8);
     fieldGroup.add(onDeck);
@@ -1542,14 +1918,36 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     fieldGroup.add(coachBox);
   });
 
-  [-3.1, 3.1].forEach((bx) => {
-    const boxFrame = new THREE.Mesh(new THREE.RingGeometry(2.3, 2.55, 4), chalkMat);
-    boxFrame.rotation.x = -Math.PI / 2;
-    boxFrame.rotation.z = Math.PI / 4;
-    boxFrame.scale.set(0.85, 1.35, 1);
-    boxFrame.position.set(bx, 0.052, 0.2);
-    fieldGroup.add(boxFrame);
-  });
+  const addRectChalkBox = (cx, cz, width, length, lineW = 0.18) => {
+    const hw = width * 0.5;
+    const hl = length * 0.5;
+    const top = new THREE.Mesh(new THREE.PlaneGeometry(width + lineW, lineW), chalkMat);
+    top.rotation.x = -Math.PI / 2;
+    top.position.set(cx, 0.054, cz - hl);
+    const bot = top.clone();
+    bot.position.z = cz + hl;
+    const left = new THREE.Mesh(new THREE.PlaneGeometry(lineW, length + lineW), chalkMat);
+    left.rotation.x = -Math.PI / 2;
+    left.position.set(cx - hw, 0.054, cz);
+    const right = left.clone();
+    right.position.x = cx + hw;
+    fieldGroup.add(top, bot, left, right);
+  };
+
+  // True 4ft x 6ft Rectangular Left & Right Batter's Boxes (MLB rulebook proportions)
+  addRectChalkBox(-3.0, 0.35, 4.0, 6.0, 0.17);
+  addRectChalkBox(3.0, 0.35, 4.0, 6.0, 0.17);
+
+  // Authentic Catcher's Chalk Box behind Home Plate
+  addRectChalkBox(0, 5.2, 3.6, 4.4, 0.16);
+
+  // 1st-Base Foul-Territory 3-ft Running Lane (halfway down 1B line)
+  const laneLen = 45;
+  const runLane = new THREE.Mesh(new THREE.PlaneGeometry(0.16, laneLen), chalkMat);
+  runLane.rotation.x = -Math.PI / 2;
+  runLane.rotation.z = Math.PI / 4;
+  runLane.position.set(34.5, 0.053, -31.5);
+  fieldGroup.add(runLane);
 
   // Players & Equipment
   const pitcher = buildCompositePitcher(maxAniso, ballTex);
@@ -1702,21 +2100,20 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
 
   function buildStadiumGroup(stSpec) {
     const grp = new THREE.Group();
-    const yellowMat = new THREE.MeshStandardMaterial({ color: '#facc15', roughness: 0.38, metalness: 0.18 });
+    const yellowMat = new THREE.MeshStandardMaterial({ color: '#facc15', roughness: 0.36, metalness: 0.18 });
     const concreteMat = new THREE.MeshStandardMaterial({ color: '#334155', roughness: 0.86, side: THREE.DoubleSide });
-    const steelMat = new THREE.MeshStandardMaterial({ color: '#475569', metalness: 0.68, roughness: 0.38 });
-    const glassMat = new THREE.MeshPhysicalMaterial({ color: '#bae6fd', transparent: true, opacity: 0.42, roughness: 0.1, side: THREE.DoubleSide });
+    const steelMat = new THREE.MeshStandardMaterial({ color: '#475569', metalness: 0.72, roughness: 0.34 });
+    const glassMat = new THREE.MeshPhysicalMaterial({ color: '#bae6fd', transparent: true, opacity: 0.38, roughness: 0.08, side: THREE.DoubleSide });
     const warnMat = new THREE.MeshStandardMaterial({ map: dirtTex, color: '#7c4728', roughness: 0.94, side: THREE.DoubleSide });
 
     if (stSpec.id === 'cage') {
-      // Sleek Continuous Arched Steel Truss HitTrax Facility
+      // D1 Indoor Rapsodo / HitTrax Performance Lab + 3D Rapsodo Optical Tripod Unit
       const netMat = new THREE.MeshBasicMaterial({ map: cageNetTex, transparent: true, side: THREE.DoubleSide, depthWrite: false });
       const glowMat = new THREE.MeshBasicMaterial({ color: '#e0f2fe' });
       const archWallMat = new THREE.MeshStandardMaterial({ color: '#142947', roughness: 0.72, side: THREE.DoubleSide });
 
       [80, 160, 240, 320, 400].forEach((dist) => {
         const z = -dist;
-        // Parabolic Steel Truss Arch via TubeGeometry (zero blocky beams!)
         const archCurve = new THREE.CatmullRomCurve3([
           new THREE.Vector3(-88, 0, z),
           new THREE.Vector3(-84, 30, z),
@@ -1724,20 +2121,17 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
           new THREE.Vector3(84, 30, z),
           new THREE.Vector3(88, 0, z)
         ]);
-        const archTube = new THREE.Mesh(new THREE.TubeGeometry(archCurve, 28, 1.25, 8, false), steelMat);
-        grp.add(archTube);
+        grp.add(new THREE.Mesh(new THREE.TubeGeometry(archCurve, 32, 1.25, 10, false), steelMat));
 
-        // Curved Overhead High-Bay Light Fixture Bar
         const lightCurve = new THREE.CatmullRomCurve3([
           new THREE.Vector3(-56, 36, z),
           new THREE.Vector3(0, 43.2, z),
           new THREE.Vector3(56, 36, z)
         ]);
-        grp.add(new THREE.Mesh(new THREE.TubeGeometry(lightCurve, 16, 0.55, 6, false), glowMat));
+        grp.add(new THREE.Mesh(new THREE.TubeGeometry(lightCurve, 18, 0.55, 8, false), glowMat));
 
-        // Curved Distance Ring on Turf
         const yardRing = new THREE.Mesh(
-          new THREE.RingGeometry(dist - 0.9, dist + 0.9, 48, 1, -Math.PI * 0.72, Math.PI * 0.44),
+          new THREE.RingGeometry(dist - 0.9, dist + 0.9, 56, 1, -Math.PI * 0.72, Math.PI * 0.44),
           dist === 400 ? yellowMat : chalkMat
         );
         yardRing.rotation.x = -Math.PI / 2;
@@ -1745,26 +2139,11 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         grp.add(yardRing);
       });
 
-      // Curved Swept Back Padded Telemetry Wall + HR Line + Side Nets
-      const backWallGeom = createSweptWallGeometry(
-        () => 406,
-        () => 18,
-        -0.44,
-        0.44,
-        40,
-        2.5
-      );
+      const backWallGeom = createSweptWallGeometry(() => 406, () => 18, -0.44, 0.44, 44, 2.5);
       grp.add(new THREE.Mesh(backWallGeom, archWallMat));
-      grp.add(buildTopCopingTube(() => 406, () => 18, -0.44, 0.44, 36, 0.85, yellowMat));
+      grp.add(buildTopCopingTube(() => 406, () => 18, -0.44, 0.44, 40, 0.85, yellowMat));
 
-      const backNetGeom = createSweptWallGeometry(
-        () => 405,
-        () => 44,
-        -0.44,
-        0.44,
-        36,
-        0.2
-      );
+      const backNetGeom = createSweptWallGeometry(() => 405, () => 44, -0.44, 0.44, 40, 0.2);
       grp.add(new THREE.Mesh(backNetGeom, netMat));
 
       [-1, 1].forEach((side) => {
@@ -1773,6 +2152,26 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         net.position.set(side * 86, 17, -195);
         grp.add(net);
       });
+
+      // Physical 3D Rapsodo HITTING 2.0 Optical Camera Unit on Tripod behind Pitching Rubber
+      const rapGrp = new THREE.Group();
+      rapGrp.position.set(4.5, 0, -14.5);
+      for (let t = 0; t < 3; t++) {
+        const a = (t / 3) * Math.PI * 2;
+        const legCurve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(Math.cos(a) * 0.85, 0, Math.sin(a) * 0.85),
+          new THREE.Vector3(0, 2.2, 0)
+        ]);
+        rapGrp.add(new THREE.Mesh(new THREE.TubeGeometry(legCurve, 4, 0.04, 8, false), steelMat));
+      }
+      const podMat = new THREE.MeshPhysicalMaterial({ color: '#0f172a', roughness: 0.28, metalness: 0.4, clearcoat: 0.65 });
+      const unitBody = new THREE.Mesh(new THREE.ExtrudeGeometry(makeRoundedRectShape(0.85, 0.45, 0.12), { depth: 0.42, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 2 }), podMat);
+      unitBody.position.set(0, 2.42, -0.2);
+      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.08, 16), new THREE.MeshBasicMaterial({ color: '#38bdf8' }));
+      lens.rotation.x = Math.PI / 2;
+      lens.position.set(0, 2.42, 0.26);
+      rapGrp.add(unitBody, lens);
+      grp.add(rapGrp);
 
       return grp;
     }
@@ -1785,18 +2184,18 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       () => 0.065,
       -0.8,
       0.8,
-      88
+      96
     );
     const warnMesh = new THREE.Mesh(warnGeom, warnMat);
     warnMesh.receiveShadow = true;
     grp.add(warnMesh);
 
-    // 2. Continuous Swept Outfield Wall + Coping Tube
+    // 2. Continuous Swept College Outfield Wall + Smooth Coping Tube
     const wallTex =
-      stSpec.id === 'fenway' ? fenwayWallTex : stSpec.id === 'wrigley' ? wrigleyWallTex : dodgerWallTex;
+      stSpec.id === 'omaha' ? omahaWallTex : stSpec.id === 'lsu' ? lsuWallTex : missStWallTex;
     const wallMat = new THREE.MeshStandardMaterial({
       map: wallTex,
-      roughness: stSpec.id === 'dodger' ? 0.54 : 0.72,
+      roughness: 0.58,
       side: THREE.DoubleSide
     });
     const wallGeom = createSweptWallGeometry(stSpec.wallDist, stSpec.wallHeight, -0.785, 0.785, 96, 3.8);
@@ -1804,49 +2203,53 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     wallMesh.castShadow = true;
     wallMesh.receiveShadow = true;
     grp.add(wallMesh);
+    grp.add(buildTopCopingTube(stSpec.wallDist, stSpec.wallHeight, -0.785, 0.785, 96, 0.82, yellowMat));
 
-    const copingMat =
-      stSpec.id === 'wrigley'
-        ? new THREE.MeshStandardMaterial({ color: '#14532d', roughness: 0.6 })
-        : yellowMat;
-    grp.add(buildTopCopingTube(stSpec.wallDist, stSpec.wallHeight, -0.785, 0.785, 96, 0.82, copingMat));
-
-    // 3. Continuous Radial Foul Poles
+    // 3. Sculpted Tapered Lathe Foul Poles + Screens
+    const foulPoleProfile = [
+      new THREE.Vector2(0.58, 0),
+      new THREE.Vector2(0.42, 36),
+      new THREE.Vector2(0.28, 72),
+      new THREE.Vector2(0, 72.5)
+    ];
+    const foulPoleGeom = new THREE.LatheGeometry(foulPoleProfile, 14);
     [-0.785, 0.785].forEach((phi) => {
       const d = stSpec.wallDist(phi);
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 72, 12), yellowMat);
-      pole.position.set(Math.sin(phi) * d, 36, -Math.cos(phi) * d);
-      const screen = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 54), new THREE.MeshBasicMaterial({ color: '#fde047', side: THREE.DoubleSide, transparent: true, opacity: 0.85 }));
+      const pole = new THREE.Mesh(foulPoleGeom, yellowMat);
+      pole.position.set(Math.sin(phi) * d, 0, -Math.cos(phi) * d);
+      const screen = new THREE.Mesh(
+        new THREE.PlaneGeometry(3.2, 54),
+        new THREE.MeshBasicMaterial({ color: '#fde047', side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
       screen.position.set(Math.sin(phi) * (d - 1.6), 38, -Math.cos(phi) * (d - 1.6));
       screen.rotation.y = phi;
       grp.add(pole, screen);
     });
 
-    // 4. Continuous Curved Spectator Grandstand Amphitheater Bowl + Concrete Fascia Concourse
-    const crowdTex =
-      stSpec.id === 'fenway' ? fenwayCrowdTex : stSpec.id === 'wrigley' ? wrigleyCrowdTex : dodgerCrowdTex;
-    const crowdMat = new THREE.MeshStandardMaterial({ map: crowdTex, roughness: 0.82, side: THREE.DoubleSide });
+    // 4. Completely EMPTY Realistic College Grandstand Bowls (Zero Crowd Blobs!)
+    const seatsTex =
+      stSpec.id === 'omaha' ? omahaSeatsTex : stSpec.id === 'lsu' ? lsuSeatsTex : missStSeatsTex;
+    const seatsMat = new THREE.MeshStandardMaterial({ map: seatsTex, roughness: 0.78, side: THREE.DoubleSide });
 
     const tierConfigs =
-      stSpec.id === 'fenway'
+      stSpec.id === 'omaha'
         ? [
-            // Fenway: Lower RF/CF Bleachers + Raised Green Monster Rooftop Deck
-            { startPhi: -0.78, endPhi: -0.15, dOff: 6, dSpan: 28, y0: 41, y1: 52, isMonster: true },
-            { startPhi: -0.14, endPhi: 0.79, dOff: 8, dSpan: 48, y0: 8, y1: 30 },
-            { startPhi: -0.14, endPhi: 0.79, dOff: 60, dSpan: 40, y0: 36, y1: 58 }
+            // Charles Schwab Field Omaha: Continuous 360-wrap lower college bowl + upper CWS club deck
+            { startPhi: -0.82, endPhi: 0.82, dOff: 12, dSpan: 48, y0: 9, y1: 31 },
+            { startPhi: -0.88, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54 },
+            { startPhi: 0.22, endPhi: 0.88, dOff: 66, dSpan: 36, y0: 37, y1: 54 }
           ]
-        : stSpec.id === 'dodger'
+        : stSpec.id === 'lsu'
           ? [
-              // Dodger Stadium: Twin Outfield Pavilions + Upper Reserve Horizon Bowl
-              { startPhi: -0.78, endPhi: -0.14, dOff: 10, dSpan: 46, y0: 11, y1: 33 },
-              { startPhi: 0.14, endPhi: 0.78, dOff: 10, dSpan: 46, y0: 11, y1: 33 },
-              { startPhi: -0.95, endPhi: 0.95, dOff: 62, dSpan: 44, y0: 38, y1: 60 }
+              // Alex Box Stadium: Continuous Purple/Gold Outfield Berm & Bleacher Tiers + Twin Grandstand Decks
+              { startPhi: -0.82, endPhi: 0.82, dOff: 10, dSpan: 50, y0: 10, y1: 34 },
+              { startPhi: -0.88, endPhi: 0.88, dOff: 66, dSpan: 38, y0: 39, y1: 57 }
             ]
           : [
-              // Wrigley Field: Classic Curved Bleacher Amphitheater + Front Basket Concourse
-              { startPhi: -0.82, endPhi: 0.82, dOff: 8, dSpan: 52, y0: 13, y1: 37 },
-              { startPhi: -0.86, endPhi: -0.22, dOff: 66, dSpan: 34, y0: 42, y1: 56 },
-              { startPhi: 0.22, endPhi: 0.86, dOff: 66, dSpan: 34, y0: 42, y1: 56 }
+              // Dude Noble Field (Miss. State): Lower Empty Outfield Lounge Terraces + Upper College Bowl
+              { startPhi: -0.82, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, isLounge: true },
+              { startPhi: 0.18, endPhi: 0.82, dOff: 10, dSpan: 46, y0: 10, y1: 32 },
+              { startPhi: -0.9, endPhi: 0.9, dOff: 62, dSpan: 40, y0: 38, y1: 58 }
             ];
 
     for (const tc of tierConfigs) {
@@ -1857,38 +2260,36 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         () => tc.y1,
         tc.startPhi,
         tc.endPhi,
-        56
+        64
       );
-      const bowlMesh = new THREE.Mesh(bowlGeom, crowdMat);
+      const bowlMesh = new THREE.Mesh(bowlGeom, seatsMat);
       bowlMesh.receiveShadow = true;
       grp.add(bowlMesh);
 
-      // Curved Front Concrete Fascia Wall Supporting Each Bowl Tier
       const fasciaGeom = createSweptWallGeometry(
         (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + tc.dOff,
         () => tc.y0,
         tc.startPhi,
         tc.endPhi,
-        44,
+        48,
         2.0
       );
       grp.add(new THREE.Mesh(fasciaGeom, concreteMat));
 
-      if (tc.isMonster) {
-        // Glass Safety Barrier along Fenway's Iconic Green Monster Seats
-        const railGeom = createSweptWallGeometry(
-          (phi) => stSpec.wallDist(phi) + 4.5,
-          () => 41.5,
+      if (tc.isLounge) {
+        const glassRailGeom = createSweptWallGeometry(
+          (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + tc.dOff - 1.5,
+          () => tc.y0 + 3.5,
           tc.startPhi,
           tc.endPhi,
-          36,
+          40,
           0.35
         );
-        grp.add(new THREE.Mesh(railGeom, glassMat));
+        grp.add(new THREE.Mesh(glassRailGeom, glassMat));
       }
     }
 
-    // 5. Continuous Side Baseline Extension Bowls down 1st & 3rd Base Lines (No Disconnected Open Flanks!)
+    // 5. Continuous Side Baseline Extension Empty Bowls down 1B & 3B Lines
     [-1, 1].forEach((side) => {
       const startP = side < 0 ? -1.48 : 0.785;
       const endP = side < 0 ? -0.785 : 1.48;
@@ -1897,182 +2298,99 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         () => baseD * 0.52,
         () => baseD * 0.68,
         () => 6,
-        () => 26,
+        () => 28,
         startP,
         endP,
-        20
+        24
       );
-      grp.add(new THREE.Mesh(wingBowl, crowdMat));
+      grp.add(new THREE.Mesh(wingBowl, seatsMat));
     });
 
-    // 6. Multi-Bulb Steel LED Stadium Light Towers
+    // 6. Sculpted D1 LED Stadium Light Towers
     grp.add(buildStadiumLightTowers(stSpec, [-0.64, -0.35, -0.1, 0.1, 0.35, 0.64], concreteMat, steelMat));
 
-    // 7. Signature Park Architectural Landmarks
-    if (stSpec.id === 'fenway') {
-      // Iconic 3D Metal Monster Ladder in Deep LC Gap + 18 tubular rungs
-      const ladderGrp = new THREE.Group();
-      const railL = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 36.5, 8), steelMat);
-      railL.position.set(-106, 18.2, -338);
-      const railR = railL.clone();
-      railR.position.x = -103.6;
-      ladderGrp.add(railL, railR);
+    // 7. Sculpted College Videoboard + Park Architectural Landmarks (Zero Crude Boxes!)
+    const boardTex =
+      stSpec.id === 'omaha' ? omahaBoardTex : stSpec.id === 'lsu' ? lsuBoardTex : missStBoardTex;
+    const frameColor =
+      stSpec.id === 'omaha' ? '#0f284e' : stSpec.id === 'lsu' ? '#3b156b' : '#4a121e';
+    const sbGrp = new THREE.Group();
+    sbGrp.position.set(0, 56, -455);
+    const sbFrame = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(makeRoundedRectShape(92, 46, 4.5), { depth: 4, bevelEnabled: true, bevelThickness: 0.8, bevelSize: 0.8, bevelSegments: 3 }),
+      new THREE.MeshStandardMaterial({ color: frameColor, roughness: 0.42 })
+    );
+    const sbFace = new THREE.Mesh(new THREE.PlaneGeometry(84, 40), new THREE.MeshBasicMaterial({ map: boardTex }));
+    sbFace.position.z = 4.3;
+    const sbPylonL = new THREE.Mesh(new THREE.CapsuleGeometry(1.6, 42, 6, 12), concreteMat);
+    sbPylonL.position.set(-24, -34, 2);
+    const sbPylonR = sbPylonL.clone();
+    sbPylonR.position.x = 24;
+    sbGrp.add(sbFrame, sbFace, sbPylonL, sbPylonR);
+    grp.add(sbGrp);
 
-      const rungMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.08, 2.4, 6), steelMat, 18);
-      const dummy = new THREE.Object3D();
-      for (let r = 0; r < 18; r++) {
-        dummy.position.set(-104.8, 2 + r * 1.9, -338);
-        dummy.rotation.z = Math.PI / 2;
-        dummy.updateMatrix();
-        rungMesh.setMatrixAt(r, dummy.matrix);
+    if (stSpec.id === 'missst') {
+      // Sculpted Multi-Tier Left Field Lounge Terraced Steel Rig Decks
+      const deckMat = new THREE.MeshStandardMaterial({ color: '#475569', roughness: 0.6, metalness: 0.35 });
+      const canopyMat = new THREE.MeshStandardMaterial({ color: '#5d1725', roughness: 0.55 });
+      for (let tier = 0; tier < 2; tier++) {
+        const yFloor = 16 + tier * 10;
+        const deck = new THREE.Mesh(
+          createSweptStripGeometry(
+            (phi) => stSpec.wallDist(phi) + 12 + tier * 14,
+            (phi) => stSpec.wallDist(phi) + 24 + tier * 14,
+            () => yFloor,
+            () => yFloor + 0.5,
+            -0.75,
+            -0.25,
+            24
+          ),
+          deckMat
+        );
+        const canopy = new THREE.Mesh(
+          createSweptStripGeometry(
+            (phi) => stSpec.wallDist(phi) + 12 + tier * 14,
+            (phi) => stSpec.wallDist(phi) + 24 + tier * 14,
+            () => yFloor + 7.5,
+            () => yFloor + 8.5,
+            -0.75,
+            -0.25,
+            24
+          ),
+          canopyMat
+        );
+        grp.add(deck, canopy);
       }
-      rungMesh.instanceMatrix.needsUpdate = true;
-      ladderGrp.add(rungMesh);
-      grp.add(ladderGrp);
-
-      // Authentic Glowing CITGO Kenmore Neon Sign (Tower Truss + Triangle Emblem + Glow Ring)
-      const citgoGrp = new THREE.Group();
-      citgoGrp.position.set(-188, 84, -365);
-      citgoGrp.lookAt(0, 48, 0);
-      const citgoSignBg = new THREE.Mesh(new THREE.BoxGeometry(36, 36, 2.5), new THREE.MeshBasicMaterial({ color: '#f8fafc' }));
-      const citgoOuterTrim = new THREE.Mesh(new THREE.BoxGeometry(38, 38, 2.0), new THREE.MeshBasicMaterial({ color: '#1d4ed8' }));
-      citgoOuterTrim.position.z = -0.5;
-      const triShape = new THREE.Shape();
-      triShape.moveTo(0, 13);
-      triShape.lineTo(-11.5, -9);
-      triShape.lineTo(11.5, -9);
-      triShape.closePath();
-      const citgoTri = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(triShape, { depth: 1.5, bevelEnabled: false }),
-        new THREE.MeshBasicMaterial({ color: '#ef4444' })
-      );
-      citgoTri.position.set(0, -1, 1.4);
-      const supportPostL = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 40, 8), steelMat);
-      supportPostL.position.set(-12, -32, 0);
-      const supportPostR = supportPostL.clone();
-      supportPostR.position.x = 12;
-      citgoGrp.add(citgoOuterTrim, citgoSignBg, citgoTri, supportPostL, supportPostR);
-      grp.add(citgoGrp);
-    } else if (stSpec.id === 'wrigley') {
-      // Authentic Continuous Cantilevered Wrigley Field Home Run Basket along Curved Ivy Top!
-      const basketMesh = new THREE.Mesh(
+    } else if (stSpec.id === 'omaha') {
+      // Smooth Continuous Curved CWS Architectural Canopy Fascia Ring around Concourse
+      const cwsCanopy = new THREE.Mesh(
         createSweptStripGeometry(
-          (phi) => stSpec.wallDist(phi) - 2.6,
-          (phi) => stSpec.wallDist(phi) + 0.4,
-          () => 11.4,
-          () => 11.9,
-          -0.78,
-          0.78,
+          (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + 56,
+          (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + 98,
+          () => 58,
+          () => 62,
+          -0.88,
+          0.88,
           64
         ),
-        new THREE.MeshStandardMaterial({ color: '#14532d', wireframe: true })
+        new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.42, side: THREE.DoubleSide })
       );
-      grp.add(basketMesh);
-
-      // Iconic 1937 Wrigley Art-Deco Hand-Turned Green Center Field Scoreboard + Roof Arch
-      const sbGrp = new THREE.Group();
-      sbGrp.position.set(0, 62, -454);
-      const boardFrame = new THREE.Mesh(new THREE.BoxGeometry(96, 56, 5), new THREE.MeshStandardMaterial({ color: '#15472a', roughness: 0.55 }));
-      const boardFace = new THREE.Mesh(new THREE.PlaneGeometry(90, 52), new THREE.MeshBasicMaterial({ map: wrigleyBoardTex }));
-      boardFace.position.z = 2.8;
-      const topCrest = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 5, 24, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: '#15472a' }));
-      topCrest.rotation.z = Math.PI / 2;
-      topCrest.rotation.y = Math.PI / 2;
-      topCrest.position.set(0, 26, 0);
-      const mastL = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 48, 8), steelMat);
-      mastL.position.set(-28, -36, 0);
-      const mastR = mastL.clone();
-      mastR.position.x = 28;
-      sbGrp.add(boardFrame, boardFace, topCrest, mastL, mastR);
-      grp.add(sbGrp);
-
-      // Signature Sheffield & Waveland Wrigleyville Brick Rooftop Houses + Bleachers Behind Wall!
-      const brickMat = new THREE.MeshStandardMaterial({ color: '#7c2d23', roughness: 0.88 });
-      const bldgPositions = [
-        { x: -240, z: -380, w: 46, h: 48, d: 34, rot: 0.45 },
-        { x: -165, z: -435, w: 50, h: 54, d: 36, rot: 0.28 },
-        { x: 165, z: -435, w: 50, h: 52, d: 36, rot: -0.28 },
-        { x: 245, z: -375, w: 46, h: 46, d: 34, rot: -0.45 }
-      ];
-      for (const b of bldgPositions) {
-        const bMesh = new THREE.Mesh(new THREE.BoxGeometry(b.w, b.h, b.d), brickMat);
-        bMesh.position.set(b.x, b.h * 0.5, b.z);
-        bMesh.rotation.y = b.rot;
-        const deck = new THREE.Mesh(new THREE.BoxGeometry(b.w + 3, 2, b.d + 3), steelMat);
-        deck.position.set(b.x, b.h + 1, b.z);
-        deck.rotation.y = b.rot;
-        grp.add(bMesh, deck);
-      }
-
-      // Instanced Park Elm & Oak Trees Behind Center Field Wall
-      const treeCrown = new THREE.InstancedMesh(
-        new THREE.DodecahedronGeometry(9, 1),
-        new THREE.MeshStandardMaterial({ color: '#14532d', roughness: 0.85 }),
-        14
+      grp.add(cwsCanopy);
+    } else if (stSpec.id === 'lsu') {
+      // LSU Intimidator Gold Championship Ribbon Deck + Surrounding Louisiana Pines
+      const ribbon = new THREE.Mesh(
+        createSweptWallGeometry((phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + 64, () => 4.2, -0.82, 0.82, 56, 1.5),
+        new THREE.MeshStandardMaterial({ color: '#fdd023', roughness: 0.4, metalness: 0.2 })
       );
-      const dummy = new THREE.Object3D();
-      for (let i = 0; i < 14; i++) {
-        const phi = -0.68 + (i / 13) * 1.36;
-        const td = stSpec.wallDist(phi) + 125;
-        dummy.position.set(Math.sin(phi) * td, 22 + (i % 3) * 4, -Math.cos(phi) * td);
-        dummy.scale.set(1.1, 0.9 + (i % 3) * 0.25, 1.1);
-        dummy.updateMatrix();
-        treeCrown.setMatrixAt(i, dummy.matrix);
-      }
-      treeCrown.instanceMatrix.needsUpdate = true;
-      grp.add(treeCrown);
-    } else if (stSpec.id === 'dodger') {
-      // Authentic Mid-Century Continuous Folded-Plate Zig-Zag Pavilion Roofs (BufferGeometry)
-      const roofMat = new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.36, side: THREE.DoubleSide });
-      const fasciaMat = new THREE.MeshStandardMaterial({ color: '#0ea5e9', roughness: 0.45, side: THREE.DoubleSide });
-      grp.add(buildPleatedPavilionRoof(-0.46, 0.3, 392, 48, 36, 9.5, 10, roofMat, fasciaMat));
-      grp.add(buildPleatedPavilionRoof(0.46, 0.3, 392, 48, 36, 9.5, 10, roofMat, fasciaMat));
-
-      // Twin Hexagonal DodgerVision Center-Field Scoreboards (ExtrudeGeometry)
-      const hexShape = new THREE.Shape();
-      hexShape.moveTo(-42, -16);
-      hexShape.lineTo(0, -24);
-      hexShape.lineTo(42, -16);
-      hexShape.lineTo(42, 16);
-      hexShape.lineTo(0, 24);
-      hexShape.lineTo(-42, 16);
-      hexShape.closePath();
-
-      const hexFrame = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(hexShape, { depth: 4, bevelEnabled: true, bevelThickness: 0.8, bevelSize: 0.8 }),
-        new THREE.MeshStandardMaterial({ color: '#1e3a8a', roughness: 0.42 })
-      );
-      hexFrame.position.set(0, 56, -455);
-      const visionFace = new THREE.Mesh(new THREE.PlaneGeometry(78, 34), new THREE.MeshBasicMaterial({ map: dodgerBoardTex }));
-      visionFace.position.set(0, 56, -450.5);
-      const pylon = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.6, 36, 10), concreteMat);
-      pylon.position.set(0, 18, -455);
-      grp.add(hexFrame, visionFace, pylon);
-
-      // Continuous Multi-Octave Sculpted San Gabriel Mountain Ridge!
-      grp.add(buildSanGabrielMountainRidge());
-
-      // Iconic Curved California Fan Palms flanking LF & RF Pavilions
-      const palmSpecs = [
-        [-275, -240, 44, -6, 4],
-        [-248, -295, 50, 5, -3],
-        [-210, -345, 42, -4, 3],
-        [210, -345, 46, 5, -3],
-        [248, -295, 52, -5, 4],
-        [275, -240, 43, 6, 3]
-      ];
-      for (const [px, pz, ph, cx, cz] of palmSpecs) {
-        const palm = buildCaliforniaPalmTree(ph, cx, cz);
-        palm.position.set(px, 0, pz);
-        grp.add(palm);
-      }
+      ribbon.position.y = 35;
+      grp.add(ribbon);
     }
 
     // Centerfield Wind Pennant Flag Mast on Stadium Rim
-    const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.48, 24, 8), steelMat);
-    flagPole.position.set(42, 34, -445);
+    const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.48, 24, 10), steelMat);
+    flagPole.position.set(48, 34, -445);
     const flagPivot = new THREE.Group();
-    flagPivot.position.set(42, 44, -445);
+    flagPivot.position.set(48, 44, -445);
     const flagMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(16, 5.5),
       new THREE.MeshBasicMaterial({ color: '#facc15', side: THREE.DoubleSide })
@@ -2105,12 +2423,14 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   let curCameraMode = 'pov'; // 'pov' | 'broadcast' | 'side'
 
   function setStadium(id) {
-    if (curStadiumId === id) return;
-    curStadiumId = id;
+    const aliasMap = { fenway: 'omaha', wrigley: 'lsu', dodger: 'missst' };
+    const resolvedId = stadiumGroups[id] ? id : aliasMap[id] || 'omaha';
+    if (curStadiumId === resolvedId) return;
+    curStadiumId = resolvedId;
     for (const k of Object.keys(stadiumGroups)) {
-      stadiumGroups[k].visible = k === id;
+      stadiumGroups[k].visible = k === resolvedId;
     }
-    const st = stadiumSpecs[id] || stadiumSpecs.fenway;
+    const st = stadiumSpecs[resolvedId] || stadiumSpecs.omaha;
     paintSky(st.skyTop, st.skyMid, st.skyLow);
   }
 
@@ -2128,7 +2448,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     }
   }
 
-  setStadium('fenway');
+  setStadium('omaha');
   setBat('goods-2026');
 
   function resize(width, height) {
@@ -2146,43 +2466,76 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     };
   }
 
+  function smoothStep(edge0, edge1, x) {
+    const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+
   function updateAndRender(simState, dt) {
+    // Fluid Multi-Phase Pitcher Biomechanics (Balance Leg Lift -> Stride & Hip-Shoulder Coil -> High 3/4 Whip)
     if (simState.phase === 'windup') {
       const p = clamp(simState.t, 0, 1);
-      const kick = Math.sin(p * Math.PI);
-      pitcher.leftLegPivot.rotation.x = -kick * 0.95;
-      pitcher.throwArmPivot.rotation.x = -p * 2.6;
-      pitcher.gloveArmPivot.rotation.x = -0.45 - p * 0.4;
-      pitcher.root.position.z = -60.5 + Math.max(0, p - 0.55) * 6.5;
-      pitcher.handBall.visible = true;
+      const lift = smoothStep(0.0, 0.44, p);
+      const drop = smoothStep(0.42, 0.85, p);
+      const whip = smoothStep(0.62, 1.0, p);
+
+      pitcher.leftLegPivot.rotation.x = -lift * 1.12 + drop * 1.48;
+      pitcher.leftKneePivot.rotation.x = lift * 1.32 - drop * 1.12;
+      pitcher.rightKneePivot.rotation.x = 0.12 + drop * 0.32;
+      pitcher.torsoPivot.rotation.y = -0.34 * lift + 0.52 * whip;
+      pitcher.torsoPivot.rotation.x = 0.24 * whip;
+      pitcher.throwArmPivot.rotation.x = -whip * 2.55 + Math.sin(whip * Math.PI) * 0.45;
+      pitcher.throwArmPivot.rotation.z = -0.25 * drop + 0.15 * whip;
+      pitcher.throwElbowPivot.rotation.x = -0.95 * Math.sin(p * Math.PI);
+      pitcher.gloveArmPivot.rotation.x = -0.52 * lift + 0.18 * whip;
+      pitcher.gloveElbowPivot.rotation.x = -0.82;
+      pitcher.root.position.z = -60.5 + drop * 4.8;
+      pitcher.handBall.visible = p < 0.96;
     } else if (simState.phase === 'pitch') {
-      pitcher.leftLegPivot.rotation.x = 0.28;
-      pitcher.throwArmPivot.rotation.x = 1.15;
-      pitcher.gloveArmPivot.rotation.x = -0.25;
-      pitcher.root.position.z = -57.2;
+      pitcher.leftLegPivot.rotation.x = THREE.MathUtils.damp(pitcher.leftLegPivot.rotation.x, 0.28, 12, dt);
+      pitcher.leftKneePivot.rotation.x = THREE.MathUtils.damp(pitcher.leftKneePivot.rotation.x, 0.14, 12, dt);
+      pitcher.rightKneePivot.rotation.x = THREE.MathUtils.damp(pitcher.rightKneePivot.rotation.x, 0.2, 12, dt);
+      pitcher.torsoPivot.rotation.y = THREE.MathUtils.damp(pitcher.torsoPivot.rotation.y, 0.24, 10, dt);
+      pitcher.torsoPivot.rotation.x = THREE.MathUtils.damp(pitcher.torsoPivot.rotation.x, 0.18, 10, dt);
+      pitcher.throwArmPivot.rotation.x = THREE.MathUtils.damp(pitcher.throwArmPivot.rotation.x, 1.24, 14, dt);
+      pitcher.throwElbowPivot.rotation.x = THREE.MathUtils.damp(pitcher.throwElbowPivot.rotation.x, -0.24, 12, dt);
+      pitcher.gloveArmPivot.rotation.x = THREE.MathUtils.damp(pitcher.gloveArmPivot.rotation.x, -0.25, 10, dt);
+      pitcher.gloveElbowPivot.rotation.x = THREE.MathUtils.damp(pitcher.gloveElbowPivot.rotation.x, -0.95, 10, dt);
+      pitcher.root.position.z = THREE.MathUtils.damp(pitcher.root.position.z, -56.6, 12, dt);
       pitcher.handBall.visible = false;
     } else {
-      pitcher.leftLegPivot.rotation.x = THREE.MathUtils.damp(pitcher.leftLegPivot.rotation.x, 0, 8, dt);
-      pitcher.throwArmPivot.rotation.x = THREE.MathUtils.damp(pitcher.throwArmPivot.rotation.x, 0.12, 8, dt);
-      pitcher.gloveArmPivot.rotation.x = THREE.MathUtils.damp(pitcher.gloveArmPivot.rotation.x, -0.32, 8, dt);
-      pitcher.root.position.z = THREE.MathUtils.damp(pitcher.root.position.z, -60.5, 6, dt);
+      pitcher.leftLegPivot.rotation.x = THREE.MathUtils.damp(pitcher.leftLegPivot.rotation.x, 0, 7, dt);
+      pitcher.leftKneePivot.rotation.x = THREE.MathUtils.damp(pitcher.leftKneePivot.rotation.x, 0.08, 7, dt);
+      pitcher.rightKneePivot.rotation.x = THREE.MathUtils.damp(pitcher.rightKneePivot.rotation.x, 0.06, 7, dt);
+      pitcher.torsoPivot.rotation.y = THREE.MathUtils.damp(pitcher.torsoPivot.rotation.y, 0, 7, dt);
+      pitcher.torsoPivot.rotation.x = THREE.MathUtils.damp(pitcher.torsoPivot.rotation.x, 0, 7, dt);
+      pitcher.throwArmPivot.rotation.x = THREE.MathUtils.damp(pitcher.throwArmPivot.rotation.x, 0.12, 7, dt);
+      pitcher.throwArmPivot.rotation.z = THREE.MathUtils.damp(pitcher.throwArmPivot.rotation.z, 0, 7, dt);
+      pitcher.throwElbowPivot.rotation.x = THREE.MathUtils.damp(pitcher.throwElbowPivot.rotation.x, -0.35, 7, dt);
+      pitcher.gloveArmPivot.rotation.x = THREE.MathUtils.damp(pitcher.gloveArmPivot.rotation.x, -0.32, 7, dt);
+      pitcher.gloveElbowPivot.rotation.x = THREE.MathUtils.damp(pitcher.gloveElbowPivot.rotation.x, -0.6, 7, dt);
+      pitcher.root.position.z = THREE.MathUtils.damp(pitcher.root.position.z, -60.5, 5, dt);
       pitcher.handBall.visible = true;
     }
 
-    const swingVal = clamp((simState.swingAngle + 0.42) / 1.37, 0, 1);
+    const swingRaw = clamp((simState.swingAngle + 0.42) / 1.37, 0, 1);
+    const swingVal = smoothStep(0, 1, swingRaw);
     const hideClosePlateCrew = curCameraMode === 'pov' && simState.camT > 0.74;
     batPivot.visible = !hideClosePlateCrew;
     batter.root.visible = !hideClosePlateCrew;
     plateCrew.grp.visible = !hideClosePlateCrew;
 
-    const pitchLoad = simState.phase === 'windup' ? clamp(simState.t, 0, 1) * 0.22 : 0;
-    batter.torsoPivot.rotation.y = -0.18 - pitchLoad + swingVal * 1.48;
-    batter.strideLegPivot.rotation.x = pitchLoad * 0.45 - swingVal * 0.24;
+    const pitchLoad = simState.phase === 'windup' ? smoothStep(0, 1, simState.t) * 0.28 : 0;
+    batter.torsoPivot.rotation.y = THREE.MathUtils.damp(batter.torsoPivot.rotation.y, -0.2 - pitchLoad + swingVal * 1.54, 18, dt);
+    batter.strideLegPivot.rotation.x = THREE.MathUtils.damp(batter.strideLegPivot.rotation.x, pitchLoad * 0.56 - swingVal * 0.24, 16, dt);
+    batter.strideKneePivot.rotation.x = THREE.MathUtils.damp(batter.strideKneePivot.rotation.x, pitchLoad * 0.42 + 0.1, 16, dt);
+    batter.backKneePivot.rotation.x = THREE.MathUtils.damp(batter.backKneePivot.rotation.x, 0.16 + swingVal * 0.22, 16, dt);
+    batter.handsGroup.position.x = THREE.MathUtils.damp(batter.handsGroup.position.x, 0.62 + swingVal * 0.26, 18, dt);
 
     batPivot.rotation.order = 'YXZ';
-    batPivot.rotation.z = 0.52 - swingVal * 2.08;
-    batPivot.rotation.y = -0.65 + swingVal * 2.15;
-    batPivot.rotation.x = 0.22 - swingVal * 0.28;
+    batPivot.rotation.z = 0.54 - swingVal * 2.12;
+    batPivot.rotation.y = -0.66 + swingVal * 2.18;
+    batPivot.rotation.x = 0.24 - swingVal * 0.34;
 
     if (simState.phase === 'pitch' && simState.pitchPos) {
       plateCrew.mitt.position.x = THREE.MathUtils.damp(plateCrew.mitt.position.x, clamp(simState.pitchPos.x, -1.2, 1.2), 14, dt);

@@ -9,6 +9,7 @@ const { store } = require('./db');
 const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = Number(process.env.PORT) || 3000;
 const COOKIE_NAME = 'diamondiq_sid';
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -96,19 +97,28 @@ function parseCookies(cookieHeader) {
   return result;
 }
 
-function setSessionCookie(res, token) {
+function isSecureRequest(req) {
+  const xfProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();
+  return Boolean(req.secure || xfProto === 'https');
+}
+
+function setSessionCookie(req, res, token) {
+  const secure = isSecureRequest(req);
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: secure ? 'none' : 'lax',
+    secure,
     path: '/',
     maxAge: COOKIE_MAX_AGE_MS
   });
 }
 
-function clearSessionCookie(res) {
+function clearSessionCookie(req, res) {
+  const secure = isSecureRequest(req);
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: secure ? 'none' : 'lax',
+    secure,
     path: '/'
   });
 }
@@ -116,8 +126,10 @@ function clearSessionCookie(res) {
 async function attachUser(req, _res, next) {
   try {
     const cookies = parseCookies(req.headers.cookie);
-    const token = cookies[COOKIE_NAME];
-    req.sessionToken = token || null;
+    const authHeader = String(req.headers.authorization || '').trim();
+    const bearerToken = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+    const token = cookies[COOKIE_NAME] || bearerToken || null;
+    req.sessionToken = token;
     req.user = token ? await store.getUserBySession(token) : null;
     next();
   } catch (err) {
@@ -190,8 +202,8 @@ app.post('/api/auth/register', async (req, res, next) => {
       password: cleanPass
     });
     const token = await store.createSession(user.id);
-    setSessionCookie(res, token);
-    return res.status(201).json({ user, isNewUser: true, needsOnboarding: true });
+    setSessionCookie(req, res, token);
+    return res.status(201).json({ user, sessionToken: token, isNewUser: true, needsOnboarding: true });
   } catch (err) {
     if (err.code === 'CONFLICT') {
       return res.status(409).json({ error: err.message });
@@ -219,8 +231,8 @@ app.post('/api/auth/login', async (req, res, next) => {
     }
 
     const token = await store.createSession(user.id);
-    setSessionCookie(res, token);
-    return res.json({ user, needsOnboarding: !user.hasOnboarding });
+    setSessionCookie(req, res, token);
+    return res.json({ user, sessionToken: token, needsOnboarding: !user.hasOnboarding });
   } catch (err) {
     return next(err);
   }
@@ -231,7 +243,7 @@ app.post('/api/auth/logout', async (req, res, next) => {
     if (req.sessionToken) {
       await store.deleteSession(req.sessionToken);
     }
-    clearSessionCookie(res);
+    clearSessionCookie(req, res);
     return res.json({ ok: true });
   } catch (err) {
     return next(err);
@@ -253,13 +265,141 @@ app.get('/api/onboarding/me', async (req, res, next) => {
   }
 });
 
+function buildDeterministicCoachProfile({
+  experienceLevel,
+  primaryPosition,
+  hittingSymptom,
+  fieldingSymptom,
+  iqChecks,
+  iqCorrectCount,
+  playerNotes
+}) {
+  const expLow = experienceLevel.toLowerCase();
+  const hitLow = hittingSymptom.toLowerCase();
+  const fieldLow = fieldingSymptom.toLowerCase();
+  const posLow = primaryPosition.toLowerCase();
+  const noteLow = playerNotes.toLowerCase();
+
+  let skillTier = 'Developing';
+  if (expLow.includes('varsity') || expLow.includes('college')) {
+    skillTier = iqCorrectCount >= 2 ? 'Varsity / Advanced' : 'Intermediate';
+  } else if (expLow.includes('travel') || expLow.includes('high school')) {
+    skillTier = iqCorrectCount === 3 ? 'Intermediate' : 'Developing';
+  } else if (expLow.includes('beginner')) {
+    skillTier = 'Beginner';
+  }
+
+  // Match hitting clinic
+  let hitClinicId = 'rolling-over';
+  let chosenBatId = 'goods-2026';
+  let swingDiagnosis = 'Your swing foundation is solid; keeping your top hand palm-up/palm-down 8 inches past contact will unlock higher backspin carry and eliminate rolled-over pull grounders.';
+  let batReason = '2026 DeMarini The Goods (-3) rewards clean lower-half turn and held barrel extension with towering 26°–30° carries.';
+
+  if (hitLow.includes('bat drag') || hitLow.includes('late on fastballs') || noteLow.includes('jam')) {
+    hitClinicId = 'bat-drag';
+    chosenBatId = 'baum-gold';
+    swingDiagnosis = 'Your rear elbow appears to fire ahead of your hands at swing launch, flattening the barrel behind the hitting zone on inside fastballs.';
+    batReason = 'Baum Bat Gold (-3) PermaWood composite gives honest sweet-spot feedback so you feel tight hip-to-hand connection immediately.';
+  } else if (hitLow.includes('casting') || hitLow.includes('loops wide') || noteLow.includes('loop')) {
+    hitClinicId = 'casting';
+    chosenBatId = 'combat-blue';
+    swingDiagnosis = 'Your hands are sweeping slightly away from your torso early, lengthening your swing arc and reducing inside-pitch adjustability.';
+    batReason = 'Combat Spec-A1 Members Club Blue (-3) swings balanced and quick so your knob stays tight inside the baseball.';
+  } else if (hitLow.includes('lunging') || hitLow.includes('drift') || noteLow.includes('changeup') || noteLow.includes('curve')) {
+    hitClinicId = 'lunging';
+    chosenBatId = 'combat-rodeo';
+    swingDiagnosis = 'Your weight and head drift onto a locking front leg early, making breaking balls and changeups tough to square up.';
+    batReason = 'Combat Spec-A1 Rodeo (-3) offers responsive 1-piece barrel feedback while building front-side block timing against Mix pitches.';
+  } else if (hitLow.includes('square the ball up')) {
+    hitClinicId = 'rolling-over';
+    chosenBatId = expLow.includes('varsity') ? 'baum-gold' : 'goods-2026';
+    swingDiagnosis = 'Strong barrel feel — focusing on slight upward attack (+8° to +13°) and holding top-hand posture past contact turns hard liners into deep home runs.';
+  }
+
+  // Match fielding clinic
+  let fieldClinicId = 'glove-stab';
+  let fieldingDiagnosis = 'Working your open glove triangle out in front of your eyes and funneling softly toward your belt prevents bad hops and speeds up throwing exchanges.';
+
+  if (fieldLow.includes('footwork') || fieldLow.includes('heels')) {
+    fieldClinicId = 'footwork-cadence';
+    fieldingDiagnosis = 'Replacing flat-footed waits with rhythmic "Right—Left—Catch—Right—Throw" footwork puts body momentum smoothly behind every throw across the diamond.';
+  } else if (fieldLow.includes('banana') || fieldLow.includes('fly balls') || posLow.includes('outfield')) {
+    fieldClinicId = 'banana-route';
+    fieldingDiagnosis = 'Snapping your hips open into an immediate 45° drop-step and pumping both arms straight to the landing spot adds 10+ feet of outfield range.';
+  } else if (fieldLow.includes('crow hop') || fieldLow.includes('carry')) {
+    fieldClinicId = 'crow-hop';
+    fieldingDiagnosis = 'Switching from a tall vertical bounce to a low, linear crow-hop skim preserves forward speed and produces flat, biting relay throws.';
+  } else if (fieldLow.includes('clean glove')) {
+    fieldClinicId = posLow.includes('outfield') ? 'crow-hop' : 'footwork-cadence';
+    fieldingDiagnosis = 'With clean hands already in place, tightening transfer rhythm and downhill throw alignment will shave tenths of a second off outs.';
+  }
+
+  const missedIq = iqChecks.filter((c) => !c.correct).map((c) => c.label);
+  const iqBreakdown = missedIq.length === 0
+    ? 'Perfect 3/3 on rules & Statcast barrels! Keep pairing situational anticipation with pre-pitch awareness before every ball put in play.'
+    : `You scored ${iqCorrectCount}/3 on situational IQ. Review ${missedIq.join(' & ')} inside our 5-Expert Lessons so pre-pitch reads become automatic.`;
+
+  const baseScenarios = [];
+  if (!iqChecks[0].correct) baseScenarios.push({ scenarioId: 'force-vs-tag', reason: 'Lock down exactly when to touch the bag vs. tag the runner on infield grounders.' });
+  if (!iqChecks[1].correct) baseScenarios.push({ scenarioId: 'infield-fly', reason: 'Clarify automatic outs and base-running traps with runners on 1st & 2nd.' });
+  if (!iqChecks[2].correct) baseScenarios.push({ scenarioId: 'launch-angle-exit-velo', reason: 'See how 26°–30° launch angles and 98+ mph exit velo create true Statcast barrels.' });
+  const posScenario = posLow.includes('outfield')
+    ? { scenarioId: 'relay-throw', reason: 'Align relay targets and hit the cutoff chest smoothly on extra-base hits.' }
+    : posLow.includes('catcher')
+      ? { scenarioId: 'catcher-framing', reason: 'Steal borderline strikes quietly with strong low-to-high receiving pockets.' }
+      : { scenarioId: 'xwoba-metrics', reason: 'Compare quality of contact vs. lucky box-score hits across a full season.' };
+  if (baseScenarios.length < 2) baseScenarios.push(posScenario);
+  if (baseScenarios.length < 2) baseScenarios.push({ scenarioId: 'stealing-second', reason: 'Read pitcher pickoff timing, jump speed, and infield coverage.' });
+
+  const readinessScore = Math.min(96, Math.max(52, 58 + iqCorrectCount * 8 + (expLow.includes('varsity') ? 14 : expLow.includes('travel') ? 8 : 2)));
+
+  const videoIds = [hitClinicId, fieldClinicId];
+  if (hitClinicId !== 'rolling-over' && videoIds.length < 3) videoIds.push('rolling-over');
+  else if (fieldClinicId !== 'footwork-cadence' && videoIds.length < 3) videoIds.push('footwork-cadence');
+
+  return {
+    createdAt: new Date().toISOString(),
+    inputs: { experienceLevel, primaryPosition, hittingSymptom, fieldingSymptom, playerNotes },
+    iqCorrectCount,
+    iqTotal: 3,
+    skillTier,
+    readinessScore,
+    headline: `${primaryPosition.split(' (')[0]} Plan: Fix ${VALID_CLINICS[hitClinicId].title.split(' (')[0]}`,
+    summary: `Tailored for ${experienceLevel.split(' (')[0]} level: tighten ${VALID_CLINICS[hitClinicId].domain.toLowerCase()} first, sharpen ${VALID_CLINICS[fieldClinicId].title.split(' (')[0].toLowerCase()}, and track every cut in the D1 Rapsodo Lab.`,
+    swingDiagnosis,
+    fieldingDiagnosis,
+    iqBreakdown,
+    actionableTips: [
+      `Watch "${VALID_CLINICS[hitClinicId].title}" in 0.45x Slow-Mo Split View and pause at Stage 3 (Contact) to match your hand & elbow slot.`,
+      `Run 3 sets × 10 focused tee swings focusing solely on "${VALID_CLINICS[hitClinicId].title}" before full BP.`,
+      `Warm up defense with "${VALID_CLINICS[fieldClinicId].title}" slow-mo footwork reps so transfers stay fluid.`,
+      `Step into Charles Schwab Field Omaha (3D Studio) with ${VALID_BATS[chosenBatId].split(' (')[0]} and aim for 1.32+ Smash Factor & 20°–30° launch angles.`
+    ],
+    videoLinks: videoIds.filter((cid) => VALID_CLINICS[cid]).map((cid) => ({
+      clinicId: cid,
+      title: VALID_CLINICS[cid].title,
+      domain: VALID_CLINICS[cid].domain,
+      reason: cid === hitClinicId
+        ? 'Primary swing fix matched directly to your reported plate feel.'
+        : cid === fieldClinicId
+          ? 'Primary defensive drill tailored to your glove/footwork habit.'
+          : 'Bonus Rapsodo/contact clinic to build complete barrel control.',
+      url: `training.html?clinic=${encodeURIComponent(cid)}&slow=1&bat=${encodeURIComponent(chosenBatId)}`
+    })),
+    recommendedScenarios: baseScenarios.slice(0, 2).map((s) => ({
+      scenarioId: s.scenarioId,
+      title: VALID_SCENARIOS[s.scenarioId],
+      reason: s.reason,
+      url: `detail.html?id=${encodeURIComponent(s.scenarioId)}`
+    })),
+    recommendedBatId: chosenBatId,
+    recommendedBatName: VALID_BATS[chosenBatId],
+    batReason
+  };
+}
+
 app.post('/api/ai/onboarding-quiz', async (req, res) => {
   const apiKey = (process.env.GEMINI_API_KEY || '').trim();
-  if (!apiKey) {
-    return res.status(503).json({
-      error: 'Gemini AI Coach is not configured yet (missing GEMINI_API_KEY in environment).'
-    });
-  }
 
   const body = req.body || {};
   const experienceLevel = String(body.experienceLevel || '').trim();
@@ -296,6 +436,24 @@ app.post('/api/ai/onboarding-quiz', async (req, res) => {
     }
   ];
   const iqCorrectCount = iqChecks.filter((c) => c.correct).length;
+
+  const fallbackParams = {
+    experienceLevel,
+    primaryPosition,
+    hittingSymptom,
+    fieldingSymptom,
+    iqChecks,
+    iqCorrectCount,
+    playerNotes
+  };
+
+  if (!apiKey) {
+    const profile = buildDeterministicCoachProfile(fallbackParams);
+    if (req.user) {
+      await store.saveOnboardingProfile(req.user.id, profile);
+    }
+    return res.json({ profile, saved: Boolean(req.user), source: 'coach-rules' });
+  }
 
   const ai = new GoogleGenAI({
     apiKey,
@@ -341,8 +499,9 @@ Rules:
 - Pick 2 recommendedScenarios matching any IQ gaps or positional focus.
 - Pick the single best recommendedBatId matching their swing profile and experience level.`;
 
+  let timeoutHandle;
   try {
-    const response = await ai.models.generateContent({
+    const aiPromise = ai.models.generateContent({
       model: 'gemini-4-hydrogen',
       contents: promptText,
       config: {
@@ -419,6 +578,15 @@ Rules:
       }
     });
 
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        reject(new Error('Coach AI timed out after 25s'));
+      }, 25000);
+    });
+
+    const response = await Promise.race([aiPromise, timeoutPromise]);
+    clearTimeout(timeoutHandle);
+
     const parsed = JSON.parse(response.text || '{}');
     const chosenBatId = VALID_BATS[parsed.recommendedBatId] ? parsed.recommendedBatId : 'goods-2026';
 
@@ -476,12 +644,15 @@ Rules:
       await store.saveOnboardingProfile(req.user.id, finalProfile);
     }
 
-    return res.json({ profile: finalProfile, saved: Boolean(req.user) });
+    return res.json({ profile: finalProfile, saved: Boolean(req.user), source: 'gemini' });
   } catch (err) {
-    console.error('Gemini Onboarding Quiz Error:', err);
-    return res.status(502).json({
-      error: `AI Coach request failed (${err.message || 'upstream error'}). Please try again.`
-    });
+    clearTimeout(timeoutHandle);
+    console.warn('Gemini Onboarding Quiz fallback triggered:', err && err.message ? err.message : err);
+    const profile = buildDeterministicCoachProfile(fallbackParams);
+    if (req.user) {
+      await store.saveOnboardingProfile(req.user.id, profile);
+    }
+    return res.json({ profile, saved: Boolean(req.user), source: 'coach-fallback' });
   }
 });
 

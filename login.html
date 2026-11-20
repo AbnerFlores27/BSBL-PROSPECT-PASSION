@@ -68,7 +68,7 @@
       </div>
       <div class="kicker-line">Member Sign In</div>
       <h1>Log In</h1>
-      <p style="color:var(--text-secondary);">Sign in with your username or email to access your personal playbook.</p>
+      <p style="color:var(--text-secondary);">Sign in to unlock your scouting report, personalized coaching tips, and slow-mo fix videos.</p>
       <form id="login-form" class="form-stack" method="post" action="/api/auth/login" onsubmit="return false;" novalidate>
         <div class="field">
           <label for="login-user">Username or email</label>
@@ -76,9 +76,38 @@
         </div>
         <div class="field">
           <label for="login-pass">Password</label>
-          <input type="password" id="login-pass" name="password" placeholder="At least 8 characters" autocomplete="current-password" required minlength="8">
+          <div class="password-field-wrap">
+            <input type="password" id="login-pass" name="password" placeholder="At least 8 characters" autocomplete="current-password" required minlength="8">
+            <button type="button" class="password-toggle-btn" data-toggle-pw="login-pass" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary">Log In</button>
+
+        <div id="auth-focus-quiz" class="auth-quiz-box">
+          <div class="kicker-line" style="margin-bottom:0.2rem;">Quick Pre-Session Checkup Quiz</div>
+          <p class="auth-quiz-sub">Pick your current focus to preview custom coaching tips &amp; tutorial videos right now:</p>
+          <div class="auth-focus-grid" id="auth-focus-options" role="group" aria-label="Select your main training focus">
+            <button type="button" class="auth-focus-btn" data-focus="hitting-power" aria-pressed="true">Drive Bombs &amp; Lift</button>
+            <button type="button" class="auth-focus-btn" data-focus="hitting-timing" aria-pressed="false">Catch Heat &amp; Off-Speed</button>
+            <button type="button" class="auth-focus-btn" data-focus="fielding-hands" aria-pressed="false">Infield Hands &amp; Feet</button>
+            <button type="button" class="auth-focus-btn" data-focus="fielding-routes" aria-pressed="false">Outfield Routes &amp; Throws</button>
+          </div>
+          <div class="field" style="margin-top:0.55rem;">
+            <label for="auth-skill-level" style="font-size:0.8rem;">Skill Level</label>
+            <select id="auth-skill-level" style="width:100%;min-height:36px;font-size:0.86rem;">
+              <option value="Beginner (New to baseball / 1st season)">Beginner / 1st Season</option>
+              <option value="Rec / Little League (Learning core skills)" selected>Rec / Little League</option>
+              <option value="Travel / High School (Facing faster pitching)">Travel / High School</option>
+              <option value="Varsity / College Prep (Polishing high-level mechanics)">Varsity / College Prep</option>
+            </select>
+          </div>
+          <div id="auth-instant-tips" class="auth-tips-preview" aria-live="polite"></div>
+          <label class="auth-check-row">
+            <input type="checkbox" id="login-open-quiz" checked>
+            <span>Open my full AI Checkup Quiz &amp; tailored video plan right after Log In</span>
+          </label>
+        </div>
+
+        <button type="submit" id="login-submit-btn" class="btn btn-primary">Log In &amp; Open Coaching Plan</button>
         <p id="login-error" class="feedback-banner" role="alert"></p>
       </form>
       <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">

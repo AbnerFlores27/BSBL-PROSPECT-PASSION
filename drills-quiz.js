@@ -17,6 +17,17 @@
       fixCue: 'Back elbow slots beside hip while hands stay stacked above the rear shoulder.',
       summary: 'When the back elbow shoots ahead of the hands, the barrel drags flat behind the zone, causing jammed inside flares and weak opposite-field pop-ups.',
       stages: ['1. Stance & Load', '2. Hip Turn & Slot', '3. Deep Contact', '4. High Finish'],
+      stageCues: [
+        'Pin a towel under your rear armpit; coil weight inside back thigh while hands stay stacked above back shoulder.',
+        'Fire your belt buckle toward the pitcher FIRST while keeping rear elbow tucked beside hip — do NOT let elbow pass your hands.',
+        'Barrel whips behind the ball cleanly through the inner third; rear palm faces up at deep contact.',
+        'Finish tall above your front shoulder with full two-hand or smooth one-hand follow-through.'
+      ],
+      howToSteps: [
+        'Toggle 0.45x Slow-Mo and click Stage 2 (Hip Turn & Slot) to compare elbow position side-by-side.',
+        'Watch the highlighted rear-elbow ring: keep it stacked beside your hip instead of shooting toward the pitcher.',
+        'Practice 3×10 Towel-Under-Armpit tee reps, then swing Baum Bat Gold (-3) in the 3D Stadium.'
+      ],
       batId: 'baum-gold',
       batNote: 'Swing the Baum Bat Gold (-3) in the cage — heavy end feedback punishes dragged barrels immediately.',
       scenarioId: 'launch-angle-exit-velo',
@@ -44,9 +55,20 @@
       fixCue: 'Keep hands tight to the back shoulder and drive the knob straight inside the baseball.',
       summary: 'Pushing your hands outward around the ball creates a long, slow arc. Pitchers beat inside fastballs easily and you hit weak fly balls or roll off the end cap.',
       stages: ['1. Quiet Hands', '2. Tight Knob Path', '3. Inside-Out Square', '4. Clean Extension'],
+      stageCues: [
+        'Set hands softly near your back shoulder without drifting backward or pushing toward home plate.',
+        'Drive the bat knob straight toward the pitcher past your chest while hugging the imaginary wall behind you.',
+        'Stay inside the seam with compact arms so the barrel whips flush onto inside fastballs.',
+        'Extend cleanly toward center-left gap without wrapping around the ball early.'
+      ],
+      howToSteps: [
+        'Check the dashed reference wall line behind the hitter in Stage 2 (Tight Knob Path).',
+        'Notice how the Pro figure clears the wall cleanly while Flaw casts the barrel wide.',
+        'Complete 3×12 dry Fence-Wall swings before stepping into the Omaha cage against Fastballs.'
+      ],
       batId: 'combat-blue',
       batNote: 'Try the Combat Spec-A1 Members Club Blue (-3) for fast balanced hand speed inside the ball.',
-      scenarioId: 'two-strike-approach',
+      scenarioId: 'xwoba-metrics',
       drills: [
         {
           name: 'Paint-the-Fence Wall Drill',
@@ -71,6 +93,17 @@
       fixCue: 'Stay Palm-Up (bottom hand) / Palm-Down (top hand) all the way past contact.',
       summary: 'Snapping the top wrist over before or right at contact slams the barrel downward, turning hard pitches into weak pull-side grounders.',
       stages: ['1. Balanced Load', '2. On-Plane Entry', '3. Palm-Up Contact', '4. Full Zone Extension'],
+      stageCues: [
+        'Load weight evenly on the inside edge of your back foot with relaxed wrists.',
+        'Enter the pitch plane early behind the ball so the barrel matches the downward angle of the pitch.',
+        'Hold top hand Palm-Down and bottom hand Palm-Up through the hitting zone — resist rolling the wrist over.',
+        'Finish extension 8+ inches through the front of home plate to send high backspin liners into the gap.'
+      ],
+      howToSteps: [
+        'Freeze Stage 3 (Palm-Up Contact) and look at the batted ball flight line: Pro lifts at 26° while Flaw chops down.',
+        'Mirror the Palm-Up/Palm-Down freeze drill stopping 8 inches past a waist-high tee.',
+        'Test 2026 DeMarini The Goods (-3) in the 3D Stadium aiming your PCI 0.25" under ball center.'
+      ],
       batId: 'goods-2026',
       batNote: 'Test with 2026 The Goods (-3): hold top-hand palm skyward and launch balls 25°–30° into LF/LCF.',
       scenarioId: 'launch-angle-exit-velo',
@@ -98,9 +131,20 @@
       fixCue: 'Coil into the back hip, land softly, and brace against a firm front leg at swing launch.',
       summary: 'Jumping forward at pitch release locks out your front knee early, making curveballs and changeups impossible to hit.',
       stages: ['1. Back-Hip Coil', '2. Soft Stride Land', '3. Firm Front Block', '4. Head Centered'],
+      stageCues: [
+        'Coil slightly inward into your back hip pocket while keeping your head quiet between both feet.',
+        'Stride softly onto the ball of your front foot with weight still held 60/40 behind your front hip.',
+        'Lock your front knee into a firm block right as your hips fire — zero extra forward slide.',
+        'Eyes stay level right at contact so curveballs and changeups stay in focus longer.'
+      ],
+      howToSteps: [
+        'Compare head height and front-knee angle in Stage 2 and Stage 3 using Side-by-Side view.',
+        'Rehearse the 2-Second Stride Pause drill so your front leg learns to absorb and block energy.',
+        'Face Mix / Curveballs in the 3D Stadium with Combat Spec-A1 Rodeo (-3).'
+      ],
       batId: 'combat-rodeo',
       batNote: 'Pair with Combat Spec-A1 Rodeo (-3) against Mix/Changeup pitches in the 3D cage.',
-      scenarioId: 'pitch-tunneling',
+      scenarioId: 'xwoba-metrics',
       drills: [
         {
           name: 'Step-Back (Happy Gilmore) Rhythm Drill',
@@ -125,6 +169,17 @@
       fixCue: 'Form a wide triangle out in front of your eyes, thumb down, and softly funnel into your chest.',
       summary: 'Waiting until the grounder reaches your ankles causes late stiff stabs and bad-hop errors. Working through the ball out front lets you adjust smoothly.',
       stages: ['1. Low Ready Base', '2. Triangle Out Front', '3. Soft Catch', '4. Funnel to Chest'],
+      stageCues: [
+        'Sink hips low before the ball arrives with chest angled down and eyes tracking the hop early.',
+        'Extend both hands cleanly out in front of your face forming a relaxed wide triangle.',
+        'Present thumb down / pinky in and work slightly THROUGH the bounce rather than jabbing down.',
+        'Glide the glove softly toward your belly button as throwing fingers find a 4-seam grip.'
+      ],
+      howToSteps: [
+        'Scrub Stage 2 (Triangle Out Front) to see how far ahead of your cleats your glove needs to be.',
+        'Notice Flaw stabbing straight down deep between the ankles where hops are blind.',
+        'Run 4×20 Wall Short-Hop Rapid Hands before infield grounder practice.'
+      ],
       batId: 'baum-gold',
       batNote: 'Clean infield hands mirror clean barrel control—stay athletic with quiet eyes.',
       scenarioId: 'force-vs-tag',
@@ -152,9 +207,20 @@
       fixCue: 'Time your approach "Right, Left, Field, Right, Throw" so momentum flows toward 1st base.',
       summary: 'Catching grounders on your heels forces all-arm throws with low accuracy. Rhythmic footwork puts your body behind every throw automatically.',
       stages: ['1. Prep Creep Step', '2. Round Angle', '3. Right-Left Catch', '4. Step & Fire'],
+      stageCues: [
+        'Take an athletic creep step landing softly on the balls of your feet as the pitch crosses the plate.',
+        'Work slightly right around the grounder to create an inline angle directly toward 1st base.',
+        'Step Right—Left into the ball so your hips and glove glide forward through the catch.',
+        'Replace your right foot straight toward target and release cleanly with body momentum behind it.'
+      ],
+      howToSteps: [
+        'Follow the green dashed footwork arrow underneath the Pro fielder across Stages 2–4.',
+        'Say "Right—Left—Catch—Right—Throw" aloud at 0.45x speed until your feet sync naturally.',
+        'Practice 3×12 Line Cadence reps with cones before live fungo grounders.'
+      ],
       batId: 'goods-2022',
       batNote: 'Strong throwing rhythm pairs with strong lower-half ground force.',
-      scenarioId: 'double-play-pivot',
+      scenarioId: 'force-vs-tag',
       drills: [
         {
           name: 'Line Cadence "Right-Left-Field"',
@@ -179,9 +245,20 @@
       fixCue: 'Snap your hips open 45°, pump both arms with glove tucked, and run straight to the landing spot.',
       summary: 'Backpedaling or curving toward the gap loses 10–15 feet of range. A clean drop-step gets you to the ball fast so you settle under it under control.',
       stages: ['1. Athletic Read', '2. 45° Hip Drop-Step', '3. Pump Arms Sprint', '4. Settle & Catch'],
+      stageCues: [
+        'Hold an athletic ready stance tracking trajectory right off the barrel instead of backpedaling.',
+        'Whip the back hip and shoulder open 45° instantaneously toward the gap.',
+        'Tuck your glove side arm and sprint straight toward the projected X — fastest in the first 3 steps.',
+        'Arrive under control, raise the glove smoothly at the last moment, and catch on the move.'
+      ],
+      howToSteps: [
+        'Compare the straight green vector vs. the wide curving red banana arc on the overhead turf chart.',
+        'Do 4×8 Coach-Point Drop-Step Breaks focusing purely on hip snap speed on step #1.',
+        'Keep your glove down pumping until the final 2–3 steps beneath the ball.'
+      ],
       batId: 'combat-blue',
       batNote: 'Outfield speed + barrel control keeps line drives from finding the gap.',
-      scenarioId: 'cutoff-relay',
+      scenarioId: 'relay-throw',
       drills: [
         {
           name: 'Coach-Point Drop-Step Break',
@@ -206,9 +283,20 @@
       fixCue: 'Catch moving forward, skim low to the grass with a linear skip-through, and throw through the cutoff.',
       summary: 'Leaping upward wastes time and stalls forward energy. Staying low and driving linearly turns fly-ball momentum into flat, biting one-hop lasers.',
       stages: ['1. Behind-Ball Setup', '2. Catch Through', '3. Low Linear Skip', '4. Downhill Follow'],
+      stageCues: [
+        'Circle slightly behind the fly ball so every step carries your momentum straight toward the target.',
+        'Make the catch slightly ahead of your glove-side shoulder while still moving forward.',
+        'Skim low across the grass with your back foot (head level!) instead of jumping upward like a rebound.',
+        'Transfer fast near ear height and drive chest downhill throwing through the cutoff chest.'
+      ],
+      howToSteps: [
+        'Toggle Stage 3 (Low Linear Skip) and watch head height: Pro stays flat while Flaw jumps sky-high.',
+        'Compare the flat laser throw trajectory in Stage 4 vs. the looping rainbow miss.',
+        'Complete 3×10 1-Knee Separation & Low Skip throws hitting a cutoff chest bucket.'
+      ],
       batId: 'goods-2026',
       batNote: 'Transferring ground momentum through the core builds both throwing velo and exit velo.',
-      scenarioId: 'cutoff-relay',
+      scenarioId: 'relay-throw',
       drills: [
         {
           name: '1-Knee Separation & Low Skip Drill',
@@ -528,6 +616,11 @@
           };
     }
 
+    function smoothStep(u) {
+      const t = Math.max(0, Math.min(1, u));
+      return t * t * (3 - 2 * t);
+    }
+
     function drawSegment(x1, y1, x2, y2, w, color) {
       ctx.strokeStyle = color;
       ctx.lineWidth = w;
@@ -536,6 +629,35 @@
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
+    }
+
+    function drawTaperedLimb(x1, y1, x2, y2, r1, r2, fill, highlightColor = 'rgba(255,255,255,0.22)') {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.hypot(dx, dy);
+      if (len < 0.5) return;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const ang = Math.atan2(dy, dx);
+      ctx.save();
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.moveTo(x1 + nx * r1, y1 + ny * r1);
+      ctx.lineTo(x2 + nx * r2, y2 + ny * r2);
+      ctx.arc(x2, y2, r2, ang + Math.PI / 2, ang - Math.PI / 2, true);
+      ctx.lineTo(x1 - nx * r1, y1 - ny * r1);
+      ctx.arc(x1, y1, r1, ang - Math.PI / 2, ang + Math.PI / 2, true);
+      ctx.closePath();
+      ctx.fill();
+      if (highlightColor) {
+        ctx.strokeStyle = highlightColor;
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(x1 + nx * r1 * 0.62, y1 + ny * r1 * 0.62);
+        ctx.lineTo(x2 + nx * r2 * 0.62, y2 + ny * r2 * 0.62);
+        ctx.stroke();
+      }
+      ctx.restore();
     }
 
     function drawJoint(x, y, r, fill, stroke) {
@@ -634,11 +756,11 @@
 
     function drawThemedBat2D(hx, hy, angle, batId) {
       const themes = {
-        'baum-gold': { handle: '#18110b', cuff: '#111827', barrel: '#eab364', accent: '#fde68a', cap: '#291a0e', knob: '#110c07' },
-        'goods-2026': { handle: '#0f172a', cuff: '#ef4444', barrel: '#1b2230', accent: '#2dd4bf', cap: '#090d14', knob: '#ef4444' },
-        'goods-2022': { handle: '#18181b', cuff: '#dc2626', barrel: '#e2e8f0', accent: '#dc2626', cap: '#0f172a', knob: '#dc2626' },
-        'combat-rodeo': { handle: '#854d0e', cuff: '#ea580c', barrel: '#f3ead8', accent: '#7f1d1d', cap: '#7f1d1d', knob: '#7f1d1d' },
-        'combat-blue': { handle: '#1e3a8a', cuff: '#facc15', barrel: '#72c8f8', accent: '#172554', cap: '#172554', knob: '#1e3a8a' }
+        'baum-gold': { handle: '#0a0b0e', cuff: '#111318', barrel: '#111318', accent: '#eab308', cap: '#0a0b0e', knob: '#0a0b0e', hi: 'rgba(255,255,255,0.42)' },
+        'goods-2026': { handle: '#12141a', cuff: '#1f232c', barrel: '#9beae4', accent: '#ef4444', cap: '#0b0d12', knob: '#12141a', hi: 'rgba(255,255,255,0.6)' },
+        'goods-2022': { handle: '#14151a', cuff: '#1e2128', barrel: '#cbd5e1', accent: '#111827', cap: '#0e1015', knob: '#14151a', hi: 'rgba(255,255,255,0.7)' },
+        'combat-rodeo': { handle: '#991b1b', cuff: '#f2e3be', barrel: '#f2e3be', accent: '#991b1b', cap: '#f2e3be', knob: '#88131d', hi: 'rgba(255,255,255,0.5)' },
+        'combat-blue': { handle: '#9be7fd', cuff: '#87defb', barrel: '#87defb', accent: '#1e3a8a', cap: '#1e3a8a', knob: '#1e3a8a', hi: 'rgba(255,255,255,0.58)' }
       };
       const t = themes[batId] || themes['goods-2026'];
       ctx.save();
@@ -652,7 +774,7 @@
       // Handle
       ctx.fillStyle = t.handle;
       ctx.fillRect(2, -2.1, 20, 4.2);
-      // Connector / Taper Cuff
+      // Connector / Taper transition
       ctx.fillStyle = t.cuff;
       ctx.fillRect(22, -2.6, 5, 5.2);
       // Taper + Barrel
@@ -666,16 +788,41 @@
       ctx.lineTo(27, 2.3);
       ctx.closePath();
       ctx.fill();
-      // Barrel Stripe & End Cap
-      ctx.fillStyle = t.accent;
-      ctx.fillRect(36, -3.9, 4.5, 7.8);
+      // Photo-matched markings
+      if (batId === 'baum-gold') {
+        ctx.fillStyle = '#eab308';
+        ctx.beginPath();
+        ctx.ellipse(34, 0, 5.2, 2.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (batId === 'goods-2026') {
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(42, -3.4, 9, 2.2);
+        ctx.fillStyle = '#181a20';
+        ctx.fillRect(40, 0.2, 12, 2.2);
+      } else if (batId === 'goods-2022') {
+        ctx.fillStyle = '#111827';
+        ctx.beginPath();
+        ctx.arc(49, 0, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (batId === 'combat-rodeo') {
+        ctx.fillStyle = '#991b1b';
+        ctx.fillRect(39, -1.5, 14, 3);
+      } else if (batId === 'combat-blue') {
+        ctx.fillStyle = '#d4af37';
+        ctx.fillRect(34, -3.9, 1.4, 7.8);
+        ctx.fillRect(55, -3.9, 1.4, 7.8);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.beginPath();
+        ctx.arc(48, 0, 2.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.fillStyle = t.cap;
       ctx.fillRect(57, -3.6, 3.2, 7.2);
       // Specular sheen highlight
-      ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = t.hi;
+      ctx.lineWidth = 1.1;
       ctx.beginPath();
-      ctx.moveTo(36, -1.9);
+      ctx.moveTo(35, -1.9);
       ctx.lineTo(56, -1.9);
       ctx.stroke();
       ctx.restore();
@@ -694,11 +841,11 @@
       const accent = isFlaw ? c.flaw : c.pro;
       const jersey = isFlaw ? c.jerseyFlaw : c.jerseyPro;
 
-      // Phase easing curves
-      const load = Math.min(1, p / 0.30);
-      const stride = p < 0.25 ? 0 : Math.min(1, (p - 0.25) / 0.22);
-      const swing = p < 0.45 ? 0 : Math.min(1, (p - 0.45) / 0.26);
-      const finish = p < 0.71 ? 0 : Math.min(1, (p - 0.71) / 0.29);
+      // Smooth biomechanical phase easing curves
+      const load = smoothStep(Math.min(1, p / 0.30));
+      const stride = smoothStep(p < 0.25 ? 0 : Math.min(1, (p - 0.25) / 0.22));
+      const swing = smoothStep(p < 0.45 ? 0 : Math.min(1, (p - 0.45) / 0.26));
+      const finish = smoothStep(p < 0.71 ? 0 : Math.min(1, (p - 0.71) / 0.29));
 
       // Compute biomechanics offsets by clinic + flaw vs pro
       let hipShiftX = -load * 6 + stride * 12;
@@ -753,26 +900,38 @@
       const backKneeX = (backFootX + hipX) * 0.5 + 4 + swing * 10;
       const backKneeY = groundY - 30;
 
-      // Draw Legs
-      drawSegment(backFootX, groundY - 4, backKneeX, backKneeY, 8, c.body);
-      drawSegment(backKneeX, backKneeY, hipX - 6, hipY, 9, c.body);
-      drawSegment(frontFootX, groundY - 4, frontKneeX, frontKneeY, 8, c.body);
-      drawSegment(frontKneeX, frontKneeY, hipX + 6, hipY, 9, c.body);
+      // Ground shadow under feet + Cleats + Smooth athletic tapered legs
+      ctx.fillStyle = 'rgba(0,0,0,0.34)';
+      ctx.beginPath();
+      ctx.ellipse((backFootX + frontFootX) * 0.5, groundY - 1, 34, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
 
-      // Torso & Head
+      drawTaperedLimb(hipX - 5.5, hipY, backKneeX, backKneeY, 6.2, 4.8, c.body);
+      drawTaperedLimb(backKneeX, backKneeY, backFootX, groundY - 4, 4.6, 3.2, c.body);
+      drawTaperedLimb(hipX + 5.5, hipY, frontKneeX, frontKneeY, 6.2, 4.8, c.body);
+      drawTaperedLimb(frontKneeX, frontKneeY, frontFootX, groundY - 4, 4.6, 3.2, c.body);
+
+      // Stirrup stripe & cleats
+      drawTaperedLimb(backFootX - 1, groundY - 3.5, backFootX + 9, groundY - 3, 3.0, 2.4, '#0f172a', null);
+      drawTaperedLimb(frontFootX - 1, groundY - 3.5, frontFootX + 10, groundY - 3, 3.0, 2.4, '#0f172a', null);
+
+      // Athletic tapered torso + belt
       const shX = hipX - 4 + (clinicId === 'lunging' && isFlaw ? stride * 18 : -swing * 5);
       const shY = hipY - 46 + headDrop * 0.45;
-      drawSegment(hipX, hipY, shX, shY, 13, jersey);
+      drawTaperedLimb(hipX, hipY, shX, shY, 7.6, 9.8, jersey);
+      drawSegment(hipX - 6, hipY + 1, hipX + 6, hipY + 1, 4.2, '#0f172a');
 
-      // Head & Batting Helmet
+      // Head, Contoured Batting Helmet, Bill & C-Flap Jaw Guard
       const headX = shX + 3 + (clinicId === 'lunging' && isFlaw ? stride * 8 : 0);
       const headY = shY - 17;
-      drawJoint(headX, headY, 10, '#fed7aa', null);
+      drawJoint(headX, headY, 9.5, '#e8be96', null);
       ctx.beginPath();
-      ctx.arc(headX - 1, headY - 2, 11, Math.PI * 0.9, Math.PI * 2.05);
+      ctx.arc(headX - 1, headY - 2, 11.2, Math.PI * 0.85, Math.PI * 2.08);
       ctx.fillStyle = jersey;
       ctx.fill();
-      ctx.fillRect(headX + 4, headY - 4, 11, 3); // visor facing pitcher
+      ctx.fillRect(headX + 4, headY - 4, 12, 3.2);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(headX + 2, headY + 1, 6, 4.5);
 
       // Fence visual for Casting Wall Drill!
       if (clinicId === 'casting') {
@@ -798,10 +957,10 @@
       const rearElbowX = backShoulderX - 4 + rearElbowLead + swing * 12;
       const rearElbowY = backShoulderY + 18 + (clinicId === 'bat-drag' && !isFlaw ? 6 : 0);
 
-      drawSegment(backShoulderX, backShoulderY, rearElbowX, rearElbowY, 6, jersey);
-      drawSegment(rearElbowX, rearElbowY, handsX, handsY, 5.5, '#fed7aa');
-      drawSegment(frontShoulderX, frontShoulderY, (frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, 5.5, jersey);
-      drawSegment((frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, handsX, handsY, 5, '#fed7aa');
+      drawTaperedLimb(backShoulderX, backShoulderY, rearElbowX, rearElbowY, 4.0, 3.3, jersey);
+      drawTaperedLimb(rearElbowX, rearElbowY, handsX, handsY, 3.2, 2.7, '#fed7aa', null);
+      drawTaperedLimb(frontShoulderX, frontShoulderY, (frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, 3.8, 3.1, jersey);
+      drawTaperedLimb((frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, handsX, handsY, 3.0, 2.5, '#fed7aa', null);
 
       // Highlight Joint Warning or Cue Circle
       if (clinicId === 'bat-drag') {
@@ -812,8 +971,20 @@
         drawJoint(frontKneeX, frontKneeY, 6, accent, '#ffffff');
       }
 
-      // 3D-Styled Actual Theme Bat (Baum Bat Gold / 2026 Goods / 2022 Goods / Combat Rodeo / Combat Blue)
+      // Translucent Bat Swing Arc Ribbon Trail
       const batAngle = barrelLagDeg + finish * 0.65 + (clinicId === 'rolling-over' && isFlaw ? wristRoll * 0.5 : 0);
+      if (swing > 0.08) {
+        ctx.save();
+        ctx.strokeStyle = isFlaw ? 'rgba(248, 113, 113, 0.34)' : 'rgba(56, 189, 248, 0.42)';
+        ctx.lineWidth = 7;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(handsX, handsY, 48, Math.max(-2.1, batAngle - 1.15 * swing), batAngle);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3D-Styled Actual Theme Bat (Baum Bat Gold / 2026 Goods / 2022 Goods / Combat Rodeo / Combat Blue)
       drawThemedBat2D(handsX, handsY, batAngle, c.activeBatId || 'goods-2026');
 
       // Incoming & Batted Ball Trajectory
@@ -998,15 +1169,15 @@
         }
       }
 
-      // Draw Fielder Body + Legs + Glove
+      // Draw Smooth Anatomical Fielder Body + Legs + Glove
       const hipY = groundY - 56 + crouch * 0.65 - hopY;
       const shY = hipY - 40 + crouch * 0.3;
       const shX = fx + crouch * 0.25;
-      drawSegment(fx - 16, groundY - 4 - hopY, fx - 6, groundY - 28 - hopY, 8, c.body);
-      drawSegment(fx - 6, groundY - 28 - hopY, fx, hipY, 8.5, c.body);
-      drawSegment(fx + 14, groundY - 4 - hopY, fx + 10, groundY - 28 - hopY, 8, c.body);
-      drawSegment(fx + 10, groundY - 28 - hopY, fx, hipY, 8.5, c.body);
-      drawSegment(fx, hipY, shX, shY, 13, jersey);
+      drawTaperedLimb(fx, hipY, fx - 6, groundY - 28 - hopY, 5.6, 4.4, c.body);
+      drawTaperedLimb(fx - 6, groundY - 28 - hopY, fx - 16, groundY - 4 - hopY, 4.2, 2.9, c.body);
+      drawTaperedLimb(fx, hipY, fx + 10, groundY - 28 - hopY, 5.6, 4.4, c.body);
+      drawTaperedLimb(fx + 10, groundY - 28 - hopY, fx + 14, groundY - 4 - hopY, 4.2, 2.9, c.body);
+      drawTaperedLimb(fx, hipY, shX, shY, 7.2, 9.0, jersey);
 
       // Head + Cap
       drawJoint(shX + 3, shY - 16, 9.5, '#fed7aa', null);
@@ -1019,12 +1190,12 @@
       // Glove & Throwing Arm
       const gx = shX + gloveOut;
       const gy = clinicId === 'crow-hop' ? shY + 6 : groundY - 16 - (clinicId === 'glove-stab' && !isFlaw ? 2 : 0) - hopY;
-      drawSegment(shX + 4, shY + 5, gx, gy, 5.5, jersey);
+      drawTaperedLimb(shX + 4, shY + 5, gx, gy, 3.6, 2.8, jersey);
       drawJoint(gx, gy, 7.5, '#92400e', accent);
       if (clinicId === 'crow-hop') {
         const tx = shX - 6 + Math.cos(armAngle) * 26;
         const ty = shY + 4 + Math.sin(armAngle) * 26;
-        drawSegment(shX - 4, shY + 5, tx, ty, 5, '#fed7aa');
+        drawTaperedLimb(shX - 4, shY + 5, tx, ty, 3.4, 2.5, '#fed7aa', null);
       }
 
       const fieldNote =
@@ -1124,6 +1295,11 @@
     const drillsWrapEl = document.getElementById('clinic-drills-wrap');
     const saveDrillBtn = document.getElementById('save-clinic-drill-btn');
     const playLinkEl = document.getElementById('clinic-play-link');
+    const cageLinkEl = document.getElementById('clinic-cage-link');
+    const liveStageTitleEl = document.getElementById('clinic-live-stage-title');
+    const liveStageBadgeEl = document.getElementById('clinic-live-stage-badge');
+    const liveStageCueEl = document.getElementById('clinic-live-stage-cue');
+    const howToStepsEl = document.getElementById('clinic-howto-steps');
     const batSelectEl = document.getElementById('clinic-bat-select');
 
     let activeClinic = VIDEO_CLINICS[0];
@@ -1134,7 +1310,21 @@
     let slowMo = false;
     let progress = 0;
     let lastTs = 0;
+    let lastSyncedStage = -1;
+    let lastSyncedClinicId = '';
     const renderer = videoCanvas ? createVideoRenderer(videoCanvas) : null;
+
+    function syncStageGuide(force = false) {
+      const idx = Math.min(3, Math.floor((((progress % 1) + 1) % 1) * 4));
+      if (!force && idx === lastSyncedStage && activeClinic.id === lastSyncedClinicId) return;
+      lastSyncedStage = idx;
+      lastSyncedClinicId = activeClinic.id;
+      const stageName = (activeClinic.stages && activeClinic.stages[idx]) || `Stage ${idx + 1}`;
+      const cue = (activeClinic.stageCues && activeClinic.stageCues[idx]) || activeClinic.fixCue;
+      if (liveStageTitleEl) liveStageTitleEl.textContent = stageName;
+      if (liveStageBadgeEl) liveStageBadgeEl.textContent = `Frame ${idx + 1} / 4`;
+      if (liveStageCueEl) liveStageCueEl.textContent = cue;
+    }
 
     function renderClinicButtons() {
       if (!clinicListEl) return;
@@ -1165,6 +1355,12 @@
       if (titleEl) titleEl.textContent = found.title;
       if (summaryEl) summaryEl.textContent = `${found.summary} Pro cue: "${found.fixCue}"`;
       if (playLinkEl) playLinkEl.href = `detail.html?id=${encodeURIComponent(found.scenarioId)}`;
+      if (cageLinkEl) cageLinkEl.href = `index.html?bat=${encodeURIComponent(activeBatId)}#gameday-studio`;
+
+      if (howToStepsEl && Array.isArray(found.howToSteps)) {
+        howToStepsEl.innerHTML = found.howToSteps.map((step) => `<li>${step}</li>`).join('');
+      }
+      syncStageGuide(true);
 
       if (chapterTabsEl) {
         chapterTabsEl.innerHTML = found.stages
@@ -1196,6 +1392,7 @@
     if (batSelectEl) {
       batSelectEl.addEventListener('change', () => {
         activeBatId = batSelectEl.value;
+        if (cageLinkEl) cageLinkEl.href = `index.html?bat=${encodeURIComponent(activeBatId)}#gameday-studio`;
         if (renderer) renderer.render(activeClinic, progress, viewMode, activeBatId);
       });
     }
@@ -1260,6 +1457,7 @@
         playing = false;
         if (playBtn) playBtn.textContent = 'Play';
         progress = Number(seekInput.value) / 100;
+        syncStageGuide();
         if (renderer) renderer.render(activeClinic, progress, viewMode, activeBatId);
       });
     }
@@ -1276,35 +1474,54 @@
         chapterTabsEl.querySelectorAll('[data-chapter-idx]').forEach((b) => {
           b.setAttribute('aria-pressed', String(Number(b.dataset.chapterIdx) === idx));
         });
+        syncStageGuide(true);
         if (renderer) renderer.render(activeClinic, progress, viewMode, activeBatId);
       });
     }
 
+    function authHeaders(extra = {}) {
+      if (window.diamondiqAuth && typeof window.diamondiqAuth.getHeaders === 'function') {
+        return window.diamondiqAuth.getHeaders(extra);
+      }
+      return { ...extra };
+    }
+
     if (saveDrillBtn) {
+      let savingDrill = false;
       saveDrillBtn.addEventListener('click', async () => {
+        if (savingDrill) return;
+        savingDrill = true;
+        saveDrillBtn.disabled = true;
+        saveDrillBtn.classList.add('is-loading');
+        saveDrillBtn.textContent = 'Saving Drill...';
         const title = `Drill Fix: ${activeClinic.title}`;
         const body = `${activeClinic.fixCue}\nDrills:\n- ${activeClinic.drills.map((d) => `${d.name} (${d.reps}): ${d.cue}`).join('\n- ')}`;
         try {
           const res = await fetch('/api/playbook', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ title, body, rating: 4 })
           });
           if (res.status === 401) {
-            saveDrillBtn.textContent = 'Log in to save to Playbook';
+            saveDrillBtn.textContent = 'Log in to save to Playbook...';
             setTimeout(() => {
-              window.location.href = 'login.html';
-            }, 900);
+              window.location.href = 'login.html?next=training.html';
+            }, 850);
             return;
           }
           if (!res.ok) throw new Error('Could not save');
           saveDrillBtn.textContent = 'Saved to My Playbook!';
           setTimeout(() => {
             saveDrillBtn.textContent = 'Save Drill to My Playbook';
+            saveDrillBtn.disabled = false;
           }, 2200);
         } catch {
           saveDrillBtn.textContent = 'Could not save right now';
+          saveDrillBtn.disabled = false;
+        } finally {
+          savingDrill = false;
+          saveDrillBtn.classList.remove('is-loading');
         }
       });
     }
@@ -1322,6 +1539,7 @@
             b.setAttribute('aria-pressed', String(Number(b.dataset.chapterIdx) === activeCh));
           });
         }
+        syncStageGuide();
         renderer.render(activeClinic, progress, viewMode, activeBatId);
       }
       requestAnimationFrame(tickVideo);
@@ -1369,8 +1587,9 @@
 
     function updateProgressUi() {
       const count = Object.keys(answers).length;
-      if (quizProgressText) quizProgressText.textContent = `${count} / ${QUIZ_QUESTIONS.length} answered`;
-      if (quizProgressBar) quizProgressBar.style.width = `${Math.round((count / QUIZ_QUESTIONS.length) * 100)}%`;
+      const pct = Math.round((count / QUIZ_QUESTIONS.length) * 100);
+      if (quizProgressText) quizProgressText.textContent = `${count} / ${QUIZ_QUESTIONS.length} answered (${pct}%)`;
+      if (quizProgressBar) quizProgressBar.style.width = `${pct}%`;
     }
 
     function renderQuizQuestions() {
@@ -1380,12 +1599,12 @@
         .map((q) => {
           const picked = answers[q.id];
           return `
-            <fieldset class="quiz-q-card" data-qid="${q.id}">
+            <fieldset class="quiz-q-card${picked ? ' is-answered' : ''}" data-qid="${q.id}">
               <legend class="quiz-q-title">
                 <span class="quiz-q-num tabular-nums">Q${String(q.id).padStart(2, '0')}</span>
                 <span>${q.prompt}</span>
               </legend>
-              <div class="quiz-q-meta">${q.partLabel}</div>
+              <div class="quiz-q-meta">${q.partLabel}${picked ? ' · Answered' : ''}</div>
               <div class="quiz-options-grid">
                 ${q.options
                   .map(
@@ -1489,6 +1708,9 @@
     function renderDiagnosticReport(report) {
       if (!reportWrapEl) return;
       reportWrapEl.hidden = false;
+      reportWrapEl.classList.remove('is-revealed');
+      void reportWrapEl.offsetWidth;
+      reportWrapEl.classList.add('is-revealed');
 
       const hitClinic = report.hitClinic;
       const fieldClinic = report.fieldClinic;
@@ -1594,7 +1816,13 @@
 
       const savePlanBtn = document.getElementById('save-report-playbook-btn');
       if (savePlanBtn) {
+        let savingPlan = false;
         savePlanBtn.addEventListener('click', async () => {
+          if (savingPlan) return;
+          savingPlan = true;
+          savePlanBtn.disabled = true;
+          savePlanBtn.classList.add('is-loading');
+          savePlanBtn.textContent = 'Saving Plan...';
           const title = `Scouting Plan: ${hitClinic.title} + ${fieldClinic.title}`;
           const body = [
             `HITTING PRIORITY: ${hitClinic.flawName}`,
@@ -1611,20 +1839,24 @@
             const res = await fetch('/api/playbook', {
               method: 'POST',
               credentials: 'same-origin',
-              headers: { 'Content-Type': 'application/json' },
+              headers: authHeaders({ 'Content-Type': 'application/json' }),
               body: JSON.stringify({ title, body, rating: 5 })
             });
             if (res.status === 401) {
               savePlanBtn.textContent = 'Log in to save plan...';
               setTimeout(() => {
-                window.location.href = 'login.html';
-              }, 900);
+                window.location.href = 'login.html?next=training.html';
+              }, 850);
               return;
             }
             if (!res.ok) throw new Error('Save failed');
             savePlanBtn.textContent = 'Saved to My Playbook!';
           } catch {
             savePlanBtn.textContent = 'Save failed — try logging in';
+            savePlanBtn.disabled = false;
+          } finally {
+            savingPlan = false;
+            savePlanBtn.classList.remove('is-loading');
           }
         });
       }
@@ -1638,11 +1870,20 @@
         answers[qid] = input.value;
         const card = input.closest('.quiz-q-card');
         if (card) {
+          card.classList.add('is-answered');
+          card.classList.remove('is-missing');
+          const meta = card.querySelector('.quiz-q-meta');
+          if (meta && !meta.textContent.includes('Answered')) {
+            meta.textContent = `${meta.textContent} · Answered`;
+          }
           card.querySelectorAll('.quiz-opt-label').forEach((lbl) => lbl.classList.remove('is-selected'));
           const parentLbl = input.closest('.quiz-opt-label');
           if (parentLbl) parentLbl.classList.add('is-selected');
         }
-        if (quizErrorEl) quizErrorEl.textContent = '';
+        if (quizErrorEl) {
+          quizErrorEl.className = 'feedback-banner';
+          quizErrorEl.textContent = '';
+        }
         updateProgressUi();
       });
     }
@@ -1674,6 +1915,10 @@
             });
             renderQuizQuestions();
           }
+          quizListEl?.querySelectorAll('.quiz-q-card').forEach((c) => {
+            const cid = Number(c.dataset.qid);
+            c.classList.toggle('is-missing', !answers[cid]);
+          });
           const firstMissingCard = quizListEl?.querySelector(`[data-qid="${missing[0].slice(1)}"]`);
           firstMissingCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
