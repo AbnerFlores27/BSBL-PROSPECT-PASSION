@@ -46,14 +46,53 @@
       .replace(/'/g, '&#39;');
   }
 
+  const SESSION_TOKEN_KEY = 'diamondiq_sid_fallback';
+
+  function getStoredSessionToken() {
+    try {
+      return localStorage.getItem(SESSION_TOKEN_KEY) || '';
+    } catch {
+      return '';
+    }
+  }
+
+  function setStoredSessionToken(token) {
+    try {
+      if (token) localStorage.setItem(SESSION_TOKEN_KEY, token);
+      else localStorage.removeItem(SESSION_TOKEN_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function safeNextUrl(raw) {
+    if (!raw || typeof raw !== 'string') return null;
+    const trimmed = raw.trim();
+    if (/^[a-zA-Z0-9_-]+\.html(\?[a-zA-Z0-9_=&%+-]*)?(#[a-zA-Z0-9_-]+)?$/.test(trimmed)) {
+      return trimmed;
+    }
+    return null;
+  }
+
+  function getAuthHeaders(extraHeaders = {}) {
+    const token = getStoredSessionToken();
+    const base = { 'Content-Type': 'application/json', ...extraHeaders };
+    if (token) base.Authorization = `Bearer ${token}`;
+    return base;
+  }
+
+  window.diamondiqAuth = {
+    getHeaders: getAuthHeaders,
+    safeNextUrl,
+    getToken: getStoredSessionToken,
+    setToken: setStoredSessionToken
+  };
+
   async function api(url, options = {}) {
     const config = {
       credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {})
-      },
-      ...options
+      ...options,
+      headers: getAuthHeaders(options.headers || {})
     };
     const res = await fetch(url, config);
     const data = await res.json().catch(() => ({}));
@@ -526,6 +565,7 @@
         btn.addEventListener('click', async () => {
           try {
             await api('/api/auth/logout', { method: 'POST' });
+            setStoredSessionToken(null);
             currentUser = null;
             showToast('Logged out.');
             await syncAuthNav();
@@ -647,163 +687,166 @@
       'baum-gold': {
         id: 'baum-gold',
         name: 'Baum Bat Gold',
-        shortLabel: 'BAUM GOLD',
-        meta: 'PermaWood Composite · Slight End-Load · 2.505" Barrel',
-        desc: 'Glazed maple wood finish over a composite core. Narrower pro-wood barrel with crisp atomic crack sound and pro exit velocity.',
+        shortLabel: 'Baum',
+        meta: 'AAA Pro Maple Gold Edition · Slight End-Load · 2.505" Barrel',
+        desc: 'High-gloss jet-black maple-composite finish with metallic gold Baum oval medallion, gold BBCOR .50 stamp, cupped black tip, and solid-wood crack.',
         construction: '1pc-wood',
         weightMod: 0.985,
         popMod: 0.975,
         sweetSpot: 0.86,
         soundType: 'wood',
-        barrelColor: '#d49b4b',
-        barrelHi: '#f3cb83',
-        barrelLo: '#9a621f',
-        taperColor: '#b87a2a',
-        handleColor: '#1a130e',
-        accentColor: '#f59e0b',
-        trimColor: '#111827',
-        capColor: '#18120c',
+        barrelColor: '#111318',
+        barrelHi: '#343946',
+        barrelLo: '#060709',
+        taperColor: '#0e1014',
+        handleColor: '#0a0b0e',
+        accentColor: '#eab308',
+        trimColor: '#d4af37',
+        capColor: '#0a0b0e',
         capStyle: 'cupped'
       },
       'goods-2026': {
         id: 'goods-2026',
         name: '2026 DeMarini The Goods',
-        shortLabel: '26 GOODS',
+        shortLabel: 'GOODS',
         meta: '2-Piece Hybrid · Heavy End-Load · 2 5/8" Barrel',
-        desc: 'Matte black X14 Alloy Barrel with red/teal accents, stiff 1375 Composite Handle, and notched Tremor End Cap for towering bombs.',
+        desc: 'Pale ice-blue X14 Alloy barrel paired with black 1375 composite handle, red arrow/stencil graphics, notched black Tremor end cap, and deep damped thud.',
         construction: '2pc',
-        cuffColor: '#ef4444',
-        cuffTrim: '#2dd4bf',
+        cuffColor: '#181a20',
+        cuffTrim: '#334155',
         weightMod: 0.992,
         popMod: 1.045,
         sweetSpot: 0.96,
         soundType: 'hybrid',
-        barrelColor: '#1e2430',
-        barrelHi: '#475569',
-        barrelLo: '#0d1117',
-        taperColor: '#111827',
-        handleColor: '#0f172a',
-        accentColor: '#2dd4bf',
-        trimColor: '#ef4444',
-        capColor: '#090d14',
+        barrelColor: '#9beae4',
+        barrelHi: '#d8faf7',
+        barrelLo: '#61c9c1',
+        taperColor: '#9beae4',
+        handleColor: '#12141a',
+        accentColor: '#ef4444',
+        trimColor: '#181a20',
+        capColor: '#0b0d12',
         capStyle: 'tremor'
       },
       'goods-2022': {
         id: 'goods-2022',
         name: '2022 DeMarini The Goods',
-        shortLabel: '22 GOODS',
+        shortLabel: 'The GOODS',
         meta: 'Half+Half Hybrid · Classic End-Load · 2 5/8" Barrel',
-        desc: 'Signature brushed chrome silver X14 Alloy barrel + black Paraflex Plus composite handle with crimson red graphics and smooth whip.',
+        desc: 'Brushed metallic chrome silver X14 Alloy barrel + matte black Paraflex composite handle with monochromatic black graphics and loud metallic ping-crack.',
         construction: '2pc',
-        cuffColor: '#dc2626',
-        cuffTrim: '#18181b',
+        cuffColor: '#18191e',
+        cuffTrim: '#334155',
         weightMod: 0.998,
         popMod: 1.033,
         sweetSpot: 0.98,
         soundType: 'hybrid',
         barrelColor: '#cbd5e1',
-        barrelHi: '#ffffff',
-        barrelLo: '#64748b',
-        taperColor: '#334155',
-        handleColor: '#18181b',
-        accentColor: '#dc2626',
-        trimColor: '#0f172a',
-        capColor: '#18181b',
+        barrelHi: '#f8fafc',
+        barrelLo: '#7b8798',
+        taperColor: '#b8c3d0',
+        handleColor: '#14151a',
+        accentColor: '#111827',
+        trimColor: '#111827',
+        capColor: '#0e1015',
         capStyle: 'dish'
       },
       'combat-rodeo': {
         id: 'combat-rodeo',
         name: 'Combat MFG Spec-A1 Rodeo',
-        shortLabel: 'RODEO A1',
-        meta: '1-Piece SFX Alloy · Balanced Whip · Clinch Tan Grip',
-        desc: 'Antique cream barrel with deep maroon & burnt-orange western stripes, seamless 1-piece taper, tan Clinch grip, and loud Combat thwack.',
+        shortLabel: 'NOT MY FIRST RODEO!',
+        meta: '1-Piece SFX Alloy · Balanced Whip · Crimson Grip',
+        desc: 'Vintage buttercream barrel & taper, crimson-red perforated grip & flared pommel, western bronco art ("Not My First Rodeo!"), and loud Combat thwack.',
         construction: '1pc',
         weightMod: 1.024,
         popMod: 1.02,
         sweetSpot: 1.06,
         soundType: 'combat',
-        barrelColor: '#efe4ce',
-        barrelHi: '#fffbf2',
-        barrelLo: '#cbb898',
-        taperColor: '#7f1d1d',
-        handleColor: '#854d0e',
-        accentColor: '#7f1d1d',
-        trimColor: '#ea580c',
-        capColor: '#7f1d1d',
+        barrelColor: '#f2e3be',
+        barrelHi: '#fcf6e6',
+        barrelLo: '#d4c193',
+        taperColor: '#f2e3be',
+        handleColor: '#f2e3be',
+        gripColor: '#991b1b',
+        accentColor: '#991b1b',
+        trimColor: '#b45309',
+        capColor: '#f2e3be',
+        knobColor: '#88131d',
         capStyle: 'flared'
       },
       'combat-blue': {
         id: 'combat-blue',
         name: 'Combat Spec-A1 Members Club Blue',
-        shortLabel: 'CLUB BLUE',
+        shortLabel: 'Members Only',
         meta: '1-Piece Country Club Alloy · Ultra-Balanced · Widest Sweet Spot',
-        desc: 'Powder sky-blue SFX alloy barrel with navy & gold Country Club bands, argyle navy handle grip, and the widest sweet-spot forgiveness.',
+        desc: 'Powder sky-blue 1-piece SFX barrel & handle with sky-blue grip, royal blue flared knob & end cap, gold pinstripes, and crisp alloy thwack.',
         construction: '1pc',
         weightMod: 1.028,
         popMod: 1.016,
         sweetSpot: 1.1,
         soundType: 'combat',
-        barrelColor: '#67c1f5',
-        barrelHi: '#d8f1ff',
-        barrelLo: '#2b7ec1',
-        taperColor: '#1e3a8a',
-        handleColor: '#172554',
+        barrelColor: '#87defb',
+        barrelHi: '#d4f3fe',
+        barrelLo: '#53bee8',
+        taperColor: '#87defb',
+        handleColor: '#87defb',
+        gripColor: '#94e4fc',
         accentColor: '#1e3a8a',
-        trimColor: '#facc15',
-        capColor: '#172554',
+        trimColor: '#d4af37',
+        capColor: '#1e3a8a',
+        knobColor: '#1e3a8a',
         capStyle: 'flared'
       }
     };
 
     const STADIUMS = {
-      fenway: {
-        id: 'fenway',
-        name: 'Fenway Park',
-        dimsLabel: 'Fenway Park · 310 LF · 420 CF · 302 RF',
-        skyTop: '#071426',
-        skyMid: '#122949',
-        skyLow: '#1b3d64',
-        wallColor: '#1b4d38',
-        wallCap: '#fbbf24',
-        wallDist(phi) {
-          // phi in [-0.785 .. +0.785] (-45 LF to +45 RF)
-          if (phi < -0.18) return 310 + ((phi + 0.785) / 0.605) * 68;
-          if (phi < 0.16) return 388 + Math.cos(((phi - 0.02) / 0.18) * Math.PI * 0.5) * 32;
-          return 380 - ((phi - 0.16) / 0.625) * 78;
-        },
-        wallHeight(phi) {
-          if (phi < -0.15) return 37; // Iconic Green Monster!
-          if (phi < 0.12) return 17;
-          return 5; // Pesky's Pole corner
-        }
-      },
-      wrigley: {
-        id: 'wrigley',
-        name: 'Wrigley Field',
-        dimsLabel: 'Wrigley Field · 355 LF · 400 CF · 353 RF',
-        skyTop: '#0b1c36',
-        skyMid: '#19375f',
+      omaha: {
+        id: 'omaha',
+        name: 'Charles Schwab Field (Omaha)',
+        dimsLabel: 'Omaha CWS · 335 LF · 408 CF · 335 RF',
+        skyTop: '#08182e',
+        skyMid: '#153257',
         skyLow: '#2b557c',
-        wallColor: '#255c32',
-        wallCap: '#b45309',
+        wallColor: '#0f3f2b',
+        wallCap: '#fbbf24',
+        airDensity: 0.965,
         wallDist(phi) {
-          return 354 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 46;
+          // Charles Schwab Field Omaha: symmetrical 335 corners, 375 power alleys, 408 CF
+          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 73;
         },
         wallHeight() {
-          return 11.5; // Brick + Ivy
+          return 8.5;
         }
       },
-      dodger: {
-        id: 'dodger',
-        name: 'Dodger Stadium',
-        dimsLabel: 'Dodger Stadium · 330 LF · 395 CF · 330 RF',
+      lsu: {
+        id: 'lsu',
+        name: 'Alex Box Stadium (LSU)',
+        dimsLabel: 'Alex Box (LSU) · 330 LF · 405 CF · 330 RF',
         skyTop: '#161130',
         skyMid: '#372357',
-        skyLow: '#7a3c4a',
-        wallColor: '#1d4ed8',
-        wallCap: '#fbbf24',
+        skyLow: '#6e3b5c',
+        wallColor: '#1a4a33',
+        wallCap: '#facc15',
+        airDensity: 1.008,
         wallDist(phi) {
-          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
+        },
+        wallHeight() {
+          return 10;
+        }
+      },
+      missst: {
+        id: 'missst',
+        name: 'Dude Noble Field (Miss. State)',
+        dimsLabel: 'Dude Noble (MSU) · 330 LF · 390 CF · 330 RF',
+        skyTop: '#0b182c',
+        skyMid: '#242947',
+        skyLow: '#4f3b49',
+        wallColor: '#5c1424',
+        wallCap: '#e2e8f0',
+        airDensity: 0.992,
+        wallDist(phi) {
+          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
         },
         wallHeight() {
           return 9;
@@ -811,13 +854,14 @@
       },
       cage: {
         id: 'cage',
-        name: 'Indoor HitTrax Cage',
-        dimsLabel: 'Indoor HitTrax · 400 FT Simulated Net',
+        name: 'D1 Rapsodo Lab',
+        dimsLabel: 'D1 Rapsodo Lab · 400 FT Simulated',
         skyTop: '#070d18',
         skyMid: '#0e1b2f',
         skyLow: '#142742',
         wallColor: '#1e3a5f',
         wallCap: '#fbbf24',
+        airDensity: 1.0,
         wallDist() {
           return 400;
         },
@@ -828,14 +872,67 @@
     };
 
     const PITCH_TYPES = {
-      fastball: { name: '4-Seam Fastball', mphMin: 91, mphMax: 95, dur: 0.6, dropFt: 1.0, breakX: 0.14 },
-      slider: { name: 'Sharp Slider', mphMin: 82, mphMax: 85, dur: 0.7, dropFt: 2.1, breakX: -0.58 },
-      curve: { name: '12-6 Curveball', mphMin: 74, mphMax: 78, dur: 0.8, dropFt: 3.6, breakX: -0.15 },
-      changeup: { name: 'Fade Changeup', mphMin: 79, mphMax: 83, dur: 0.75, dropFt: 2.5, breakX: 0.42 }
+      fastball: {
+        name: '4-Seam Fastball',
+        mphMin: 91,
+        mphMax: 95,
+        rpmMin: 2260,
+        rpmMax: 2490,
+        spinAxisClock: '12:45',
+        spinAxisDeg: 22,
+        spinEff: 94,
+        ivbIn: 17.2,
+        hbIn: 8.4,
+        magX: 4.5,
+        magY: 16.4
+      },
+      slider: {
+        name: 'Sharp Slider',
+        mphMin: 82,
+        mphMax: 86,
+        rpmMin: 2440,
+        rpmMax: 2740,
+        spinAxisClock: '9:30',
+        spinAxisDeg: 285,
+        spinEff: 48,
+        ivbIn: 2.1,
+        hbIn: -12.4,
+        magX: -14.8,
+        magY: 2.4
+      },
+      curve: {
+        name: '12-6 Curveball',
+        mphMin: 74,
+        mphMax: 78,
+        rpmMin: 2520,
+        rpmMax: 2860,
+        spinAxisClock: '6:30',
+        spinAxisDeg: 195,
+        spinEff: 86,
+        ivbIn: -12.8,
+        hbIn: -4.6,
+        magX: -4.4,
+        magY: -12.0
+      },
+      changeup: {
+        name: 'Fade Changeup',
+        mphMin: 79,
+        mphMax: 83,
+        rpmMin: 1640,
+        rpmMax: 1890,
+        spinAxisClock: '2:15',
+        spinAxisDeg: 68,
+        spinEff: 90,
+        ivbIn: 6.2,
+        hbIn: 14.4,
+        magX: 11.8,
+        magY: 5.5
+      }
     };
 
     const cageCanvas = document.getElementById('cage-canvas');
     const sprayCanvas = document.getElementById('hittrax-spray-canvas');
+    const rapsodoViewTabs = document.getElementById('rapsodo-view-tabs');
     const batRack = document.getElementById('bat-rack');
     const stadiumTabs = document.getElementById('stadium-tabs');
     const pitchTabs = document.getElementById('pitch-tabs');
@@ -852,6 +949,12 @@
     const apexEl = document.getElementById('hitlab-apex');
     const spinEl = document.getElementById('hitlab-spin');
     const outEl = document.getElementById('hitlab-outcome');
+    const rapBatSpeedEl = document.getElementById('rapsodo-batspeed');
+    const rapSmashEl = document.getElementById('rapsodo-smash');
+    const rapAttackEl = document.getElementById('rapsodo-attack');
+    const rapBreakEl = document.getElementById('rapsodo-break');
+    const rapAxisEl = document.getElementById('rapsodo-axis');
+    const rapCarryEl = document.getElementById('rapsodo-carry');
     const batSpecMeta = document.getElementById('bat-spec-meta');
     const batSpecName = document.getElementById('bat-spec-name');
     const batSpecDesc = document.getElementById('bat-spec-desc');
@@ -861,28 +964,68 @@
     const sprayClearBtn = document.getElementById('spray-clear-btn');
     const countReadout = document.getElementById('count-readout');
 
+    const testBatSoundBtn = document.getElementById('test-bat-sound-btn');
+
     function renderBatSvg(bat) {
+      const isWood = bat.id === 'baum-gold';
+      const isGoods26 = bat.id === 'goods-2026';
+      const isGoods22 = bat.id === 'goods-2022';
+      const isRodeo = bat.id === 'combat-rodeo';
+      const isBlue = bat.id === 'combat-blue';
+
       const cuff =
         bat.construction === '2pc'
-          ? `<rect x="132" y="12.5" width="15" height="19" rx="2.5" fill="${bat.cuffColor}" stroke="${bat.cuffTrim}" stroke-width="1.5"/>
-             <line x1="139.5" y1="13" x2="139.5" y2="31" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`
+          ? `<rect x="128" y="12.6" width="16" height="18.8" rx="2.5" fill="${bat.cuffColor}" stroke="${bat.cuffTrim}" stroke-width="1.3"/>
+             <line x1="136" y1="13" x2="136" y2="31" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>`
           : '';
-      const woodGrain =
-        bat.construction === '1pc-wood'
-          ? `<line x1="168" y1="15" x2="320" y2="15" stroke="rgba(120,53,15,0.34)" stroke-width="1.1"/>
-             <line x1="172" y1="21" x2="316" y2="21" stroke="rgba(120,53,15,0.22)" stroke-width="1"/>
-             <line x1="168" y1="28" x2="320" y2="28" stroke="rgba(120,53,15,0.28)" stroke-width="1.1"/>`
-          : '';
-      const argyleGrip =
-        bat.id === 'combat-blue'
-          ? `<path d="M 32 17 L 40 27 M 44 17 L 52 27 M 56 17 L 64 27 M 68 17 L 76 27 M 80 17 L 88 27 M 92 17 L 100 27 M 40 17 L 32 27 M 52 17 L 44 27 M 64 17 L 56 27 M 76 17 L 68 27 M 88 17 L 80 27" stroke="rgba(250,204,21,0.52)" stroke-width="1.3"/>`
-          : `<path d="M 30 17 L 37 27 M 42 17 L 49 27 M 54 17 L 61 27 M 66 17 L 73 27 M 78 17 L 85 27 M 90 17 L 97 27" stroke="rgba(255,255,255,0.26)" stroke-width="1.6"/>`;
+
+      const woodCrest = isWood
+        ? `<ellipse cx="164" cy="22" rx="26" ry="6.2" fill="url(#goldOval)" stroke="#ca8a04" stroke-width="0.9"/>
+           <text x="164" y="24.8" text-anchor="middle" font-family="Georgia,serif" font-size="8.5" font-weight="800" fill="#111318">Baum</text>
+           <rect x="218" y="19" width="14" height="6" rx="1" fill="none" stroke="#d4af37" stroke-width="0.9"/>
+           <text x="225" y="23.8" text-anchor="middle" font-size="4.6" font-weight="700" fill="#eab308">.50</text>`
+        : '';
+
+      const gripBase = bat.gripColor || bat.handleColor;
+      const gripWrap = isRodeo
+        ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#991b1b"/>
+           <path d="M 28 17 L 36 27 M 40 17 L 48 27 M 52 17 L 60 27 M 64 17 L 72 27 M 76 17 L 84 27 M 88 17 L 96 27" stroke="rgba(254,226,226,0.4)" stroke-width="1.3"/>
+           <rect x="100" y="16.4" width="6" height="11.2" rx="1" fill="#dc2626"/>`
+        : isBlue
+          ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#9be7fd"/>
+             <path d="M 28 17 L 36 27 M 40 17 L 48 27 M 52 17 L 60 27 M 64 17 L 72 27 M 76 17 L 84 27 M 88 17 L 96 27" stroke="rgba(255,255,255,0.55)" stroke-width="1.3"/>`
+          : `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#111318"/>
+             <path d="M 28 17 L 35 27 M 40 17 L 47 27 M 52 17 L 59 27 M 64 17 L 71 27 M 76 17 L 83 27 M 88 17 L 95 27" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`;
+
+      const barrelDetails = isGoods26
+        ? `<polygon points="222,10.5 236,10.5 242,14.5 236,18.5 222,18.5 228,14.5" fill="#ef4444"/>
+           <polygon points="262,25.5 278,25.5 284,29.5 278,33.5 262,33.5 268,29.5" fill="#ef4444"/>
+           <polygon points="288,25.5 304,25.5 310,29.5 304,33.5 288,33.5 294,29.5" fill="#ef4444"/>
+           <rect x="164" y="18" width="12" height="8" rx="1.5" fill="#1e293b"/>`
+        : isGoods22
+          ? `<circle cx="290" cy="22" r="7.5" fill="#111827"/>
+             <rect x="176" y="18.5" width="16" height="7" rx="1" fill="none" stroke="#111827" stroke-width="1.1"/>
+             <text x="184" y="23.8" text-anchor="middle" font-size="5" font-weight="800" fill="#111827">.50</text>`
+          : isRodeo
+            ? `<rect x="158" y="18.5" width="12" height="6.5" rx="1" fill="none" stroke="#991b1b" stroke-width="0.9"/>
+               <circle cx="192" cy="22" r="4.5" fill="none" stroke="#b45309" stroke-width="1.1"/>`
+            : isBlue
+              ? `<rect x="160" y="9.8" width="2" height="24.4" fill="#d4af37"/>
+                 <rect x="163" y="9.8" width="1.8" height="24.4" fill="#1e3a8a"/>
+                 <rect x="316" y="9.8" width="2" height="24.4" fill="#d4af37"/>
+                 <rect x="319" y="9.8" width="2" height="24.4" fill="#1e3a8a"/>
+                 <polygon points="292,15 304,15 306,22 298,28 290,22" fill="#1e3a8a" stroke="#eab308" stroke-width="1.1"/>`
+              : '';
+
       const capMarkup =
-        bat.capStyle === 'tremor'
-          ? `<path d="M 324 10 L 334 12.5 L 334 31.5 L 324 34 Z" fill="${bat.capColor}"/><line x1="331.5" y1="14" x2="331.5" y2="30" stroke="${bat.accentColor}" stroke-width="1.6" stroke-dasharray="3 2"/>`
+        bat.capStyle === 'tremor' || bat.capStyle === 'dish'
+          ? `<path d="M 323 10 L 335 12.2 L 335 31.8 L 323 34 Z" fill="${bat.capColor}"/><line x1="330" y1="13" x2="330" y2="31" stroke="#334155" stroke-width="1.8" stroke-dasharray="2.5 2"/>`
           : bat.capStyle === 'flared'
-            ? `<rect x="323" y="9.5" width="10" height="25" rx="4" fill="${bat.capColor}" stroke="${bat.trimColor}" stroke-width="1.2"/>`
-            : `<rect x="324" y="10" width="9" height="24" rx="3.5" fill="${bat.capColor}"/>`;
+            ? `<rect x="323" y="9.5" width="9.5" height="25" rx="3.5" fill="${bat.capColor}" stroke="${isBlue ? '#172554' : 'rgba(0,0,0,0.16)'}" stroke-width="1"/>`
+            : `<rect x="323" y="10" width="9" height="24" rx="3" fill="${bat.barrelColor}"/><ellipse cx="331" cy="22" rx="2.2" ry="8.5" fill="#1e1b18"/>`;
+
+      const textFill = isWood ? 'transparent' : isGoods26 ? '#181a20' : isRodeo ? '#991b1b' : isBlue ? '#1e3a8a' : '#111827';
+      const knobFill = bat.knobColor || '#0f1218';
 
       return `
         <svg viewBox="0 0 344 44" role="img" aria-label="${escapeHtml(bat.name)}">
@@ -894,33 +1037,24 @@
               <stop offset="68%" stop-color="${bat.barrelColor}"/>
               <stop offset="100%" stop-color="${bat.barrelLo}"/>
             </linearGradient>
-            <linearGradient id="hsvg_${bat.id}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#090d14"/>
-              <stop offset="40%" stop-color="${bat.handleColor}"/>
-              <stop offset="100%" stop-color="#05080d"/>
+            <linearGradient id="goldOval" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ca8a04"/>
+              <stop offset="50%" stop-color="#fef08a"/>
+              <stop offset="100%" stop-color="#eab308"/>
             </linearGradient>
           </defs>
-          <!-- Drop Shadow -->
           <ellipse cx="176" cy="39" rx="154" ry="3.5" fill="rgba(0,0,0,0.45)"/>
-          <!-- Knob -->
-          <ellipse cx="18" cy="22" rx="6" ry="9.5" fill="${bat.trimColor || '#0f172a'}" stroke="rgba(255,255,255,0.34)" stroke-width="1"/>
-          <!-- Handle -->
-          <rect x="22" y="17" width="84" height="10" rx="2" fill="url(#hsvg_${bat.id})"/>
-          ${argyleGrip}
-          <!-- Taper -->
+          <ellipse cx="18" cy="22" rx="6.2" ry="9.8" fill="${knobFill}" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+          <rect x="22" y="17" width="112" height="10" rx="2" fill="${bat.handleColor}"/>
+          ${gripWrap}
           <polygon points="104,17 162,10 162,34 104,27" fill="${bat.taperColor}"/>
-          <!-- 3D Shaded Cylindrical Barrel -->
           <rect x="160" y="9.5" width="166" height="25" rx="4.5" fill="url(#bsvg_${bat.id})"/>
-          ${woodGrain}
-          <!-- Glossy Specular Highlight Line -->
-          <line x1="166" y1="15" x2="320" y2="15" stroke="rgba(255,255,255,0.38)" stroke-width="1.5" stroke-linecap="round"/>
-          <!-- Barrel Graphic Bands & Model Label -->
-          <rect x="172" y="9.5" width="8" height="25" fill="${bat.accentColor}"/>
-          <rect x="183" y="9.5" width="4" height="25" fill="${bat.trimColor || '#ffffff'}"/>
-          <rect x="292" y="9.5" width="10" height="25" fill="${bat.accentColor}" opacity="0.9"/>
+          <line x1="166" y1="14.5" x2="320" y2="14.5" stroke="rgba(255,255,255,${isGoods22 ? '0.68' : isWood ? '0.45' : '0.42'})" stroke-width="1.6" stroke-linecap="round"/>
+          ${barrelDetails}
+          ${woodCrest}
           ${cuff}
           ${capMarkup}
-          <text x="238" y="25.2" text-anchor="middle" font-size="9.4" font-weight="800" letter-spacing="1.2" fill="${bat.id === 'goods-2026' ? '#f8fafc' : '#0f172a'}" opacity="0.94">${bat.shortLabel}</text>
+          ${isWood ? '' : `<text x="242" y="25.2" text-anchor="middle" font-size="${isRodeo ? '7.2' : '8.8'}" font-weight="800" font-style="${isBlue ? 'italic' : 'normal'}" font-family="${isBlue ? 'Georgia,serif' : 'sans-serif'}" letter-spacing="${isRodeo ? '0.4' : '1.0'}" fill="${textFill}" opacity="0.95">${bat.shortLabel}</text>`}
         </svg>`;
     }
 
@@ -939,7 +1073,8 @@
 
       const urlBat = new URLSearchParams(window.location.search).get('bat');
       let activeBatId = urlBat && BATS[urlBat] ? urlBat : 'goods-2026';
-      let activeStadiumId = 'fenway';
+      let activeStadiumId = 'omaha';
+      let activeTelemetryView = 'spray'; // 'spray' | 'arc' | 'zone'
       let selectedPitchType = 'mix';
       let activeWindId = 'calm';
       let activeCameraMode = 'pov';
@@ -955,14 +1090,16 @@
         });
       }
 
-      // Session / Game State
+      // Session / Rapsodo Game State
       const session = {
         balls: 0,
         strikes: 0,
         outs: 0,
         hits: 0,
         hrs: 0,
-        sprays: []
+        sprays: [],
+        lastHit: null,
+        lastPitch: null
       };
 
       // Mini PCI in normalized strike-zone coords: x in [-1.5..1.5], y in [-1.5..1.5]
@@ -1024,7 +1161,20 @@
       }
 
       let noiseBuffer = null;
+      let impactExciterBuffer = null;
       let masterBus = null;
+      let cageEchoBus = null;
+      let stadiumEchoBus = null;
+
+      function createSoftClipCurve(amount = 2.6) {
+        const n = 256;
+        const curve = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          const x = (i * 2) / n - 1;
+          curve[i] = Math.tanh(x * amount) / Math.tanh(amount);
+        }
+        return curve;
+      }
 
       function ensureAudioBus() {
         const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -1033,16 +1183,48 @@
         if (audioCtx.state === 'suspended') audioCtx.resume();
         if (!masterBus) {
           const comp = audioCtx.createDynamicsCompressor();
-          comp.threshold.value = -12;
-          comp.knee.value = 14;
-          comp.ratio.value = 8;
-          comp.attack.value = 0.001;
-          comp.release.value = 0.14;
+          comp.threshold.value = -10;
+          comp.knee.value = 12;
+          comp.ratio.value = 6;
+          comp.attack.value = 0.0008;
+          comp.release.value = 0.12;
           const master = audioCtx.createGain();
-          master.gain.value = 0.9;
+          master.gain.value = 0.94;
           comp.connect(master);
           master.connect(audioCtx.destination);
           masterBus = comp;
+
+          // Real DelayNode Acoustic Early Reflections for Cage vs Open Stadium
+          const buildReflectionBus = (taps) => {
+            const inGain = audioCtx.createGain();
+            inGain.gain.value = 1.0;
+            taps.forEach(([delaySec, lpHz, level]) => {
+              const del = audioCtx.createDelay(0.5);
+              del.delayTime.value = delaySec;
+              const lp = audioCtx.createBiquadFilter();
+              lp.type = 'lowpass';
+              lp.frequency.value = lpHz;
+              const g = audioCtx.createGain();
+              g.gain.value = level;
+              inGain.connect(del);
+              del.connect(lp);
+              lp.connect(g);
+              g.connect(masterBus);
+            });
+            return inGain;
+          };
+
+          cageEchoBus = buildReflectionBus([
+            [0.022, 4600, 0.34],
+            [0.047, 3200, 0.24],
+            [0.083, 2100, 0.16],
+            [0.132, 1500, 0.09]
+          ]);
+          stadiumEchoBus = buildReflectionBus([
+            [0.052, 3400, 0.22],
+            [0.118, 2200, 0.14],
+            [0.195, 1450, 0.08]
+          ]);
         }
         if (!noiseBuffer) {
           const len = Math.floor(audioCtx.sampleRate * 2.2);
@@ -1055,6 +1237,20 @@
             b0 = 0.96 * b0 + white * 0.18;
             b1 = 0.72 * b1 + white * 0.35;
             data[i] = Math.max(-1, Math.min(1, white * 0.55 + b0 * 0.25 + b1 * 0.2));
+          }
+        }
+        if (!impactExciterBuffer) {
+          // 14ms realistic baseball compression transient exciter (sharp microsecond impulse + dense leather snap)
+          const sr = audioCtx.sampleRate;
+          const len = Math.floor(sr * 0.016);
+          impactExciterBuffer = audioCtx.createBuffer(1, len, sr);
+          const ch = impactExciterBuffer.getChannelData(0);
+          for (let i = 0; i < len; i++) {
+            const t = i / sr;
+            const dirac = i < 4 ? (1 - i * 0.2) : 0;
+            const snap = (Math.random() * 2 - 1) * Math.exp(-t * 580);
+            const thump = Math.sin(2 * Math.PI * 340 * t) * Math.exp(-t * 420) * 0.45;
+            ch[i] = Math.max(-1, Math.min(1, dirac * 0.85 + snap * 0.75 + thump));
           }
         }
         return audioCtx;
@@ -1073,7 +1269,7 @@
         }
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, startTime);
-        g.gain.linearRampToValueAtTime(gainPeak, startTime + Math.min(0.0025, dur * 0.15));
+        g.gain.linearRampToValueAtTime(gainPeak, startTime + Math.min(0.002, dur * 0.12));
         g.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
         src.connect(filt);
         filt.connect(g);
@@ -1091,7 +1287,7 @@
         }
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, startTime);
-        g.gain.linearRampToValueAtTime(gainPeak, startTime + 0.0015);
+        g.gain.linearRampToValueAtTime(gainPeak, startTime + 0.0012);
         g.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
         osc.connect(g);
         g.connect(dest);
@@ -1099,80 +1295,175 @@
         osc.stop(startTime + dur + 0.02);
       }
 
-      function playBatAudio(kind, barrelFactor = 0.85, isHr = false) {
-        if (!soundOn) return;
+      // Excite real locked cylindrical shell / maple body formants with our physical impact impulse
+      function spawnModalResonator(ctx, dest, startTime, freqHz, q, gainVal, ringDur) {
+        const exc = ctx.createBufferSource();
+        exc.buffer = impactExciterBuffer;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.setValueAtTime(freqHz, startTime);
+        bp.Q.setValueAtTime(q, startTime);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(gainVal, startTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, startTime + ringDur);
+        exc.connect(bp);
+        bp.connect(g);
+        g.connect(dest);
+        exc.start(startTime);
+        exc.stop(startTime + ringDur + 0.03);
+      }
+
+      const clipCurve = createSoftClipCurve(2.8);
+
+      function playBatAudio(kind, barrelFactor = 0.85, isHr = false, stadiumId = activeStadiumId, forcePlay = false) {
+        if (!soundOn && !forcePlay) return;
         try {
           const ctx = ensureAudioBus();
           if (!ctx || !masterBus) return;
           const now = ctx.currentTime;
-          const power = Math.max(0.45, Math.min(1.15, 0.55 + barrelFactor * 0.55));
+          const power = Math.max(0.45, Math.min(1.22, 0.56 + barrelFactor * 0.6));
+          const ringScale = barrelFactor < 0.65 ? Math.max(0.28, barrelFactor / 0.65) : 1;
+          const offCenterSting = barrelFactor < 0.65 ? (0.65 - barrelFactor) / 0.65 : 0;
+          const pitchJitter = 0.988 + Math.random() * 0.024; // Organic hit-to-hit spot shift
 
           if (kind === 'whiff') {
-            // Clean bat wind whoosh + delayed catcher leather mitt pop
-            spawnNoiseBurst(ctx, masterBus, now, 0.12, 'bandpass', 320, 740, 2.2, 0.24);
-            spawnNoiseBurst(ctx, masterBus, now + 0.088, 0.04, 'bandpass', 1050, 480, 1.4, 0.36);
-            spawnModalTone(ctx, masterBus, now + 0.088, 0.055, 'triangle', 142, 62, 0.32);
+            spawnNoiseBurst(ctx, masterBus, now, 0.12, 'bandpass', 340, 780, 2.2, 0.25);
+            spawnNoiseBurst(ctx, masterBus, now + 0.086, 0.038, 'bandpass', 1080, 480, 1.4, 0.36);
+            spawnModalTone(ctx, masterBus, now + 0.086, 0.052, 'triangle', 140, 60, 0.32);
             return;
           }
 
           if (kind === 'mitt') {
-            // Crisp catcher leather mitt pop without bat swing whoosh
-            spawnNoiseBurst(ctx, masterBus, now, 0.036, 'bandpass', 1120, 460, 1.35, 0.42);
-            spawnModalTone(ctx, masterBus, now, 0.055, 'triangle', 148, 58, 0.36);
+            spawnNoiseBurst(ctx, masterBus, now, 0.035, 'bandpass', 1120, 450, 1.35, 0.44);
+            spawnModalTone(ctx, masterBus, now, 0.055, 'triangle', 148, 56, 0.38);
             return;
           }
 
-          // 1. Sub-millisecond ball-on-barrel snap transient (every bat starts with a crisp physical crack)
-          spawnNoiseBurst(ctx, masterBus, now, 0.014, 'highpass', 1650, 950, 0.9, 0.85 * power);
-
-          if (kind === 'wood') {
-            // Solid PermaWood Baum Bat: dry, dense broadband crack + warm low wood thump + zero metal ring
-            spawnNoiseBurst(ctx, masterBus, now, 0.036, 'bandpass', 2450, 1180, 1.5, 0.95 * power);
-            spawnNoiseBurst(ctx, masterBus, now, 0.048, 'bandpass', 620, 290, 1.2, 0.65 * power);
-            spawnModalTone(ctx, masterBus, now, 0.026, 'triangle', 340, 112, 0.55 * power);
-            spawnModalTone(ctx, masterBus, now, 0.048, 'sine', 165, 74, 0.62 * power);
-            // Ballpark stadium slapback echo (wood crack echoing off stands)
-            spawnNoiseBurst(ctx, masterBus, now + 0.095, 0.055, 'bandpass', 1100, 620, 1.3, 0.22 * power);
-          } else if (kind === 'combat') {
-            // 1-Piece Alloy (Spec-A1): crisp crack transient + authentic hollow cylindrical hoop modes (2.18 kHz & 2.79 kHz)
-            spawnNoiseBurst(ctx, masterBus, now, 0.026, 'bandpass', 2600, 1400, 1.6, 0.72 * power);
-            spawnModalTone(ctx, masterBus, now, 0.045, 'sine', 155, 68, 0.52 * power);
-            spawnModalTone(ctx, masterBus, now + 0.001, 0.22, 'sine', 2185, 2145, 0.28 * power);
-            spawnModalTone(ctx, masterBus, now + 0.001, 0.17, 'sine', 2790, 2750, 0.16 * power);
-            spawnModalTone(ctx, masterBus, now + 0.002, 0.11, 'sine', 1435, 1410, 0.12 * power);
-            spawnNoiseBurst(ctx, masterBus, now + 0.09, 0.05, 'bandpass', 1600, 900, 1.6, 0.18 * power);
-          } else {
-            // 2-Piece Hybrid BBCOR (2026 & 2022 DeMarini The Goods): heavy alloy thwack + tight composite-damped hoop ring
-            spawnNoiseBurst(ctx, masterBus, now, 0.03, 'bandpass', 2150, 980, 1.4, 0.84 * power);
-            spawnModalTone(ctx, masterBus, now, 0.055, 'triangle', 148, 66, 0.65 * power);
-            spawnModalTone(ctx, masterBus, now + 0.001, 0.135, 'sine', 1940, 1900, 0.17 * power);
-            spawnModalTone(ctx, masterBus, now + 0.001, 0.105, 'sine', 2520, 2480, 0.1 * power);
-            spawnNoiseBurst(ctx, masterBus, now + 0.09, 0.05, 'bandpass', 1250, 740, 1.4, 0.2 * power);
+          if (kind === 'wall') {
+            spawnNoiseBurst(ctx, masterBus, now, 0.052, 'bandpass', 480, 160, 1.1, 0.65);
+            spawnModalTone(ctx, masterBus, now, 0.085, 'triangle', 130, 48, 0.55);
+            return;
           }
 
-          // Distant stadium crowd swell on Home Runs!
-          if (isHr) {
-            const crowdSrc = ctx.createBufferSource();
-            crowdSrc.buffer = noiseBuffer;
-            crowdSrc.loop = true;
-            const crowdBand = ctx.createBiquadFilter();
-            crowdBand.type = 'bandpass';
-            crowdBand.frequency.setValueAtTime(620, now + 0.18);
-            crowdBand.frequency.linearRampToValueAtTime(980, now + 0.85);
-            crowdBand.Q.value = 0.75;
-            const crowdGain = ctx.createGain();
-            crowdGain.gain.setValueAtTime(0.0001, now + 0.16);
-            crowdGain.gain.linearRampToValueAtTime(0.24, now + 0.65);
-            crowdGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.15);
-            crowdSrc.connect(crowdBand);
-            crowdBand.connect(crowdGain);
-            crowdGain.connect(masterBus);
-            crowdSrc.start(now + 0.16);
-            crowdSrc.stop(now + 2.2);
+          // Dedicated per-hit acoustic bus routed to both direct dry output & realistic cage/stadium reflections
+          const batBus = ctx.createGain();
+          batBus.gain.value = 1.0;
+          const shaper = ctx.createWaveShaper();
+          shaper.curve = clipCurve;
+          shaper.oversample = '2x';
+          batBus.connect(shaper);
+          shaper.connect(masterBus);
+          const echoTarget = stadiumId === 'cage' ? cageEchoBus : stadiumEchoBus;
+          if (echoTarget) shaper.connect(echoTarget);
+
+          // Universal sub-millisecond leather-on-barrel physical impulse transient
+          const rawImp = ctx.createBufferSource();
+          rawImp.buffer = impactExciterBuffer;
+          const impHp = ctx.createBiquadFilter();
+          impHp.type = 'highpass';
+          impHp.frequency.value = kind === 'baum-gold' ? 920 : kind === 'goods-2026' ? 760 : 1280;
+          const impGain = ctx.createGain();
+          impGain.gain.value = (kind === 'goods-2026' ? 0.92 : 1.08) * power;
+          rawImp.connect(impHp);
+          impHp.connect(impGain);
+          impGain.connect(batBus);
+          rawImp.start(now);
+
+          if (kind === 'baum-gold' || kind === 'wood') {
+            // 1. Baum Bat Gold (PermaWood Maple Composite): Explosive, loud, punchy dry shotgun maple CRACK (~52ms dense wood transient, zero metal ping)
+            const deadened = barrelFactor < 0.65 ? 0.72 : 1.0;
+            spawnModalResonator(ctx, batBus, now, 345 * pitchJitter * deadened, 6.2, 1.85 * power, 0.062);
+            spawnModalResonator(ctx, batBus, now, 810 * pitchJitter * deadened, 8.8, 2.25 * power, 0.052);
+            spawnModalResonator(ctx, batBus, now, 1490 * pitchJitter * deadened, 10.5, 2.15 * power, 0.042);
+            spawnModalResonator(ctx, batBus, now, 2480 * pitchJitter * deadened, 9.5, 1.65 * power, 0.032);
+            spawnModalResonator(ctx, batBus, now, 3650 * pitchJitter * deadened, 7.8, 1.15 * power, 0.022);
+            // Blistering crisp air-crack & solid maple core punch
+            spawnNoiseBurst(ctx, batBus, now, 0.024, 'bandpass', 2350 * deadened, 1080, 1.05, 1.18 * power);
+            spawnNoiseBurst(ctx, batBus, now + 0.002, 0.018, 'lowpass', 720, 260, 0.85, 0.78 * power);
+            spawnModalTone(ctx, batBus, now, 0.048, 'triangle', 250, 68, 0.96 * power);
+          } else if (kind === 'goods-2026') {
+            // 2. 2026 DeMarini The Goods: Heavy end-loaded X14 barrel + 1375 composite handle -> deep booming ~75ms THUD/THWACK
+            spawnModalResonator(ctx, batBus, now, 520 * pitchJitter, 14, 1.55 * power, 0.072);
+            spawnModalResonator(ctx, batBus, now, 960 * pitchJitter, 28, 1.85 * power, 0.082);
+            spawnModalResonator(ctx, batBus, now, 1435 * pitchJitter, 55, 1.45 * power * ringScale, 0.105);
+            spawnModalResonator(ctx, batBus, now, 1980 * pitchJitter, 58, 0.65 * power * ringScale, 0.075);
+            spawnNoiseBurst(ctx, batBus, now, 0.022, 'lowpass', 640, 220, 0.9, 0.8 * power);
+            spawnModalTone(ctx, batBus, now, 0.064, 'triangle', 132, 54, 0.94 * power);
+          } else if (kind === 'goods-2022' || kind === 'hybrid') {
+            // 3. 2022 DeMarini The Goods: Brushed chrome X14 alloy + Paraflex Half+Half -> punchy ~200ms aluminum PING + crack
+            spawnModalResonator(ctx, batBus, now, 1215 * pitchJitter, 110, 1.65 * power * ringScale, 0.19);
+            spawnModalResonator(ctx, batBus, now, 1875 * pitchJitter, 175, 2.75 * power * ringScale, 0.25);
+            spawnModalResonator(ctx, batBus, now, 2580 * pitchJitter, 190, 1.85 * power * ringScale, 0.19);
+            spawnModalResonator(ctx, batBus, now, 3310 * pitchJitter, 160, 1.05 * power * ringScale, 0.14);
+            spawnModalTone(ctx, batBus, now + 0.0005, 0.2, 'sine', 1875 * pitchJitter, 1875 * pitchJitter, 0.15 * power * ringScale);
+            spawnModalTone(ctx, batBus, now + 0.0005, 0.14, 'sine', 2580 * pitchJitter, 2580 * pitchJitter, 0.09 * power * ringScale);
+            spawnModalTone(ctx, batBus, now, 0.048, 'triangle', 152, 68, 0.65 * power);
+          } else if (kind === 'combat-rodeo' || kind === 'combat') {
+            // 4. Combat MFG Spec-A1 Rodeo: Iconic ultra-loud 1-pc thin-wall SFX alloy cannon "KRRACK-PINGG" (~410ms natural shell decay + cage slap)
+            const f1 = 1410 * pitchJitter;
+            const f2 = 2135 * pitchJitter;
+            const f3 = 2895 * pitchJitter;
+            const f4 = 3720 * pitchJitter;
+            spawnModalResonator(ctx, batBus, now, f1, 180, 2.15 * power * ringScale, 0.28);
+            spawnModalResonator(ctx, batBus, now, f2, 360, 3.85 * power * ringScale, 0.45);
+            spawnModalResonator(ctx, batBus, now, f2 + 7.2, 340, 3.25 * power * ringScale, 0.43);
+            spawnModalResonator(ctx, batBus, now, f3, 310, 2.45 * power * ringScale, 0.34);
+            spawnModalResonator(ctx, batBus, now, f4, 240, 1.45 * power * ringScale, 0.22);
+            // Fixed-pitch axisymmetric hoop shimmer (zero pitch-glide!)
+            spawnModalTone(ctx, batBus, now + 0.0004, 0.40, 'sine', f2, f2, 0.18 * power * ringScale);
+            spawnModalTone(ctx, batBus, now + 0.0004, 0.40, 'sine', f2 + 7.2, f2 + 7.2, 0.15 * power * ringScale);
+            spawnModalTone(ctx, batBus, now + 0.0006, 0.26, 'sine', f3, f3, 0.10 * power * ringScale);
+            spawnNoiseBurst(ctx, batBus, now, 0.02, 'bandpass', 2450, 1450, 1.25, 0.88 * power);
+            spawnModalTone(ctx, batBus, now, 0.044, 'triangle', 154, 66, 0.74 * power);
+          } else if (kind === 'combat-blue') {
+            // 5. Combat Spec-A1 Members Club Blue: Crisp, loud 1-pc thin-wall SFX cannon tuned slightly higher & brighter (~420ms ring)
+            const f1 = 1485 * pitchJitter;
+            const f2 = 2255 * pitchJitter;
+            const f3 = 3045 * pitchJitter;
+            const f4 = 3890 * pitchJitter;
+            spawnModalResonator(ctx, batBus, now, f1, 185, 2.1 * power * ringScale, 0.28);
+            spawnModalResonator(ctx, batBus, now, f2, 375, 3.95 * power * ringScale, 0.46);
+            spawnModalResonator(ctx, batBus, now, f2 + 7.8, 355, 3.3 * power * ringScale, 0.44);
+            spawnModalResonator(ctx, batBus, now, f3, 320, 2.55 * power * ringScale, 0.35);
+            spawnModalResonator(ctx, batBus, now, f4, 250, 1.52 * power * ringScale, 0.23);
+            spawnModalTone(ctx, batBus, now + 0.0004, 0.41, 'sine', f2, f2, 0.18 * power * ringScale);
+            spawnModalTone(ctx, batBus, now + 0.0004, 0.41, 'sine', f2 + 7.8, f2 + 7.8, 0.15 * power * ringScale);
+            spawnModalTone(ctx, batBus, now + 0.0006, 0.27, 'sine', f3, f3, 0.10 * power * ringScale);
+            spawnNoiseBurst(ctx, batBus, now, 0.019, 'bandpass', 2650, 1550, 1.3, 0.86 * power);
+            spawnModalTone(ctx, batBus, now, 0.042, 'triangle', 158, 70, 0.7 * power);
+          }
+
+          // Off-center / jammed mishit handle-sting vibration
+          if (offCenterSting > 0.05) {
+            spawnModalTone(ctx, batBus, now + 0.002, 0.095, 'sawtooth', 192, 120, 0.22 * offCenterSting * power);
+          }
+
+          // Empty D1 Stadium Acoustic Concrete Slapback Echo (Zero crowd roar — empty park practice!)
+          if (stadiumId !== 'cage') {
+            spawnNoiseBurst(ctx, masterBus, now + 0.28, 0.09, 'bandpass', 1100, 480, 0.9, 0.14 * power);
+            spawnNoiseBurst(ctx, masterBus, now + 0.56, 0.12, 'lowpass', 620, 240, 0.8, 0.07 * power);
+            if (isHr) {
+              // Subtle empty-ballpark scoreboard bell chime on cleared bombs
+              spawnModalTone(ctx, masterBus, now + 0.62, 0.42, 'sine', 660, 660, 0.075);
+              spawnModalTone(ctx, masterBus, now + 0.62, 0.32, 'sine', 990, 990, 0.04);
+            }
           }
         } catch {
           /* ignore */
         }
+      }
+
+      if (testBatSoundBtn) {
+        testBatSoundBtn.onclick = () => {
+          cageEngaged = true;
+          playBatAudio(activeBatId, 0.94, false, activeStadiumId, true);
+          testBatSoundBtn.classList.remove('is-ringing');
+          void testBatSoundBtn.offsetWidth;
+          testBatSoundBtn.classList.add('is-ringing');
+          setTimeout(() => {
+            testBatSoundBtn.classList.remove('is-ringing');
+          }, 520);
+        };
       }
 
       function updateBatDom() {
@@ -1182,6 +1473,15 @@
         if (batSpecDesc) batSpecDesc.textContent = bat.desc;
         if (batPreviewSvg) batPreviewSvg.innerHTML = renderBatSvg(bat);
         if (engine3D) engine3D.setBat(activeBatId);
+      }
+
+      function popStatReadouts() {
+        [evEl, laEl, distEl, apexEl, spinEl, outEl].forEach((el) => {
+          if (!el) return;
+          el.classList.remove('is-popped');
+          void el.offsetWidth;
+          el.classList.add('is-popped');
+        });
       }
 
       function updateSessionDom(hitInfo = null) {
@@ -1204,27 +1504,252 @@
             }
           }
           if (outEl) {
-            outEl.textContent = hitInfo.outcome || 'Pitch Ready';
+            outEl.textContent = hitInfo.outcome || 'Step In Box';
             outEl.style.color = hitInfo.color || 'var(--accent)';
           }
+          if (rapBatSpeedEl) rapBatSpeedEl.textContent = hitInfo.batSpeed != null ? `${hitInfo.batSpeed} mph` : '-- mph';
+          if (rapSmashEl) rapSmashEl.textContent = hitInfo.smashFactor != null ? `${hitInfo.smashFactor}` : '--';
+          if (rapAttackEl) rapAttackEl.textContent = hitInfo.attackAngle != null ? `${hitInfo.attackAngle > 0 ? '+' : ''}${hitInfo.attackAngle}°` : '--°';
+          if (rapBreakEl) {
+            const p = hitInfo.pitchMeta || session.lastPitch;
+            rapBreakEl.textContent = p ? `${p.ivbIn > 0 ? '+' : ''}${p.ivbIn}" / ${p.hbIn > 0 ? '+' : ''}${p.hbIn}"` : '-- / --';
+          }
+          if (rapAxisEl) {
+            const p = hitInfo.pitchMeta || session.lastPitch;
+            rapAxisEl.textContent = hitInfo.battedSpinAxis
+              ? `${hitInfo.battedSpinAxis} · ${hitInfo.spinEff || 92}%`
+              : p
+                ? `${p.spinAxisClock} · ${p.spinEff}%`
+                : '-- · --%';
+          }
+          if (rapCarryEl) {
+            rapCarryEl.textContent = hitInfo.carryDist != null
+              ? `${hitInfo.carryDist} ft · ${hitInfo.xba || '.---'}`
+              : '-- ft · .---';
+          }
+          popStatReadouts();
         }
         if (sessionPill) sessionPill.textContent = `${session.hrs} HR · ${session.hits} Hits`;
         if (countReadout) countReadout.textContent = `Count: ${session.balls}-${session.strikes} · Outs: ${session.outs}`;
-        drawSprayChart();
+        drawTelemetryCanvas();
       }
 
       function drawSprayChart() {
+        drawTelemetryCanvas();
+      }
+
+      function drawTelemetryCanvas() {
         if (!sprayCanvas) return;
         const sctx = sprayCanvas.getContext('2d');
         const w = sprayCanvas.width;
         const h = sprayCanvas.height;
-        const st = STADIUMS[activeStadiumId] || STADIUMS.fenway;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
         if (sprayLabel) sprayLabel.textContent = st.dimsLabel;
 
         sctx.clearRect(0, 0, w, h);
         sctx.fillStyle = '#091322';
         sctx.fillRect(0, 0, w, h);
 
+        if (activeTelemetryView === 'arc') {
+          // VIEW 2: Rapsodo Side-View Height vs Distance Flight Arc
+          const fl = session.lastHit;
+          const padL = 34;
+          const padR = 14;
+          const padT = 22;
+          const padB = 26;
+          const plotW = w - padL - padR;
+          const plotH = h - padT - padB;
+          const maxX = 460;
+          const maxZ = Math.max(125, fl ? Math.ceil((fl.apex + 20) / 25) * 25 : 140);
+
+          // Grid lines
+          sctx.strokeStyle = 'rgba(255,255,255,0.1)';
+          sctx.lineWidth = 1;
+          [100, 200, 300, 400].forEach((ft) => {
+            const gx = padL + (ft / maxX) * plotW;
+            sctx.beginPath();
+            sctx.moveTo(gx, padT);
+            sctx.lineTo(gx, padT + plotH);
+            sctx.stroke();
+            sctx.fillStyle = '#94a3b8';
+            sctx.font = '600 9px "IBM Plex Mono", monospace';
+            sctx.textAlign = 'center';
+            sctx.fillText(`${ft}`, gx, h - 8);
+          });
+          [50, 100].forEach((ftZ) => {
+            if (ftZ > maxZ) return;
+            const gy = padT + plotH - (ftZ / maxZ) * plotH;
+            sctx.beginPath();
+            sctx.moveTo(padL, gy);
+            sctx.lineTo(padL + plotW, gy);
+            sctx.stroke();
+            sctx.fillStyle = '#94a3b8';
+            sctx.font = '600 9px "IBM Plex Mono", monospace';
+            sctx.textAlign = 'right';
+            sctx.fillText(`${ftZ}ft`, padL - 4, gy + 3);
+          });
+
+          // Ground Baseline
+          sctx.strokeStyle = 'rgba(74, 222, 128, 0.55)';
+          sctx.lineWidth = 1.6;
+          sctx.beginPath();
+          sctx.moveTo(padL, padT + plotH);
+          sctx.lineTo(padL + plotW, padT + plotH);
+          sctx.stroke();
+
+          // Stadium Outfield Fence Marker at hit angle
+          const wallPhi = fl ? Math.max(-0.785, Math.min(0.785, (fl.sprayDeg * Math.PI) / 180)) : 0;
+          const wallDist = st.wallDist(wallPhi);
+          const wallH = st.wallHeight(wallPhi);
+          const wx = padL + (wallDist / maxX) * plotW;
+          const whPx = (wallH / maxZ) * plotH;
+          sctx.fillStyle = st.wallCap;
+          sctx.fillRect(wx - 2, padT + plotH - Math.max(8, whPx), 4, Math.max(8, whPx));
+          sctx.fillStyle = '#fde68a';
+          sctx.font = '600 8.5px "IBM Plex Mono", monospace';
+          sctx.textAlign = 'center';
+          sctx.fillText(`WALL ${Math.round(wallDist)}`, wx, padT + plotH - Math.max(12, whPx + 4));
+
+          if (fl && Array.isArray(fl.points) && fl.points.length > 1) {
+            sctx.beginPath();
+            fl.points.forEach((pt, idx) => {
+              const dist = Math.hypot(pt.x, pt.y);
+              const px = padL + Math.min(1, dist / maxX) * plotW;
+              const py = padT + plotH - Math.min(1, pt.z / maxZ) * plotH;
+              if (idx === 0) sctx.moveTo(px, py);
+              else sctx.lineTo(px, py);
+            });
+            sctx.strokeStyle = fl.color || '#38bdf8';
+            sctx.lineWidth = 2.4;
+            sctx.stroke();
+
+            // Apex Peak Dot
+            const apexDist = Math.hypot(fl.apexPos.x, fl.apexPos.y);
+            const ax = padL + Math.min(1, apexDist / maxX) * plotW;
+            const ay = padT + plotH - Math.min(1, fl.apexPos.z / maxZ) * plotH;
+            sctx.fillStyle = '#fde047';
+            sctx.beginPath();
+            sctx.arc(ax, ay, 3.6, 0, Math.PI * 2);
+            sctx.fill();
+            sctx.font = '700 9.5px "IBM Plex Mono", monospace';
+            sctx.textAlign = 'left';
+            sctx.fillText(`APEX ${fl.apex}ft`, Math.min(w - 76, ax + 6), Math.max(padT + 10, ay - 4));
+
+            // Carry vs Total summary header
+            sctx.fillStyle = '#e2e8f0';
+            sctx.font = '600 10px "IBM Plex Mono", monospace';
+            sctx.textAlign = 'left';
+            sctx.fillText(`LA ${fl.launchAngle}° · CARRY ${fl.carryDist}ft · TOTAL ${fl.dist}ft`, padL, 14);
+          } else {
+            sctx.fillStyle = '#94a3b8';
+            sctx.font = '600 11px "Plus Jakarta Sans", sans-serif';
+            sctx.textAlign = 'center';
+            sctx.fillText('Make contact to plot full Rapsodo side flight arc & wall clearance', w / 2, h / 2);
+          }
+          return;
+        }
+
+        if (activeTelemetryView === 'zone') {
+          // VIEW 3: Rapsodo Strike Zone Pitch Location + Circular Spin Axis Clock Dial
+          const zx = 22;
+          const zy = 32;
+          const zw = 112;
+          const zh = 148;
+          sctx.strokeStyle = 'rgba(248, 250, 252, 0.72)';
+          sctx.lineWidth = 1.6;
+          sctx.strokeRect(zx, zy, zw, zh);
+          sctx.strokeStyle = 'rgba(248, 250, 252, 0.2)';
+          sctx.lineWidth = 1;
+          for (let g = 1; g <= 2; g++) {
+            sctx.beginPath();
+            sctx.moveTo(zx + (zw * g) / 3, zy);
+            sctx.lineTo(zx + (zw * g) / 3, zy + zh);
+            sctx.stroke();
+            sctx.beginPath();
+            sctx.moveTo(zx, zy + (zh * g) / 3);
+            sctx.lineTo(zx + zw, zy + (zh * g) / 3);
+            sctx.stroke();
+          }
+
+          sctx.fillStyle = '#94a3b8';
+          sctx.font = '600 9.5px "IBM Plex Mono", monospace';
+          sctx.textAlign = 'center';
+          sctx.fillText('STRIKE ZONE + BREAK', zx + zw / 2, 18);
+
+          const lp = session.lastPitch;
+          if (lp) {
+            const ppx = zx + zw / 2 + lp.endX * (zw * 0.44);
+            const ppy = zy + zh / 2 + lp.endY * (zh * 0.44);
+            // Break vector tail
+            const sx = ppx - (lp.hbIn / 20) * 26;
+            const sy = ppy + (lp.ivbIn / 20) * 24;
+            sctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+            sctx.lineWidth = 2;
+            sctx.beginPath();
+            sctx.moveTo(sx, sy);
+            sctx.lineTo(ppx, ppy);
+            sctx.stroke();
+
+            sctx.fillStyle = '#f8fafc';
+            sctx.beginPath();
+            sctx.arc(ppx, ppy, 5.2, 0, Math.PI * 2);
+            sctx.fill();
+            sctx.strokeStyle = '#ef4444';
+            sctx.lineWidth = 1.4;
+            sctx.stroke();
+          }
+
+          // Right Side: Circular Rapsodo Spin Axis Clock Dial
+          const cx = w - 92;
+          const cy = h / 2 + 8;
+          const cr = 54;
+          sctx.fillStyle = '#94a3b8';
+          sctx.font = '600 9.5px "IBM Plex Mono", monospace';
+          sctx.textAlign = 'center';
+          sctx.fillText('SPIN AXIS CLOCK', cx, 18);
+
+          sctx.beginPath();
+          sctx.arc(cx, cy, cr, 0, Math.PI * 2);
+          sctx.fillStyle = 'rgba(15, 29, 52, 0.9)';
+          sctx.fill();
+          sctx.strokeStyle = 'rgba(56, 189, 248, 0.48)';
+          sctx.lineWidth = 1.8;
+          sctx.stroke();
+
+          [12, 3, 6, 9].forEach((hr) => {
+            const ang = ((hr / 12) * Math.PI * 2) - Math.PI / 2;
+            sctx.fillStyle = '#cbd5e1';
+            sctx.font = '700 9px "IBM Plex Mono", monospace';
+            sctx.fillText(String(hr), cx + Math.cos(ang) * (cr - 10), cy + Math.sin(ang) * (cr - 10) + 3);
+          });
+
+          if (lp) {
+            const axisRad = ((lp.spinAxisDeg || 20) * Math.PI) / 180 - Math.PI / 2;
+            sctx.strokeStyle = '#38bdf8';
+            sctx.lineWidth = 3;
+            sctx.beginPath();
+            sctx.moveTo(cx, cy);
+            sctx.lineTo(cx + Math.cos(axisRad) * (cr - 18), cy + Math.sin(axisRad) * (cr - 18));
+            sctx.stroke();
+            sctx.fillStyle = '#fde047';
+            sctx.beginPath();
+            sctx.arc(cx, cy, 4, 0, Math.PI * 2);
+            sctx.fill();
+
+            sctx.fillStyle = '#f8fafc';
+            sctx.font = '700 10px "IBM Plex Mono", monospace';
+            sctx.fillText(`${lp.pitchRpm} RPM · ${lp.spinAxisClock}`, cx, h - 10);
+            sctx.textAlign = 'left';
+            sctx.fillText(`IVB ${lp.ivbIn > 0 ? '+' : ''}${lp.ivbIn}" · HB ${lp.hbIn > 0 ? '+' : ''}${lp.hbIn}"`, zx, h - 10);
+          } else {
+            sctx.fillStyle = '#94a3b8';
+            sctx.font = '600 9.5px "IBM Plex Mono", monospace';
+            sctx.fillText('Throw pitch for Spin', cx, h - 10);
+          }
+          return;
+        }
+
+        // VIEW 1: Classic Spray Chart (College Stadium Geometry)
         const ox = w / 2;
         const oy = h - 18;
         const pxPerFt = (h - 38) / 435;
@@ -1319,7 +1844,7 @@
 
       // True 4th-Order Runge-Kutta (RK4) 120Hz Aerodynamics with Wind Vector, Drag, Magnus Lift/Swerve & Restitution
       function simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg, backspinRpm = 1900, sidespinRpm = 0, startPos = null) {
-        const st = STADIUMS[activeStadiumId] || STADIUMS.fenway;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
         const wind = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
         const v0 = exitVelo * 1.46667; // mph -> ft/s
         const theta = (launchDeg * Math.PI) / 180;
@@ -1332,8 +1857,8 @@
         let vy = v0 * Math.cos(theta) * Math.cos(phi);
         let vz = v0 * Math.sin(theta);
 
-        // Air density by stadium environment (Fenway cooler night air, Dodger lighter dry evening air)
-        const airDensity = st.id === 'dodger' ? 0.96 : st.id === 'wrigley' ? 0.99 : st.id === 'fenway' ? 1.015 : 1.0;
+        // Air density by college stadium elevation/humidity
+        const airDensity = st.airDensity || 1.0;
         const K = 0.00531 * airDensity;
         let wx = (backspinRpm * 2 * Math.PI) / 60;
         let wz = -(sidespinRpm * 2 * Math.PI) / 60;
@@ -1348,6 +1873,7 @@
         let wallHit = false;
         let wallHitTime = null;
         let hangTime = null;
+        let carryDist = null;
         const fair = Math.abs(sprayDeg) <= 45;
 
         const deriv = (cvx, cvy, cvz, cwx, cwz) => {
@@ -1374,36 +1900,36 @@
           const sp = Math.hypot(vx, vy, vz);
           if (sp < 1.8 && z <= 0.16) break;
 
-          if (z <= 0.15 && Math.abs(vz) < 3.5) {
+          if (z <= 0.16 && Math.abs(vz) < 4.5 && step > 10) {
             const onDirt = Math.hypot(x, y) < 135;
-            const friction = onDirt ? 1.75 : 2.15;
+            const friction = onDirt ? 1.85 : 2.55;
             vx *= Math.max(0, 1 - friction * dt);
             vy *= Math.max(0, 1 - friction * dt);
             vz = 0;
-            z = 0.12;
+            z = 0.14;
             x += vx * dt;
             y += vy * dt;
           } else {
-            // 4th-Order Runge-Kutta Step
+            // True 4th-Order Runge-Kutta Step
             const k1 = deriv(vx, vy, vz, wx, wz);
             const k2 = deriv(vx + 0.5 * dt * k1.ax, vy + 0.5 * dt * k1.ay, vz + 0.5 * dt * k1.az, wx, wz);
             const k3 = deriv(vx + 0.5 * dt * k2.ax, vy + 0.5 * dt * k2.ay, vz + 0.5 * dt * k2.az, wx, wz);
             const k4 = deriv(vx + dt * k3.ax, vy + dt * k3.ay, vz + dt * k3.az, wx, wz);
 
-            const dx = vx + (dt / 6) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax) * 0.5;
-            const dy = vy + (dt / 6) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay) * 0.5;
-            const dz = vz + (dt / 6) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az) * 0.5;
+            const vxMid = vx + (dt / 12) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax);
+            const vyMid = vy + (dt / 12) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay);
+            const vzMid = vz + (dt / 12) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az);
 
             vx += (dt / 6) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax);
             vy += (dt / 6) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay);
             vz += (dt / 6) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az);
 
-            x += dx * dt;
-            y += dy * dt;
-            z += dz * dt;
+            x += vxMid * dt;
+            y += vyMid * dt;
+            z += vzMid * dt;
 
-            wx *= 1 - 0.055 * dt;
-            wz *= 1 - 0.055 * dt;
+            wx *= 1 - 0.06 * dt;
+            wz *= 1 - 0.06 * dt;
           }
 
           if (z > apex) {
@@ -1411,7 +1937,7 @@
             apexTime = t;
             apexPos = { x, y, z };
           }
-          if (step % 2 === 0) points.push({ x, y, z: Math.max(0.12, z), t });
+          if (step % 2 === 0) points.push({ x, y, z: Math.max(0.14, z), t });
 
           const horiz = Math.hypot(x, y);
           const curPhi = Math.atan2(x, Math.max(1, y));
@@ -1424,16 +1950,17 @@
               } else {
                 wallHit = true;
                 wallHitTime = t;
+                if (carryDist === null) carryDist = Math.round(horiz);
                 const nx = -x / Math.max(1, horiz);
                 const ny = -y / Math.max(1, horiz);
                 const vn = vx * nx + vy * ny;
                 if (vn < 0) {
-                  vx -= 1.46 * vn * nx;
-                  vy -= 1.46 * vn * ny;
+                  vx -= 1.48 * vn * nx;
+                  vy -= 1.48 * vn * ny;
                 }
                 vx *= 0.82;
                 vy *= 0.82;
-                vz = Math.max(2, vz * 0.5);
+                vz = Math.max(2, vz * 0.52);
               }
             }
           }
@@ -1445,25 +1972,27 @@
             if (pastWall > 14 && z <= bleacherFloor) {
               z = bleacherFloor;
               if (hangTime === null) hangTime = t;
+              if (carryDist === null) carryDist = Math.round(horiz);
               points.push({ x, y, z, t });
               break;
             }
           }
 
-          if (z <= 0.12) {
+          if (z <= 0.14 && vz < 0) {
             if (hangTime === null) hangTime = t;
-            if (!isHr && Math.abs(vz) > 10 && points.length < 360) {
-              z = 0.14;
+            if (carryDist === null) carryDist = Math.round(horiz);
+            if (!isHr && Math.abs(vz) > 4.5 && points.length < 360) {
+              z = 0.16;
               const onDirt = horiz < 135;
-              const eVert = onDirt ? 0.42 : 0.36;
+              const eVert = onDirt ? 0.48 : 0.38;
               vz = Math.abs(vz) * eVert;
-              const spinKick = backspinRpm < -200 ? 1.06 : backspinRpm > 1600 ? 0.72 : 0.85;
-              vx *= 0.78 * spinKick;
-              vy *= 0.78 * spinKick;
+              const spinKick = backspinRpm < -200 ? 1.04 : backspinRpm > 1600 ? 0.74 : 0.86;
+              vx *= (onDirt ? 0.84 : 0.74) * spinKick;
+              vy *= (onDirt ? 0.84 : 0.74) * spinKick;
               wx *= 0.35;
               wz *= 0.4;
             } else {
-              z = 0.12;
+              z = 0.14;
               vz = 0;
             }
           }
@@ -1471,8 +2000,21 @@
 
         const last = points[points.length - 1];
         const finalDist = Math.round(Math.hypot(last.x, last.y));
+        const finalCarry = carryDist != null ? carryDist : finalDist;
         const finalApex = Math.round(apex);
         const finalHang = Number((hangTime != null ? hangTime : t).toFixed(2));
+
+        // Expected Batting Average (xBA) heuristic matching Statcast EV/LA buckets
+        let xbaNum = 0.08;
+        if (fair) {
+          if (isHr) xbaNum = 0.99;
+          else if (launchDeg >= 10 && launchDeg <= 28 && exitVelo >= 94) xbaNum = 0.68 + Math.min(0.27, (exitVelo - 94) * 0.025);
+          else if (launchDeg >= 8 && launchDeg <= 22 && exitVelo >= 85) xbaNum = 0.44 + (exitVelo - 85) * 0.02;
+          else if (launchDeg < 6 && exitVelo >= 95) xbaNum = 0.38;
+          else if (launchDeg > 40) xbaNum = 0.06;
+          else xbaNum = 0.21;
+        }
+        const xba = fair ? `.${String(Math.round(Math.min(0.999, Math.max(0.01, xbaNum)) * 1000)).padStart(3, '0')}` : '.000';
 
         let outcome = 'Out';
         let color = '#94a3b8';
@@ -1502,10 +2044,12 @@
         return {
           points,
           dist: finalDist,
+          carryDist: finalCarry,
           apex: finalApex,
           apexTime,
           apexPos,
           hangTime: finalHang,
+          xba,
           exitVelo: Number(exitVelo.toFixed(1)),
           launchAngle: Math.round(launchDeg),
           sprayDeg: Math.round(sprayDeg),
@@ -1526,27 +2070,14 @@
 
       // Precompute realistic RK4 pitched baseball path from mound (-55) across home plate (0)
       function precomputePitchTrajectory(mph, typeKey, endX, endY, isDemo) {
+        const spec = PITCH_TYPES[typeKey] || PITCH_TYPES.fastball;
         const speedFtS = mph * 1.46667;
         const targetX = endX * 0.88;
         const targetY = 2.65 - endY * 1.0;
         const dur = isDemo ? 0.68 : Math.max(0.54, Math.min(0.84, 57 / speedFtS));
 
-        // Realistic pitch spin axes: fastball rises against gravity (+vertical Magnus), curve drops hard (-vertical Magnus), slider sweeps (-X), changeup fades (+X)
-        let magX = 0;
-        let magY = 12; // ft/s^2 upward ride vs 32.174 gravity
-        if (typeKey === 'fastball') {
-          magX = isDemo ? 0 : 4.2;
-          magY = isDemo ? 16.5 : 15.8;
-        } else if (typeKey === 'slider') {
-          magX = -14.5;
-          magY = 2.5;
-        } else if (typeKey === 'curve') {
-          magX = -4.2;
-          magY = -11.5;
-        } else if (typeKey === 'changeup') {
-          magX = 11.2;
-          magY = 5.4;
-        }
+        const magX = isDemo ? 0 : spec.magX;
+        const magY = isDemo ? 16.5 : spec.magY;
 
         // Solve initial velocity components so ball crosses exact (targetX, targetY, z=0) at t=dur
         const startX = 0.85;
@@ -1563,7 +2094,6 @@
         for (let i = 0; i <= steps; i++) {
           const p = (i / steps) * 1.06;
           const t = p * dur;
-          // Aerodynamic drag slows pitch ~7% by plate while Magnus & gravity curve smoothly
           const dragScale = 1 - 0.036 * t;
           samples.push({
             x: startX + vx0 * t * dragScale + 0.5 * axTotal * t * t,
@@ -1586,6 +2116,7 @@
         const mph = isDemoHr
           ? 89
           : Math.round(spec.mphMin + Math.random() * (spec.mphMax - spec.mphMin));
+        const pitchRpm = Math.round(spec.rpmMin + Math.random() * (spec.rpmMax - spec.rpmMin));
 
         const endX = isDemoHr ? 0.03 : (Math.random() - 0.5) * 1.72;
         const endY = isDemoHr ? 0.02 : (Math.random() - 0.5) * 1.62;
@@ -1607,14 +2138,21 @@
           typeKey: chosenKey,
           name: isDemoHr ? '89 mph Centerpiece 4-Seam' : `${mph} mph ${spec.name}`,
           mph,
+          pitchRpm,
+          spinAxisClock: spec.spinAxisClock,
+          spinAxisDeg: spec.spinAxisDeg,
+          spinEff: spec.spinEff,
+          ivbIn: spec.ivbIn,
+          hbIn: spec.hbIn,
           dur: traj.dur,
           samples: traj.samples,
           descendDeg: traj.descendDeg,
           endX,
           endY
         };
+        session.lastPitch = sim.pitch;
         if (swingBtn) swingBtn.textContent = 'SWING! (Space)';
-        if (pitchNote) pitchNote.textContent = `${sim.pitch.name} · Watch the shrinking ring!`;
+        if (pitchNote) pitchNote.textContent = `${sim.pitch.name} (${pitchRpm} rpm · ${spec.spinAxisClock}) · Watch the shrinking ring!`;
       }
 
       function resolveSwing() {
@@ -1661,9 +2199,11 @@
         // Physical Bat-Ball Collision: BBCOR / Wood COR (eA), radial sweet-spot loss, and attack plane vs pitch descent
         const radialRatio = distFromSweet / maxReach;
         const sweetSpotEff = Math.max(0.28, 1 - radialRatio * radialRatio * 0.72) * Math.max(0.45, 1 - absTime * 2.15);
-        const swingMph = sim.demoAutoSwing ? 80.5 : 71.5 + sweetSpotEff * 10.5;
+        const swingMph = Number((sim.demoAutoSwing ? 80.5 : (71.5 + sweetSpotEff * 10.5) * bat.weightMod).toFixed(1));
         const collisionQ = 0.206 * bat.popMod * (0.94 + 0.08 * sweetSpotEff);
-        const exitVelo = collisionQ * sim.pitch.mph + (1 + collisionQ) * (swingMph * bat.weightMod) * (0.79 + 0.23 * sweetSpotEff);
+        const exitVelo = collisionQ * sim.pitch.mph + (1 + collisionQ) * swingMph * (0.79 + 0.23 * sweetSpotEff);
+        const smashFactor = Number((exitVelo / Math.max(55, swingMph)).toFixed(2));
+        const attackAngle = Math.round(9 + Math.max(-4, Math.min(8, underBallOffset * 14)));
 
         // Oblique Bat-Ball Gear Effect: attack angle (~ +11 deg) + vertical offset drives launch angle & backspin RPM
         const pitchDesc = sim.pitch.descendDeg || -7.5;
@@ -1696,7 +2236,7 @@
         sim.impactPos = { x: contactStart.x, y: contactStart.z, z: -contactStart.y };
 
         const flight = simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg, backspinRpm, sidespinRpm, contactStart);
-        playBatAudio(bat.soundType, sweetSpotEff, flight.isHr);
+        playBatAudio(bat.id, sweetSpotEff, flight.isHr, activeStadiumId);
         sim.flashColor = flight.color;
         sim.flight = { ...flight, playTime: 0 };
         sim.flightPoints = flight.points;
@@ -1706,6 +2246,8 @@
         sim.flightCur = flight.points[0];
         sim.phase = 'flight';
         sim.t = 0;
+
+        session.lastHit = flight;
 
         if (!flight.fair) {
           if (session.strikes < 2) session.strikes++;
@@ -1724,6 +2266,7 @@
             xFt: flight.endX,
             yFt: flight.endY,
             dist: flight.dist,
+            carryDist: flight.carryDist,
             apex: flight.apex,
             isHr: flight.isHr,
             color: flight.color,
@@ -1731,7 +2274,7 @@
           });
           if (session.sprays.length > 24) session.sprays.shift();
           sim.calloutText = flight.outcome;
-          sim.calloutSub = `${flight.dist} FT · ${flight.exitVelo} MPH · ${flight.apex} FT APEX`;
+          sim.calloutSub = `${flight.dist} FT (${flight.carryDist} CARRY) · ${flight.exitVelo} MPH · SMASH ${smashFactor}`;
         }
         sim.calloutTimer = 2.8;
 
@@ -1739,15 +2282,21 @@
           exitVelo: flight.exitVelo,
           launchAngle: flight.launchAngle,
           dist: flight.dist,
+          carryDist: flight.carryDist,
           apex: flight.apex,
           hangTime: flight.hangTime,
           backspinRpm: flight.backspinRpm,
+          batSpeed: swingMph,
+          smashFactor,
+          attackAngle,
+          xba: flight.xba,
+          pitchMeta: sim.pitch,
           outcome: flight.outcome,
           color: flight.color
         });
         if (pitchNote) {
           const spinWord = flight.backspinRpm >= 0 ? `${flight.backspinRpm} rpm backspin` : `${Math.abs(flight.backspinRpm)} rpm topspin`;
-          pitchNote.textContent = `${flight.outcome} — ${flight.dist} ft (${flight.launchAngle}° · ${spinWord})`;
+          pitchNote.textContent = `${flight.outcome} — ${flight.dist} ft (${flight.carryDist} ft carry · ${flight.launchAngle}° · ${spinWord})`;
         }
         if (swingBtn) swingBtn.textContent = 'Throw Pitch';
       }
@@ -1792,7 +2341,7 @@
         const desiredCam = sim.phase === 'flight' ? 1 : 0;
         sim.camT += (desiredCam - sim.camT) * Math.min(1, dt * 5.2);
 
-        const st = STADIUMS[activeStadiumId] || STADIUMS.fenway;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
         const bat = BATS[activeBatId] || BATS['goods-2026'];
 
         // Advance State Machine & Compute 3D World Ball Positions
@@ -1869,7 +2418,7 @@
 
           if (fl.wallHit && !fl.wallThudPlayed && fl.wallHitTime && fl.playTime >= fl.wallHitTime) {
             fl.wallThudPlayed = true;
-            playBatAudio('wood', 0.55, false);
+            playBatAudio('wall', 0.65, false, activeStadiumId);
           }
 
           const progress = Math.min(1, fl.playTime / Math.max(0.8, fl.totalTime));
@@ -2171,12 +2720,36 @@
       if (sprayClearBtn) {
         sprayClearBtn.onclick = () => {
           session.sprays = [];
+          session.lastHit = null;
           session.hits = 0;
           session.hrs = 0;
           session.balls = 0;
           session.strikes = 0;
           session.outs = 0;
-          updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, outcome: 'Chart Cleared', color: 'var(--accent)' });
+          updateSessionDom({
+            exitVelo: null,
+            launchAngle: null,
+            dist: null,
+            carryDist: null,
+            apex: null,
+            batSpeed: null,
+            smashFactor: null,
+            attackAngle: null,
+            outcome: 'Telemetry Cleared',
+            color: 'var(--accent)'
+          });
+        };
+      }
+
+      if (rapsodoViewTabs) {
+        rapsodoViewTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-rview]');
+          if (!btn) return;
+          activeTelemetryView = btn.dataset.rview;
+          rapsodoViewTabs.querySelectorAll('[data-rview]').forEach((b) => {
+            b.setAttribute('aria-pressed', String(b === btn));
+          });
+          drawTelemetryCanvas();
         };
       }
 
@@ -2388,13 +2961,17 @@
 
     listEl.onclick = async (e) => {
       const favBtn = e.target.closest('[data-fav-id]');
-      if (!favBtn) return;
+      if (!favBtn || favBtn.disabled) return;
       if (!currentUser) {
-        showToast('Log in first to save favorite plays.');
+        showToast('Log in first — opening Log In page...');
+        setTimeout(() => {
+          window.location.href = 'login.html?next=scenarios.html';
+        }, 700);
         return;
       }
       const sid = favBtn.dataset.favId;
       const isSaved = favoriteIds.has(sid);
+      favBtn.disabled = true;
       try {
         const res = await api(`/api/favorites/${encodeURIComponent(sid)}`, {
           method: isSaved ? 'DELETE' : 'POST'
@@ -2407,6 +2984,7 @@
           renderGrid();
         }
       } catch (err) {
+        favBtn.disabled = false;
         showToast(err.message);
       }
     };
@@ -2447,10 +3025,15 @@
 
       if (favBtn) {
         favBtn.onclick = async () => {
+          if (favBtn.disabled) return;
           if (!currentUser) {
-            showToast('Log in first to save plays.');
+            showToast('Log in first — opening Log In page...');
+            setTimeout(() => {
+              window.location.href = `login.html?next=${encodeURIComponent(`detail.html?id=${scenario.id}`)}`;
+            }, 700);
             return;
           }
+          favBtn.disabled = true;
           try {
             await api(`/api/favorites/${encodeURIComponent(scenario.id)}`, {
               method: savedFav ? 'DELETE' : 'POST'
@@ -2460,6 +3043,8 @@
             showToast(savedFav ? 'Saved to favorites!' : 'Removed from favorites.');
           } catch (err) {
             showToast(err.message);
+          } finally {
+            favBtn.disabled = false;
           }
         };
       }
@@ -2519,12 +3104,16 @@
       if (ratingStars) {
         ratingStars.onclick = async (e) => {
           const btn = e.target.closest('[data-star]');
-          if (!btn) return;
+          if (!btn || btn.disabled) return;
           if (!currentUser) {
-            showToast('Log in to rate this play.');
+            showToast('Log in first — opening Log In page...');
+            setTimeout(() => {
+              window.location.href = `login.html?next=${encodeURIComponent(`detail.html?id=${scenario.id}`)}`;
+            }, 700);
             return;
           }
           const stars = Number(btn.dataset.star);
+          btn.disabled = true;
           try {
             const updated = await api(`/api/scenarios/${encodeURIComponent(scenario.id)}/rating`, {
               method: 'POST',
@@ -2534,6 +3123,8 @@
             showToast(`Rated ${stars} out of 5 stars!`);
           } catch (err) {
             showToast(err.message);
+          } finally {
+            btn.disabled = false;
           }
         };
       }
@@ -2615,6 +3206,7 @@
       }
 
       if (triviaForm) {
+        const triviaBtn = triviaForm.querySelector('button[type="submit"]');
         triviaForm.onsubmit = async (e) => {
           e.preventDefault();
           const chosen = triviaForm.querySelector('input[name="trivia"]:checked');
@@ -2622,13 +3214,21 @@
             setBanner(triviaFeedback, 'warning', 'Pick an answer choice first!');
             return;
           }
+          if (triviaBtn) {
+            triviaBtn.disabled = true;
+            triviaBtn.textContent = 'Checking...';
+          }
           try {
             const res = await api(`/api/scenarios/${encodeURIComponent(scenario.id)}/trivia`, {
               method: 'POST',
               body: JSON.stringify({ answerKey: chosen.value })
             });
             if (res.correct) {
-              const extra = res.mastered ? ' Saved to your mastered plays!' : '';
+              const extra = res.mastered
+                ? ' Saved to your mastered plays!'
+                : !currentUser
+                  ? ' Log in to save your mastery badge.'
+                  : '';
               setBanner(triviaFeedback, 'success', `${res.explanation}${extra}`);
               if (res.mastered && masteredNote) masteredNote.hidden = false;
             } else {
@@ -2636,6 +3236,11 @@
             }
           } catch (err) {
             setBanner(triviaFeedback, 'error', err.message);
+          } finally {
+            if (triviaBtn) {
+              triviaBtn.disabled = false;
+              triviaBtn.textContent = 'Check Answer';
+            }
           }
         };
       }
@@ -2781,6 +3386,7 @@
     const aiKicker = document.getElementById('pb-ai-kicker');
     const aiHeading = document.getElementById('pb-ai-heading');
     const aiSummary = document.getElementById('pb-ai-summary');
+    const aiTipsWrap = document.getElementById('pb-ai-tips');
     const aiLinksWrap = document.getElementById('pb-ai-links');
 
     const loadAiProfile = async () => {
@@ -2793,6 +3399,10 @@
           if (aiKicker) aiKicker.textContent = 'New Feature · AI Player Checkup';
           if (aiHeading) aiHeading.textContent = 'Get Your Personal Swing & Fielding Plan';
           if (aiSummary) aiSummary.textContent = 'Take our 1-minute AI quiz to get tailored fix tips, slow-mo video links, and a matched 3D cage bat.';
+          if (aiTipsWrap) {
+            aiTipsWrap.hidden = true;
+            aiTipsWrap.innerHTML = '';
+          }
           if (aiLinksWrap) aiLinksWrap.innerHTML = '';
           const retakeBtn = document.getElementById('pb-ai-retake-link');
           if (retakeBtn) retakeBtn.textContent = 'Take AI Player Quiz';
@@ -2802,6 +3412,10 @@
         if (aiKicker) aiKicker.textContent = `${profile.skillTier} · Readiness ${profile.readinessScore}/100 · IQ ${profile.iqCorrectCount}/${profile.iqTotal}`;
         if (aiHeading) aiHeading.textContent = profile.headline || 'Your AI Scouting Profile';
         if (aiSummary) aiSummary.textContent = profile.summary || '';
+        if (aiTipsWrap && Array.isArray(profile.actionableTips) && profile.actionableTips.length) {
+          aiTipsWrap.hidden = false;
+          aiTipsWrap.innerHTML = profile.actionableTips.map((t) => `<li>${escapeHtml(t)}</li>`).join('');
+        }
         if (aiLinksWrap) {
           const vids = (profile.videoLinks || []).map(
             (v) => `<a class="btn btn-secondary btn-sm" href="${escapeHtml(v.url)}">Video: ${escapeHtml(v.title)}</a>`
@@ -2954,6 +3568,11 @@
           return;
         }
 
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.classList.add('is-loading');
+          submitBtn.textContent = editId ? 'Saving changes...' : 'Saving note...';
+        }
         try {
           if (editId) {
             await api(`/api/playbook/${editId}`, {
@@ -2974,6 +3593,12 @@
           await loadEntries();
         } catch (err) {
           setBanner(feedback, 'error', err.message);
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('is-loading');
+            submitBtn.textContent = editIdInput && editIdInput.value ? 'Save Changes' : 'Add to Playbook';
+          }
         }
       };
     }
@@ -3038,9 +3663,158 @@
      Auth Pages (Login & Register)
      ========================================================= */
   function initAuthForms() {
+    const pageParams = new URLSearchParams(window.location.search);
+    const nextUrl = safeNextUrl(pageParams.get('next'));
+
+    // Password visibility toggle buttons
+    document.querySelectorAll('[data-toggle-pw]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.togglePw);
+        if (!input) return;
+        const isShowing = input.type === 'text';
+        input.type = isShowing ? 'password' : 'text';
+        btn.setAttribute('aria-pressed', String(!isShowing));
+        btn.setAttribute('aria-label', isShowing ? 'Show password' : 'Hide password');
+        btn.textContent = isShowing ? 'Show' : 'Hide';
+      });
+    });
+
+    // Live password strength indicator on Register
+    const regPassInput = document.getElementById('reg-pass');
+    const regPassFill = document.getElementById('reg-pass-fill');
+    const regPassLabel = document.getElementById('reg-pass-label');
+    if (regPassInput && regPassFill && regPassLabel) {
+      const updatePwStrength = () => {
+        const v = regPassInput.value;
+        if (!v) {
+          regPassFill.style.setProperty('--pw-scale', '0');
+          regPassFill.dataset.tier = '';
+          regPassLabel.textContent = 'Use 8+ chars with letters & numbers';
+          return;
+        }
+        let score = 0;
+        if (v.length >= 8) score++;
+        if (v.length >= 12) score++;
+        if (/[a-z]/.test(v) && /[A-Z]/.test(v)) score++;
+        if (/\d/.test(v)) score++;
+        if (/[^a-zA-Z0-9]/.test(v)) score++;
+        const scale = Math.max(0.2, Math.min(1, score / 5));
+        regPassFill.style.setProperty('--pw-scale', String(scale));
+        if (v.length < 8 || score <= 1) {
+          regPassFill.dataset.tier = 'weak';
+          regPassLabel.textContent = v.length < 8 ? `Too short (${v.length}/8 chars)` : 'Weak — add numbers or capitals';
+        } else if (score <= 2) {
+          regPassFill.dataset.tier = 'fair';
+          regPassLabel.textContent = 'Fair — add a number or symbol for extra safety';
+        } else if (score <= 3) {
+          regPassFill.dataset.tier = 'good';
+          regPassLabel.textContent = 'Good password';
+        } else {
+          regPassFill.dataset.tier = 'strong';
+          regPassLabel.textContent = 'Strong password!';
+        }
+      };
+      regPassInput.addEventListener('input', updatePwStrength);
+    }
+
+    // Interactive Auth Focus Quiz & Instant Coach Tips (on both Login & Register)
+    const AUTH_FOCUS_GUIDE = {
+      'hitting-power': {
+        clinic: 'rolling-over',
+        bat: 'goods-2026',
+        title: 'Launch Angle & Palm-Up Extension',
+        tips: [
+          'Keep your top hand palm-down and bottom hand palm-up 8 inches past contact to stop pulling weak grounders.',
+          'Aim your mini PCI 0.25" below pitch center in Rapsodo Lab to drive 26°–30° elevated backspin bombs.'
+        ]
+      },
+      'hitting-timing': {
+        clinic: 'bat-drag',
+        bat: 'baum-gold',
+        title: 'Stay Connected & Time Fastballs',
+        tips: [
+          'Coil weight inside your back foot and fire hips first while keeping hands tucked beside your rear shoulder.',
+          'Test the Towel Under Back Armpit drill in slow-mo, then swing Baum Bat Gold (-3) against Fastball/Slider mix.'
+        ]
+      },
+      'fielding-hands': {
+        clinic: 'glove-stab',
+        bat: 'goods-2022',
+        title: 'Soft Out-Front Triangle & Footwork',
+        tips: [
+          'Present your open glove triangle out in front of your eyes and funnel grounders softly to your belt.',
+          'Time your infield creep step with "Right—Left—Catch—Right—Throw" to stay off your heels.'
+        ]
+      },
+      'fielding-routes': {
+        clinic: 'banana-route',
+        bat: 'combat-blue',
+        title: '45° Drop-Step & Low Linear Crow Hop',
+        tips: [
+          'Open hips 45° immediately on deep flies and pump both arms with your glove tucked until the final three steps.',
+          'Skim low across the grass on your crow hop rather than jumping straight up so relay throws carry flat.'
+        ]
+      }
+    };
+
+    let selectedAuthFocus = 'hitting-power';
+    const focusOptsWrap = document.getElementById('auth-focus-options');
+    const skillLevelEl = document.getElementById('auth-skill-level');
+    const tipsPreviewEl = document.getElementById('auth-instant-tips');
+
+    function renderAuthTipsPreview() {
+      const guide = AUTH_FOCUS_GUIDE[selectedAuthFocus] || AUTH_FOCUS_GUIDE['hitting-power'];
+      const lvl = skillLevelEl ? skillLevelEl.value : 'Rec / Little League (Learning core skills)';
+      try {
+        localStorage.setItem('diamondiq_auth_focus', JSON.stringify({ focus: selectedAuthFocus, level: lvl }));
+      } catch {
+        /* ignore */
+      }
+      if (!tipsPreviewEl) return;
+      tipsPreviewEl.innerHTML = `
+        <strong>Coach AI Quick Tips (${escapeHtml(guide.title)}):</strong>
+        <ul>${guide.tips.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
+        <div style="margin-top:0.25rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+          <a href="training.html?clinic=${encodeURIComponent(guide.clinic)}&slow=1&bat=${encodeURIComponent(guide.bat)}#video-clinic-section" style="font-weight:700;font-size:0.8rem;">Watch Slow-Mo Tutorial &rarr;</a>
+          <span style="color:var(--text-muted);">·</span>
+          <a href="index.html?bat=${encodeURIComponent(guide.bat)}#gameday-studio" style="font-weight:700;font-size:0.8rem;">Try in 3D Stadium &rarr;</a>
+        </div>`;
+    }
+
+    if (focusOptsWrap) {
+      focusOptsWrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-focus]');
+        if (!btn) return;
+        selectedAuthFocus = btn.dataset.focus;
+        focusOptsWrap.querySelectorAll('[data-focus]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+        renderAuthTipsPreview();
+      });
+      if (skillLevelEl) skillLevelEl.addEventListener('change', renderAuthTipsPreview);
+      renderAuthTipsPreview();
+    }
+
+    // Preserve ?next= across login <-> register switch links
+    if (nextUrl) {
+      document.querySelectorAll('a[href="register.html"], a[href="login.html"]').forEach((link) => {
+        const base = link.getAttribute('href').split('?')[0];
+        link.setAttribute('href', `${base}?next=${encodeURIComponent(nextUrl)}`);
+      });
+    }
+
+    const buildOnboardingUrl = () => {
+      const lvl = skillLevelEl ? skillLevelEl.value : '';
+      const qp = new URLSearchParams({ welcome: '1', focus: selectedAuthFocus });
+      if (lvl) qp.set('level', lvl);
+      return `onboarding.html?${qp.toString()}`;
+    };
+
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
       const errEl = document.getElementById('login-error');
+      const openQuizCheck = document.getElementById('login-open-quiz');
+      const submitBtn = document.getElementById('login-submit-btn') || loginForm.querySelector('button[type="submit"]');
       loginForm.onsubmit = async (e) => {
         e.preventDefault();
         setBanner(errEl, '', '');
@@ -3054,14 +3828,30 @@
           setBanner(errEl, 'error', 'Password must be at least 8 characters.');
           return;
         }
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.classList.add('is-loading');
+          submitBtn.textContent = 'Logging in...';
+        }
         try {
           const data = await api('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify({ identifier, password })
           });
-          window.location.href = data && data.needsOnboarding ? 'onboarding.html?welcome=1' : 'playbook.html';
+          if (data && data.sessionToken) setStoredSessionToken(data.sessionToken);
+          const wantsQuiz = openQuizCheck ? openQuizCheck.checked : Boolean(data && data.needsOnboarding);
+          if (nextUrl) {
+            window.location.href = nextUrl;
+          } else {
+            window.location.href = wantsQuiz || (data && data.needsOnboarding) ? buildOnboardingUrl() : 'playbook.html';
+          }
         } catch (err) {
           setBanner(errEl, 'error', err.message);
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('is-loading');
+            submitBtn.textContent = 'Log In & Open Coaching Plan';
+          }
         }
       };
     }
@@ -3069,6 +3859,7 @@
     const regForm = document.getElementById('register-form');
     if (regForm) {
       const errEl = document.getElementById('register-error');
+      const submitBtn = document.getElementById('reg-submit-btn') || regForm.querySelector('button[type="submit"]');
       regForm.onsubmit = async (e) => {
         e.preventDefault();
         setBanner(errEl, '', '');
@@ -3089,14 +3880,25 @@
           return;
         }
 
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.classList.add('is-loading');
+          submitBtn.textContent = 'Creating account...';
+        }
         try {
-          await api('/api/auth/register', {
+          const data = await api('/api/auth/register', {
             method: 'POST',
             body: JSON.stringify({ username, email, password })
           });
-          window.location.href = 'onboarding.html?welcome=1';
+          if (data && data.sessionToken) setStoredSessionToken(data.sessionToken);
+          window.location.href = nextUrl || buildOnboardingUrl();
         } catch (err) {
           setBanner(errEl, 'error', err.message);
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('is-loading');
+            submitBtn.textContent = 'Create Account & Start Quiz';
+          }
         }
       };
     }

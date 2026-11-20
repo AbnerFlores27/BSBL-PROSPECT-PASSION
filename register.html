@@ -68,7 +68,7 @@
       </div>
       <div class="kicker-line">Free Account</div>
       <h1>Create Your Account</h1>
-      <p style="color:var(--text-secondary);">Make a free account to bookmark plays and build your own playbook.</p>
+      <p style="color:var(--text-secondary);">Make a free account to unlock your AI scouting plan, custom tips, and slow-mo tutorial videos.</p>
       <form id="register-form" class="form-stack" method="post" action="/api/auth/register" onsubmit="return false;" novalidate>
         <div class="field">
           <label for="reg-user">Username</label>
@@ -80,9 +80,38 @@
         </div>
         <div class="field">
           <label for="reg-pass">Password (8+ characters)</label>
-          <input type="password" id="reg-pass" name="password" placeholder="At least 8 characters" autocomplete="new-password" required minlength="8">
+          <div class="password-field-wrap">
+            <input type="password" id="reg-pass" name="password" placeholder="At least 8 characters" autocomplete="new-password" required minlength="8">
+            <button type="button" class="password-toggle-btn" data-toggle-pw="reg-pass" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <div class="pw-strength-wrap" id="reg-pass-strength" aria-live="polite">
+            <div class="pw-strength-track"><div class="pw-strength-fill" id="reg-pass-fill"></div></div>
+            <span class="pw-strength-label" id="reg-pass-label">Use 8+ chars with letters &amp; numbers</span>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary">Create Account</button>
+
+        <div id="auth-focus-quiz" class="auth-quiz-box">
+          <div class="kicker-line" style="margin-bottom:0.2rem;">Step 1 Quiz · Pick What You Want to Fix</div>
+          <p class="auth-quiz-sub">Get immediate tips &amp; pre-load your custom scouting checkup after sign up:</p>
+          <div class="auth-focus-grid" id="auth-focus-options" role="group" aria-label="Select your main training focus">
+            <button type="button" class="auth-focus-btn" data-focus="hitting-power" aria-pressed="true">Drive Bombs &amp; Lift</button>
+            <button type="button" class="auth-focus-btn" data-focus="hitting-timing" aria-pressed="false">Catch Heat &amp; Off-Speed</button>
+            <button type="button" class="auth-focus-btn" data-focus="fielding-hands" aria-pressed="false">Infield Hands &amp; Feet</button>
+            <button type="button" class="auth-focus-btn" data-focus="fielding-routes" aria-pressed="false">Outfield Routes &amp; Throws</button>
+          </div>
+          <div class="field" style="margin-top:0.55rem;">
+            <label for="auth-skill-level" style="font-size:0.8rem;">Playing Level</label>
+            <select id="auth-skill-level" style="width:100%;min-height:36px;font-size:0.86rem;">
+              <option value="Beginner (New to baseball / 1st season)">Beginner / 1st Season</option>
+              <option value="Rec / Little League (Learning core skills)" selected>Rec / Little League</option>
+              <option value="Travel / High School (Facing faster pitching)">Travel / High School</option>
+              <option value="Varsity / College Prep (Polishing high-level mechanics)">Varsity / College Prep</option>
+            </select>
+          </div>
+          <div id="auth-instant-tips" class="auth-tips-preview" aria-live="polite"></div>
+        </div>
+
+        <button type="submit" id="reg-submit-btn" class="btn btn-primary">Create Account &amp; Start Quiz</button>
         <p id="register-error" class="feedback-banner" role="alert"></p>
       </form>
       <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">

@@ -32,15 +32,78 @@
     const errEl = document.getElementById('onboarding-error');
     const reportEl = document.getElementById('onboarding-report');
 
+    let savedAuthFocus = null;
+    try {
+      const rawFocus = localStorage.getItem('diamondiq_auth_focus');
+      if (rawFocus) savedAuthFocus = JSON.parse(rawFocus);
+    } catch {
+      savedAuthFocus = null;
+    }
+
+    const preFocus = params.get('focus') || (savedAuthFocus && savedAuthFocus.focus) || '';
+    const preLevel = params.get('level') || (savedAuthFocus && savedAuthFocus.level) || '';
+
+    if (preLevel && expEl) {
+      const matchOpt = Array.from(expEl.options).find(
+        (opt) => opt.value === preLevel || (opt.value && opt.value.toLowerCase().includes(preLevel.toLowerCase()))
+      );
+      if (matchOpt) expEl.value = matchOpt.value;
+    }
+
+    const FOCUS_PRESETS = {
+      'hitting-power': {
+        label: 'Crushing Elevated Line Drives & Stopping Rollovers',
+        hit: 'I roll my wrists early and pull hard or weak grounders to 3rd/SS (Rolling Over)',
+        field: 'Clean glove and routes — working on faster transfers and IQ'
+      },
+      'hitting-timing': {
+        label: 'Fastball Timing & Eliminating Bat Drag',
+        hit: 'I feel late on fastballs and jam pitches off my hands (possible Bat Drag)',
+        field: 'Clean glove and routes — working on faster transfers and IQ'
+      },
+      'fielding-hands': {
+        label: 'Soft Infield Hands & Right-Left Footwork',
+        hit: 'I square the ball up well and want higher home-run launch angles',
+        field: 'Ground balls bounce off my palm or I stab downward at hops (Glove Stabbing)'
+      },
+      'fielding-routes': {
+        label: 'Outfield 45° Drop-Step & Low Linear Crow Hop',
+        hit: 'I square the ball up well and want higher home-run launch angles',
+        field: 'I curve around fly balls or misjudge deep overhead balls (Banana Route)'
+      }
+    };
+
+    if (preFocus && FOCUS_PRESETS[preFocus]) {
+      const preset = FOCUS_PRESETS[preFocus];
+      if (hitEl && preset.hit) hitEl.value = preset.hit;
+      if (fieldEl && preset.field) fieldEl.value = preset.field;
+      if (welcomeBanner && params.get('welcome') === '1') {
+        welcomeBanner.textContent = `Welcome! We pre-loaded your "${preset.label}" focus — pick your position, answer the 3 quick Baseball IQ questions below, and get your custom plan + slow-mo tutorial links.`;
+      }
+      if (statusText) {
+        statusText.textContent = `Pre-loaded "${preset.label}" focus. Answer Step 3 and tap Analyze My Game!`;
+      }
+    }
+
     function setErr(msg) {
       if (!errEl) return;
       errEl.className = msg ? 'feedback-banner is-error onboarding-step-wide' : 'feedback-banner onboarding-step-wide';
       errEl.textContent = msg || '';
     }
 
+    function authHeaders(extra = {}) {
+      if (window.diamondiqAuth && typeof window.diamondiqAuth.getHeaders === 'function') {
+        return window.diamondiqAuth.getHeaders(extra);
+      }
+      return { ...extra };
+    }
+
     function renderReport(profile, savedToAccount) {
       if (!reportEl || !profile) return;
       reportEl.hidden = false;
+      reportEl.classList.remove('is-revealed');
+      void reportEl.offsetWidth;
+      reportEl.classList.add('is-revealed');
 
       const tipsHtml = (profile.actionableTips || [])
         .map((tip) => `<li>${esc(tip)}</li>`)
@@ -135,7 +198,15 @@
 
         <div style="padding:0 1.45rem 1.25rem;">
           <div class="kicker-line">Recommended Drill Videos (Slow-Mo Pre-Loaded)</div>
-          <h3 style="margin-bottom:0.75rem;">Click Any Video Link to Open &amp; Train</h3>
+          <h3 style="margin-bottom:0.55rem;">Click Any Video Link to Open &amp; Train</h3>
+          <div class="card-subtle" style="margin-bottom:0.9rem;padding:0.85rem 1rem;">
+            <strong style="display:block;margin-bottom:0.35rem;font-size:0.92rem;">How to Do Your Tutorial Videos &amp; Practice Drills:</strong>
+            <ol style="margin:0;padding-left:1.2rem;color:var(--text-secondary);font-size:0.88rem;line-height:1.5;">
+              <li>Open any Slow-Mo Fix Video below — it boots into <strong>0.45x Split View</strong> comparing your Common Flaw vs. Pro Mechanic side-by-side.</li>
+              <li>Use the <strong>Stage 1–4 buttons</strong> (or timeline scrubber) to freeze contact/catch points and match the live step-by-step body cues.</li>
+              <li>Run the 2 listed tee/glove drills, save them to <strong>My Playbook</strong>, and test <strong>${esc(profile.recommendedBatName.split(' (')[0])}</strong> in the D1 3D Stadium.</li>
+            </ol>
+          </div>
           <div class="ob-video-grid">${videosHtml}</div>
         </div>
 
@@ -152,7 +223,13 @@
 
       const saveBtn = document.getElementById('ob-save-playbook-btn');
       if (saveBtn) {
+        let saving = false;
         saveBtn.addEventListener('click', async () => {
+          if (saving) return;
+          saving = true;
+          saveBtn.disabled = true;
+          saveBtn.classList.add('is-loading');
+          saveBtn.textContent = 'Saving to Playbook...';
           const title = `AI Coach Plan (${profile.skillTier}): ${profile.headline}`;
           const body = [
             `SKILL TIER: ${profile.skillTier} (Readiness ${profile.readinessScore}/100 · IQ ${profile.iqCorrectCount}/3)`,
@@ -171,20 +248,24 @@
             const res = await fetch('/api/playbook', {
               method: 'POST',
               credentials: 'same-origin',
-              headers: { 'Content-Type': 'application/json' },
+              headers: authHeaders({ 'Content-Type': 'application/json' }),
               body: JSON.stringify({ title, body, rating: 4 })
             });
             if (res.status === 401) {
               saveBtn.textContent = 'Log in first to save...';
               setTimeout(() => {
-                window.location.href = 'login.html';
-              }, 850);
+                window.location.href = 'login.html?next=onboarding.html';
+              }, 800);
               return;
             }
             if (!res.ok) throw new Error('Save failed');
             saveBtn.textContent = 'Saved to My Playbook!';
           } catch {
             saveBtn.textContent = 'Could not save right now';
+            saveBtn.disabled = false;
+          } finally {
+            saving = false;
+            saveBtn.classList.remove('is-loading');
           }
         });
       }
@@ -210,8 +291,10 @@
       });
     }
 
+    let analyzing = false;
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (analyzing) return;
       setErr('');
       const experienceLevel = expEl ? expEl.value : '';
       const primaryPosition = posEl ? posEl.value : '';
@@ -231,17 +314,23 @@
         return;
       }
 
+      analyzing = true;
       if (submitBtn) {
         submitBtn.disabled = true;
+        submitBtn.classList.add('is-loading');
         submitBtn.textContent = 'Coach AI is analyzing...';
       }
       if (statusText) statusText.textContent = 'Building your custom video & drill roadmap...';
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 28000);
 
       try {
         const res = await fetch('/api/ai/onboarding-quiz', {
           method: 'POST',
           credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({
             experienceLevel,
             primaryPosition,
@@ -261,18 +350,27 @@
         reportEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         if (statusText) statusText.textContent = 'Scouting report ready!';
       } catch (err) {
-        setErr(err.message || 'Could not reach AI Coach right now.');
+        const msg = err && err.name === 'AbortError'
+          ? 'Coach AI took too long to respond (28s timeout). Please tap Analyze My Game again to retry.'
+          : (err && err.message) || 'Could not reach AI Coach right now. Please try again.';
+        setErr(msg);
         if (statusText) statusText.textContent = '';
       } finally {
+        clearTimeout(timeoutId);
+        analyzing = false;
         if (submitBtn) {
           submitBtn.disabled = false;
+          submitBtn.classList.remove('is-loading');
           submitBtn.textContent = 'Analyze My Game with AI Coach';
         }
       }
     });
 
     // If returning user already has a saved onboarding profile, show it below right away
-    fetch('/api/onboarding/me', { credentials: 'same-origin' })
+    fetch('/api/onboarding/me', {
+      credentials: 'same-origin',
+      headers: authHeaders()
+    })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data && data.profile) {
