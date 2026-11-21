@@ -482,13 +482,16 @@ function createPostgresStore(connectionString) {
   });
 
   let initPromise = null;
+  let sessionTokenColumn = 'token_hash';
 
   async function initSchemaAndSeed() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
+        username_normalized TEXT NOT NULL UNIQUE,
         email TEXT UNIQUE NOT NULL,
+        email_normalized TEXT NOT NULL UNIQUE,
         password_hash TEXT NOT NULL,
         auth_provider TEXT NOT NULL DEFAULT 'password',
         google_uid TEXT,
@@ -500,12 +503,8 @@ function createPostgresStore(connectionString) {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS google_uid TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_skipped BOOLEAN NOT NULL DEFAULT FALSE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences_json JSONB NOT NULL DEFAULT '{}'::jsonb;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS username_normalized TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS email_normalized TEXT;
-      UPDATE users SET username_normalized = LOWER(username) WHERE username_normalized IS NULL;
-      UPDATE users SET email_normalized = LOWER(email) WHERE email_normalized IS NULL;
       CREATE TABLE IF NOT EXISTS sessions (
-        token TEXT PRIMARY KEY,
+        token_hash CHAR(64) PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         expires_at TIMESTAMPTZ NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -559,6 +558,15 @@ function createPostgresStore(connectionString) {
         PRIMARY KEY (user_id, scenario_id)
       );
     `);
+
+    const sessionColumns = await pool.query(
+      `SELECT column_name FROM information_schema.columns
+       WHERE table_schema = current_schema() AND table_name = 'sessions'
+         AND column_name IN ('token', 'token_hash')`
+    );
+    sessionTokenColumn = sessionColumns.rows.some((row) => row.column_name === 'token_hash')
+      ? 'token_hash'
+      : 'token';
 
     for (const s of SCENARIOS) {
       await pool.query(
@@ -642,6 +650,12 @@ function createPostgresStore(connectionString) {
       if (check.rows.length === 0) return candidate;
       candidate = `${base.slice(0, 24)}_${suffix++}`;
     }
+  }
+
+  function storedSessionToken(token) {
+    return sessionTokenColumn === 'token_hash'
+      ? crypto.createHash('sha256').update(token).digest('hex')
+      : token;
   }
 
   return {
@@ -801,8 +815,8 @@ function createPostgresStore(connectionString) {
       const token = crypto.randomBytes(32).toString('hex');
       const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
       await pool.query(
-        'INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3)',
-        [token, userId, expiresAt]
+        `INSERT INTO sessions (${sessionTokenColumn}, user_id, expires_at) VALUES ($1, $2, $3)`,
+        [storedSessionToken(token), userId, expiresAt]
       );
       return token;
     },
@@ -816,13 +830,13 @@ function createPostgresStore(connectionString) {
          FROM sessions s
          JOIN users u ON u.id = s.user_id
          LEFT JOIN onboarding_profiles op ON op.user_id = u.id
-         WHERE s.token = $1`,
-        [token]
+         WHERE s.${sessionTokenColumn} = $1`,
+        [storedSessionToken(token)]
       );
       if (res.rows.length === 0) return null;
       const row = res.rows[0];
       if (new Date(row.expires_at).getTime() < Date.now()) {
-        await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+        await pool.query(`DELETE FROM sessions WHERE ${sessionTokenColumn} = $1`, [storedSessionToken(token)]);
         return null;
       }
       return {
@@ -840,7 +854,7 @@ function createPostgresStore(connectionString) {
     async deleteSession(token) {
       if (!token) return;
       await this.ensureReady();
-      await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+      await pool.query(`DELETE FROM sessions WHERE ${sessionTokenColumn} = $1`, [storedSessionToken(token)]);
     },
 
     async setOnboardingSkipped(userId, skipped) {

@@ -1,0 +1,1 @@
+- [Account database compatibility](account-compatibility.md) — imported auth updates must preserve existing account and session formats.
