@@ -865,9 +865,9 @@
         subBanner2: 'PESKY POLE · 302 FT',
         airDensity: 1.005,
         wallDist(phi) {
-          return phi < 0
-            ? 390 - Math.pow(Math.abs(phi) / 0.785, 1.35) * 80
-            : 390 - Math.pow(phi / 0.785, 1.25) * 88;
+          if (phi < 0) return 390 - Math.pow(Math.abs(phi) / 0.785, 1.35) * 80;
+          const tri = Math.exp(-Math.pow((phi - 0.14) / 0.11, 2)) * 28;
+          return 390 + tri - Math.pow(phi / 0.785, 1.32) * 88;
         },
         wallHeight(phi) {
           return phi <= -0.25 ? 37 : phi <= 0.1 ? 17 : 5;
@@ -1561,54 +1561,53 @@
       function buildAcousticIR(ctx, kind) {
         const sr = ctx.sampleRate;
         const isCage = kind === 'cage';
-        const dur = isCage ? 0.42 : 1.45;
+        const dur = isCage ? 0.36 : 1.15;
         const len = Math.floor(sr * dur);
         const ir = ctx.createBuffer(2, len, sr);
         const rnd = makeSeededRand(isCage ? 3107 : 7411);
 
-        // Realistic physical room/park reflections:
-        // Cage: side padding/netting (9ms, 19ms), arched ceiling trusses (31ms, 52ms), far target tarp (110ms)
-        // Outdoor Stadium: plate dirt & backstop wall (18ms, 39ms), dugouts (68ms, 92ms), concrete seating bowl (148ms, 235ms), scoreboard slapback (345ms)
+        // Sample-rate-independent air absorption LP coefficient (~5.2 kHz outdoor, ~3.4 kHz padded cage)
+        const airCutHz = isCage ? 3400 : 5200;
+        const airA = Math.exp((-2 * Math.PI * airCutHz) / sr);
+
+        // Real physical acoustic reflections:
+        // Outdoor Stadium: concrete backstop (18ms), dugouts (44ms), lower concrete bowl (86ms), upper fascia (152ms), far OF wall/board (245ms)
+        // Indoor Cage: turf & padded walls (7ms, 15ms), arched steel trusses (28ms), far target tarp (68ms)
         const taps = isCage
           ? [
-              [0.009, 0.28, -0.35],
-              [0.019, 0.24, 0.4],
-              [0.031, 0.20, 0.0],
-              [0.054, 0.14, -0.25],
-              [0.088, 0.09, 0.25],
-              [0.142, 0.05, 0.0]
+              [0.007, 0.24, -0.35],
+              [0.015, 0.21, 0.42],
+              [0.028, 0.17, 0.0],
+              [0.048, 0.11, -0.25],
+              [0.072, 0.07, 0.25]
             ]
           : [
-              [0.018, 0.22, -0.15],
-              [0.039, 0.20, 0.28],
-              [0.068, 0.18, -0.55],
-              [0.094, 0.16, 0.55],
-              [0.152, 0.14, -0.35],
-              [0.238, 0.11, 0.38],
-              [0.345, 0.08, 0.0]
+              [0.019, 0.25, -0.14],
+              [0.044, 0.23, 0.32],
+              [0.086, 0.21, -0.52],
+              [0.148, 0.17, 0.48],
+              [0.215, 0.13, -0.32],
+              [0.295, 0.09, 0.36]
             ];
 
         for (let c = 0; c < 2; c++) {
           const d = ir.getChannelData(c);
           let lp = 0;
-          let lp2 = 0;
-          const tailDecay = isCage ? 9.5 : 3.2;
-          const tailAmp = isCage ? 0.11 : 0.16;
+          const tailDecay = isCage ? 11.5 : 4.2;
+          const tailAmp = isCage ? 0.075 : 0.135;
           for (let i = 0; i < len; i++) {
             const t = i / sr;
             const n = rnd();
-            // Air absorption warm lowpass filter on diffuse tail
-            lp = lp * (isCage ? 0.72 : 0.86) + n * (isCage ? 0.28 : 0.14);
-            lp2 = lp2 * 0.82 + lp * 0.18;
-            const env = Math.exp(-t * tailDecay) * (1 - Math.exp(-t * 140));
-            d[i] = lp2 * env * tailAmp;
+            lp = lp * airA + n * (1 - airA);
+            const env = Math.exp(-t * tailDecay) * (1 - Math.exp(-t * 160));
+            d[i] = lp * env * tailAmp;
           }
           taps.forEach(([sec, amp, pan]) => {
             const idx = Math.floor(sec * sr);
             const panGain = c === 0 ? Math.max(0.25, 1 - pan * 0.5) : Math.max(0.25, 1 + pan * 0.5);
-            if (idx > 2 && idx + 24 < len) {
-              for (let k = 0; k < 20; k++) {
-                d[idx + k] += amp * panGain * Math.exp(-k * 0.28) * (k === 0 ? 1 : 0.45 * rnd());
+            if (idx > 2 && idx + 28 < len) {
+              for (let k = 0; k < 24; k++) {
+                d[idx + k] += amp * panGain * Math.exp(-k * 0.32) * (k === 0 ? 1 : 0.4 * rnd());
               }
             }
           });
@@ -1637,14 +1636,14 @@
           cageConvolver = audioCtx.createConvolver();
           cageConvolver.buffer = buildAcousticIR(audioCtx, 'cage');
           cageWetGain = audioCtx.createGain();
-          cageWetGain.gain.value = 0.46;
+          cageWetGain.gain.value = 0.42;
           cageConvolver.connect(cageWetGain);
           cageWetGain.connect(masterBus);
 
           stadiumConvolver = audioCtx.createConvolver();
           stadiumConvolver.buffer = buildAcousticIR(audioCtx, 'stadium');
           stadiumWetGain = audioCtx.createGain();
-          stadiumWetGain.gain.value = 0.56;
+          stadiumWetGain.gain.value = 0.62;
           stadiumConvolver.connect(stadiumWetGain);
           stadiumWetGain.connect(masterBus);
         }
@@ -1662,112 +1661,144 @@
         return audioCtx;
       }
 
-      // Physical Baseball Acoustic PCM Synthesis:
-      // Real Hertzian compression shockwave + band-shaped wood/alloy crack transient + damped barrel shell resonances
+      // Sample-rate-independent RBJ 2nd-order Biquad Bandpass filter factory
+      function makeBiquadBP(fc, q, sr) {
+        const w0 = (2 * Math.PI * fc) / sr;
+        const alpha = Math.sin(w0) / (2 * q);
+        const a0 = 1 + alpha;
+        const b0 = alpha / a0;
+        const b2 = -alpha / a0;
+        const a1 = (-2 * Math.cos(w0)) / a0;
+        const a2 = (1 - alpha) / a0;
+        let x1 = 0;
+        let x2 = 0;
+        let y1 = 0;
+        let y2 = 0;
+        return (x) => {
+          const y = b0 * x + b2 * x2 - a1 * y1 - a2 * y2;
+          x2 = x1;
+          x1 = x;
+          y2 = y1;
+          y1 = y;
+          return y;
+        };
+      }
+
+      // True Physical Baseball-on-Bat Acoustic PCM Synthesis:
+      // 1) Sub-millisecond Hertzian cowhide collision N-wave (0.55 ms)
+      // 2) Multi-band cowhide & grain crack noise shaped at exact sample-rate-invariant bands (no plastic 808 pitch drop!)
+      // 3) Barrel-accurate structural acoustics:
+      //    - Baum Bat Gold: Pure dry broadband maple gunshot CRACK (~25ms dry, stadium echo carries tail); dead wood bend clunk on mishits
+      //    - 2026 The Goods: Explosive thick cowhide THWACK + tightly damped high-frequency X14 hoop bite (~2060/2690 Hz, ~75ms)
+      //    - 2022 The Goods: Heavy leather crack + bright ringing NCAA X14 alley-cat PING (~2180/2845/3480 Hz, ~185ms)
+      //    - Combat Spec-A1 (Rodeo / Members Blue): Massive SFX shotgun THWACK-KRRACK + tight dry-clipped high barrel sheen (~110ms)
       function getBatImpactBuffer(ctx, kind, barrelFactor) {
         const sweetBucket = barrelFactor < 0.62 ? 'jam' : 'sweet';
-        const key = `${kind}:${sweetBucket}`;
+        const key = `${kind}:${sweetBucket}:v3`;
         if (batSoundCache[key]) return batSoundCache[key];
 
         const sr = ctx.sampleRate;
         const durSec =
-          kind === 'combat-rodeo' || kind === 'combat-blue'
-            ? 0.46
-            : kind === 'goods-2022'
-              ? 0.24
+          kind === 'goods-2022' || kind === 'hybrid'
+            ? 0.24
+            : kind === 'combat-rodeo' || kind === 'combat-blue'
+              ? 0.14
               : kind === 'goods-2026'
-                ? 0.14
-                : 0.075;
+                ? 0.105
+                : 0.055;
         const len = Math.floor(sr * durSec);
         const buf = ctx.createBuffer(1, len, sr);
         const ch = buf.getChannelData(0);
         const rnd = makeSeededRand(kind.length * 9137 + (sweetBucket === 'sweet' ? 42 : 99));
 
         const isOffCenter = barrelFactor < 0.62;
-        const fScale = isOffCenter ? 0.86 : 1.0;
+        const fScale = isOffCenter ? 0.91 : 1.0;
 
-        let lpFast = 0;
-        let lpMid = 0;
-        let lpSlow = 0;
-        let bpState = 0;
+        const bpPunch = makeBiquadBP(isOffCenter ? 420 : 620, 0.95, sr);
+        const bpCrack = makeBiquadBP(isOffCenter ? 1550 : 2150, 1.05, sr);
+        const bpSnap = makeBiquadBP(4600, 0.85, sr);
+        const bpWoodBody = makeBiquadBP(1180, 1.85, sr);
 
         for (let i = 0; i < len; i++) {
           const t = i / sr;
-          // 1. Sub-millisecond Hertzian cowhide-on-barrel asymmetric pressure N-wave
+
+          // 1. Real 0.55ms Hertzian half-sine ball compression pulse + rarefaction snap (sharp front!)
           let hertz = 0;
-          if (t < 0.00085) {
-            const u = t / 0.00085;
-            hertz = Math.sin(u * Math.PI) * 1.15 - (u > 0.45 ? 0.35 * Math.sin(((u - 0.45) / 0.55) * Math.PI) : 0);
+          if (t < 0.00058) {
+            const u = t / 0.00058;
+            hertz = Math.sin(u * Math.PI) * 1.15;
+          } else if (t < 0.00115) {
+            const u = (t - 0.00058) / 0.00057;
+            hertz = -Math.sin(u * Math.PI) * 0.42;
           }
 
-          // 2. Multi-band leather & grain crack (shaped around 1.2kHz–3.8kHz, free of white static hiss)
-          const rawN = rnd();
-          lpFast = lpFast * 0.36 + rawN * 0.64;
-          lpMid = lpMid * 0.72 + lpFast * 0.28;
-          lpSlow = lpSlow * 0.89 + lpMid * 0.11;
-          bpState = bpState * 0.58 + (lpFast - lpMid) * 0.42;
-          const crackSnap = (lpFast - lpSlow) * Math.exp(-t * 280) + bpState * Math.exp(-t * 175);
+          // 2. Sample-rate-invariant multi-band broadband cowhide crack
+          const nRaw = rnd();
+          const fPunch = bpPunch(nRaw);
+          const fCrack = bpCrack(nRaw);
+          const fSnap = bpSnap(nRaw);
+          const fWood = bpWoodBody(nRaw);
+
+          const dryPunch = fPunch * Math.exp(-t * 145);
+          const dryCrack = fCrack * Math.exp(-t * 175) + fSnap * Math.exp(-t * 285);
+          const modeEnvIn = 1 - Math.exp(-t * 1500);
 
           let sample = 0;
           if (kind === 'baum-gold' || kind === 'wood') {
-            // 1. Baum Bat Gold (-3) AAA Pro Maple Composite:
-            // Authentic MLB broadcast dry wood shotgun CRACK! Ultra-tight 18-32ms impulse, crisp fibrous wood body, ZERO hollow "tok" sine.
-            const attack = 1 - Math.exp(-t * 6800);
-            const transient = crackSnap * 1.65 + (lpMid - lpSlow) * Math.exp(-t * 135) * 0.82;
-            const impactBody = Math.sin(2 * Math.PI * (245 + 135 * Math.exp(-t * 320)) * t) * Math.exp(-t * 145) * 0.34;
-            const mapleSnap1 = Math.sin(2 * Math.PI * (790 * fScale) * t) * Math.exp(-t * 210) * 0.18;
-            const mapleSnap2 = Math.sin(2 * Math.PI * (1620 * fScale) * t) * Math.exp(-t * 265) * 0.14;
-            const woodGrain = Math.sin(2 * Math.PI * (2520 * fScale) * t) * Math.exp(-t * 310) * 0.09;
-            sample = (hertz * 0.96 + transient + impactBody + mapleSnap1 + mapleSnap2 + woodGrain) * attack;
+            // Baum Bat Gold (Hard Maple over Composite Core):
+            // Pure dry broadband wooden CRACK — zero sustained tonal sine!
+            const woodyBody = fWood * Math.exp(-t * 165) * 1.65;
+            if (isOffCenter) {
+              // Penn State measured wood mis-hit bending modes (~168 Hz + ~538 Hz clunk)
+              const bend1 = Math.sin(2 * Math.PI * 168 * t) * Math.exp(-t * 72) * 0.24;
+              const bend2 = Math.sin(2 * Math.PI * 538 * t) * Math.exp(-t * 95) * 0.16;
+              sample = hertz * 0.72 + dryPunch * 1.45 + dryCrack * 0.9 + woodyBody + bend1 + bend2;
+            } else {
+              sample = hertz * 1.25 + dryPunch * 1.35 + dryCrack * 2.4 + woodyBody;
+            }
           } else if (kind === 'goods-2026') {
-            // 2. 2026 DeMarini The Goods (-3) — Thick-Wall X14 Alloy Barrel + Composite Handle:
-            // Heavy, authoritative college BBCOR THWACK-KLACK (~115ms) — deep leather crunch + tightly damped solid X14 shell modes.
-            const attack = 1 - Math.exp(-t * 5800);
-            const leatherCrunch = crackSnap * 1.38 + (lpMid - lpSlow) * Math.exp(-t * 120) * 0.65;
-            const barrelKick = Math.sin(2 * Math.PI * (285 + 165 * Math.exp(-t * 240)) * t) * Math.exp(-t * 95) * 0.42;
-            const x14a = Math.sin(2 * Math.PI * (1115 * fScale) * t) * Math.exp(-t * 52) * 0.24;
-            const x14b = Math.sin(2 * Math.PI * (1122 * fScale) * t) * Math.exp(-t * 55) * 0.14;
-            const x14c = Math.sin(2 * Math.PI * (1685 * fScale) * t) * Math.exp(-t * 62) * 0.22;
-            const x14d = Math.sin(2 * Math.PI * (2320 * fScale) * t) * Math.exp(-t * 78) * 0.14;
-            sample = (hertz * 0.94 + leatherCrunch + barrelKick + x14a + x14b + x14c + x14d) * attack;
+            // 2026 DeMarini The Goods: Stiff Direct-Connection 2pc Hybrid —
+            // Heavy chesty THWACK + tightly damped high-frequency X14 barrel bite (>2000 Hz)
+            const crackMix = hertz * 1.18 + dryPunch * 1.55 + dryCrack * 2.1 + fWood * Math.exp(-t * 135) * 1.05;
+            const hoopA = Math.sin(2 * Math.PI * (2055 * fScale) * t) * Math.exp(-t * 52) * 0.14;
+            const hoopB = Math.sin(2 * Math.PI * (2071 * fScale) * t) * Math.exp(-t * 54) * 0.10;
+            const hoop2 = Math.sin(2 * Math.PI * (2695 * fScale) * t) * Math.exp(-t * 64) * 0.09;
+            sample = crackMix + modeEnvIn * (hoopA + hoopB + hoop2);
           } else if (kind === 'goods-2022' || kind === 'hybrid') {
-            // 3. 2022 DeMarini The Goods (-3): Brushed chrome X14 alloy heavy crack + ~210ms controlled alloy ring
-            const attack = 1 - Math.exp(-t * 5400);
-            const crack = crackSnap * 1.15 + (lpMid - lpSlow) * Math.exp(-t * 115) * 0.48;
-            const kick = Math.sin(2 * Math.PI * (270 + 150 * Math.exp(-t * 220)) * t) * Math.exp(-t * 82) * 0.36;
-            const m1a = Math.sin(2 * Math.PI * (1240 * fScale) * t) * Math.exp(-t * 22) * 0.26;
-            const m1b = Math.sin(2 * Math.PI * (1247 * fScale) * t) * Math.exp(-t * 24) * 0.15;
-            const m2 = Math.sin(2 * Math.PI * (1890 * fScale) * t) * Math.exp(-t * 15) * 0.32;
-            const m3 = Math.sin(2 * Math.PI * (2590 * fScale) * t) * Math.exp(-t * 24) * 0.17;
-            sample = (hertz * 0.9 + crack + kick + m1a + m1b + m2 + m3) * attack;
+            // 2022 DeMarini The Goods: Bright metallic X14 alloy CRACK-PING! (2178/2845/3480 Hz true hoop spectrum)
+            const crackMix = hertz * 1.12 + dryPunch * 1.35 + dryCrack * 1.95 + fWood * Math.exp(-t * 140) * 0.85;
+            const h1a = Math.sin(2 * Math.PI * (2178 * fScale) * t) * Math.exp(-t * 19.5) * 0.19;
+            const h1b = Math.sin(2 * Math.PI * (2191 * fScale) * t) * Math.exp(-t * 20.5) * 0.14;
+            const h2 = Math.sin(2 * Math.PI * (2845 * fScale) * t) * Math.exp(-t * 24.0) * 0.14;
+            const h3 = Math.sin(2 * Math.PI * (3480 * fScale) * t) * Math.exp(-t * 34.0) * 0.08;
+            sample = crackMix + modeEnvIn * (h1a + h1b + h2 + h3);
           } else {
-            // 4 & 5. Combat Spec-A1 Rodeo & Members Club Blue: Thin-wall 1-piece SFX Alloy "KRRACK-PINGGG!"
-            const base = kind === 'combat-blue' ? 1.045 : 1.0;
-            const attack = 1 - Math.exp(-t * 5600);
-            const crack = crackSnap * 1.12 + (lpMid - lpSlow) * Math.exp(-t * 125) * 0.44;
-            const kick = Math.sin(2 * Math.PI * (260 + 145 * Math.exp(-t * 215)) * t) * Math.exp(-t * 80) * 0.32;
-            const r1 = Math.sin(2 * Math.PI * (1375 * base * fScale) * t) * Math.exp(-t * 15) * 0.22;
-            const r2a = Math.sin(2 * Math.PI * (2145 * base * fScale) * t) * Math.exp(-t * 7.6) * 0.44;
-            const r2b = Math.sin(2 * Math.PI * (2152 * base * fScale) * t) * Math.exp(-t * 8.0) * 0.3;
-            const r3 = Math.sin(2 * Math.PI * (3060 * base * fScale) * t) * Math.exp(-t * 11.5) * 0.2;
-            sample = (hertz * 0.9 + crack + kick + r1 + r2a + r2b + r3) * attack;
+            // Combat MFG Spec-A1 Rodeo & Members Club Blue:
+            // Thick SFX alloy wall -> Explosive composite-like booming shotgun THWACK + crisp brief upper barrel sheen
+            const brightMul = kind === 'combat-blue' ? 1.055 : 1.0;
+            const crackMix = hertz * 1.2 + dryPunch * 1.85 + dryCrack * 2.2 + fWood * Math.exp(-t * 125) * 1.35;
+            const sfxA = Math.sin(2 * Math.PI * (2140 * brightMul * fScale) * t) * Math.exp(-t * 32.0) * 0.13;
+            const sfxB = Math.sin(2 * Math.PI * (2153 * brightMul * fScale) * t) * Math.exp(-t * 34.0) * 0.09;
+            const sfx2 = Math.sin(2 * Math.PI * (2890 * brightMul * fScale) * t) * Math.exp(-t * 42.0) * 0.08;
+            sample = crackMix + modeEnvIn * (sfxA + sfxB + sfx2);
           }
 
-          if (isOffCenter) {
-            // Stung off-end/hands buzz
-            sample += Math.sin(2 * Math.PI * 172 * t) * Math.exp(-t * 36) * 0.18;
+          if (isOffCenter && kind !== 'baum-gold' && kind !== 'wood') {
+            sample += Math.sin(2 * Math.PI * 192 * t) * Math.exp(-t * 58) * 0.1;
           }
           ch[i] = sample;
         }
 
-        // Normalize cleanly to 0.86 peak amplitude — zero hard clipping!
+        // Preserve natural acoustic crest factor (no peak squashing so crack punches cleanly above resonance)
         let peak = 0;
         for (let i = 0; i < len; i++) {
           const a = Math.abs(ch[i]);
           if (a > peak) peak = a;
         }
-        const norm = peak > 0 ? 0.86 / peak : 1;
-        for (let i = 0; i < len; i++) ch[i] *= norm;
+        const norm = peak > 0 ? 0.94 / peak : 1;
+        for (let i = 0; i < len; i++) {
+          ch[i] *= norm;
+        }
 
         batSoundCache[key] = buf;
         return buf;
