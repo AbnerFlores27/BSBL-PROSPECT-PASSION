@@ -1017,16 +1017,19 @@
       ctx.roundRect(headX + 1, headY + 0.5, 6.5, 4.5, 2);
       ctx.fill();
 
-      // Fence visual for Casting Wall Drill!
+      // Fence visual for Casting Wall Drill + Red Barrel Loop Arc vs Compact Inside Path!
       if (clinicId === 'casting') {
-        ctx.strokeStyle = 'rgba(248, 250, 252, 0.35)';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(248, 250, 252, 0.45)';
+        ctx.lineWidth = 3.2;
         ctx.setLineDash([6, 4]);
         ctx.beginPath();
         ctx.moveTo(cx - 46, groundY - 140);
         ctx.lineTo(cx - 46, groundY);
         ctx.stroke();
         ctx.setLineDash([]);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 9px "IBM Plex Mono", monospace';
+        ctx.fillText('FENCE', cx - 64, groundY - 126);
       }
 
       // Arms, Rear Elbow & Hands — drop cleanly into the slot so bat sweet spot meets ballContactX/Y at p=0.60!
@@ -1048,14 +1051,119 @@
       drawTaperedLimb(frontShoulderX, frontShoulderY, (frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, 3.8, 3.1, jersey);
       drawTaperedLimb((frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, handsX, handsY, 3.0, 2.5, '#fed7aa', null);
 
-      // Highlight Joint Warning or Cue Circle
+      // Biomechanical Flaw vs Pro Coaching Vector Overlays per Clinic
+      ctx.save();
       if (clinicId === 'bat-drag') {
-        drawJoint(rearElbowX, rearElbowY, 6, accent, '#ffffff');
-      } else if (clinicId === 'casting' || clinicId === 'rolling-over') {
-        drawJoint(handsX, handsY, 6, accent, '#ffffff');
+        drawJoint(rearElbowX, rearElbowY, 6.2, accent, '#ffffff');
+        if (isFlaw) {
+          // Red horizontal elbow-drag vector showing elbow beating the hands & stranding the barrel behind!
+          drawArrow(rearElbowX - 10, rearElbowY - 12, rearElbowX + 18, rearElbowY - 12, c.flaw, false);
+          ctx.fillStyle = c.flaw;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('ELBOW DRAGS AHEAD', Math.max(x + 8, rearElbowX - 38), rearElbowY - 18);
+          if (swing > 0.2) {
+            ctx.strokeStyle = 'rgba(248, 113, 113, 0.72)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath();
+            ctx.moveTo(rearElbowX, rearElbowY);
+            ctx.lineTo(handsX, handsY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        } else {
+          // Pro Hip Slot target ring + stacked forearm-above-elbow connection guide
+          ctx.strokeStyle = c.pro;
+          ctx.lineWidth = 1.8;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.arc(hipX + 4, hipY - 14, 12, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = c.pro;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('HIP SLOT', hipX - 24, hipY + 10);
+        }
+      } else if (clinicId === 'casting') {
+        drawJoint(handsX, handsY, 6.2, accent, '#ffffff');
+        if (isFlaw) {
+          // Wide circular outside casting arc crashing through the wall
+          ctx.strokeStyle = 'rgba(248, 113, 113, 0.75)';
+          ctx.lineWidth = 2.6;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          ctx.moveTo(shX - 8, shY + 12);
+          ctx.quadraticCurveTo(cx - 56, shY + 10, cx + 18, groundY - 58);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 2.8;
+          ctx.beginPath();
+          ctx.moveTo(cx - 53, groundY - 88);
+          ctx.lineTo(cx - 39, groundY - 74);
+          ctx.moveTo(cx - 39, groundY - 88);
+          ctx.lineTo(cx - 53, groundY - 74);
+          ctx.stroke();
+          ctx.fillStyle = c.flaw;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('WIDE LOOP', cx - 78, groundY - 96);
+        } else {
+          // Tight direct inside-the-ball knob rail
+          drawArrow(shX - 2, shY + 16, cx + 16, groundY - 58, c.pro, true);
+          ctx.fillStyle = c.pro;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('KNOB INSIDE BALL', cx - 10, shY + 6);
+        }
+      } else if (clinicId === 'rolling-over') {
+        drawJoint(handsX, handsY, 6.2, accent, '#ffffff');
+        if (isFlaw) {
+          // Steep -12° downward chop line into ground
+          drawArrow(handsX + 4, handsY - 8, cx + 62, groundY - 12, c.flaw, false);
+          ctx.fillStyle = c.flaw;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('-12° TOP-HAND CHOP', cx + 14, groundY - 40);
+        } else {
+          // +10° upward attack plane tunnel + 8" extension rail past plate
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.16)';
+          ctx.beginPath();
+          ctx.moveTo(cx + 8, groundY - 54);
+          ctx.lineTo(cx + 76, groundY - 78);
+          ctx.lineTo(cx + 76, groundY - 62);
+          ctx.lineTo(cx + 8, groundY - 46);
+          ctx.closePath();
+          ctx.fill();
+          drawArrow(cx + 12, groundY - 52, cx + 74, groundY - 70, c.pro, false);
+          ctx.fillStyle = c.pro;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('+10° PALM UP/DOWN', cx + 8, groundY - 82);
+        }
       } else if (clinicId === 'lunging') {
-        drawJoint(frontKneeX, frontKneeY, 6, accent, '#ffffff');
+        drawJoint(frontKneeX, frontKneeY, 6.2, accent, '#ffffff');
+        // Head Plumb Line anchored at stance x
+        const stanceHeadX = cx - 4;
+        ctx.strokeStyle = isFlaw ? 'rgba(248, 113, 113, 0.6)' : 'rgba(34, 197, 94, 0.72)';
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(stanceHeadX, shY - 34);
+        ctx.lineTo(stanceHeadX, groundY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (isFlaw) {
+          if (headX - stanceHeadX > 10) {
+            drawArrow(stanceHeadX, headY - 16, headX, headY - 16, c.flaw, false);
+          }
+          ctx.fillStyle = c.flaw;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('HEAD DRIFT + LOCKED KNEE', stanceHeadX - 18, shY - 38);
+        } else {
+          drawArrow(frontKneeX, frontKneeY + 12, frontKneeX - 4, hipY + 4, c.pro, true);
+          ctx.fillStyle = c.pro;
+          ctx.font = '700 9px "IBM Plex Mono", monospace';
+          ctx.fillText('QUIET HEAD · FIRM BLOCK', stanceHeadX - 24, shY - 38);
+        }
       }
+      ctx.restore();
 
       // Translucent Bat Swing Arc Ribbon Trail
       if (swing > 0.08 && finish < 0.85) {

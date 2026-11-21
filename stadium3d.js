@@ -1688,28 +1688,30 @@ function buildCompositeBatter(maxAniso) {
 
   const topArm = new THREE.Group();
   topArm.position.set(0.22, 1.76, 0.5);
-  topArm.rotation.set(-0.35, 0, 0.72);
-  topArm.add(new THREE.Mesh(upperArmGeom, sleeveMat));
+  const topUpper = new THREE.Mesh(upperArmGeom, sleeveMat);
+  const topElbow = new THREE.Group();
+  topElbow.position.set(0, -0.84, 0);
   const topFore = new THREE.Mesh(foreArmGeom, skinMat);
-  topFore.position.set(0, -0.82, 0);
-  topFore.rotation.z = 0.55;
-  topArm.add(topFore);
+  topElbow.add(topFore);
+  topArm.add(topUpper, topElbow);
 
   const bottomArm = new THREE.Group();
   bottomArm.position.set(0.28, 1.72, -0.46);
-  bottomArm.rotation.set(0.38, 0, 0.84);
-  bottomArm.add(new THREE.Mesh(upperArmGeom, sleeveMat));
+  const botUpper = new THREE.Mesh(upperArmGeom, sleeveMat);
+  const botElbow = new THREE.Group();
+  botElbow.position.set(0, -0.84, 0);
   const botFore = new THREE.Mesh(foreArmGeom, skinMat);
-  botFore.position.set(0, -0.82, 0);
-  botFore.rotation.z = 0.48;
-  bottomArm.add(botFore);
+  botElbow.add(botFore);
+  bottomArm.add(botUpper, botElbow);
 
   const handsGroup = new THREE.Group();
   handsGroup.position.set(0.62, 1.32, 0.12);
-  const topHand = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 10), gloveMat);
-  topHand.position.set(0, 0.08, 0);
-  const botHand = new THREE.Mesh(new THREE.SphereGeometry(0.155, 12, 10), gloveMat);
-  botHand.position.set(0, -0.1, 0);
+  const topHand = new THREE.Mesh(new THREE.SphereGeometry(0.155, 12, 10), gloveMat);
+  topHand.scale.set(1.0, 1.15, 0.92);
+  topHand.position.set(0, 0.11, 0);
+  const botHand = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10), gloveMat);
+  botHand.scale.set(1.0, 1.15, 0.92);
+  botHand.position.set(0, -0.11, 0);
   handsGroup.add(topHand, botHand);
   torsoPivot.add(topArm, bottomArm, handsGroup);
 
@@ -1719,7 +1721,11 @@ function buildCompositeBatter(maxAniso) {
     strideKneePivot: strideLeg.knee,
     backKneePivot: backLeg.knee,
     torsoPivot,
-    handsGroup
+    handsGroup,
+    topArm,
+    topElbow,
+    bottomArm,
+    botElbow
   };
 }
 
@@ -1919,47 +1925,76 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   turfGround.receiveShadow = true;
   fieldGroup.add(turfGround);
 
-  const infieldDirt = new THREE.Mesh(new THREE.CircleGeometry(98, 48, Math.PI * 0.2, Math.PI * 0.6), dirtMat);
+  // True MLB/NCAA Regulation 95-ft Skinned Infield Dirt Arc centered on Pitcher's Mound (0, -60.5)
+  // Remember: ShapeGeometry rotated -PI/2 around X maps shape (sx, sy) -> world (sx, 0, -sy)!
+  const skinnedShape = new THREE.Shape();
+  const arcCx = 0;
+  const arcCy = 60.5;
+  const arcR = 95.0;
+  // Sweep along the outer 95ft skinned dirt boundary from 3B foul apron (-11 ft outside foul line) to 1B foul apron
+  const arcStartA = Math.PI - 0.54;
+  const arcEndA = 0.54;
+  const x3bStart = arcCx + Math.cos(arcStartA) * arcR;
+  const y3bStart = arcCy + Math.sin(arcStartA) * arcR;
+  skinnedShape.moveTo(-12.5, 4.5);
+  skinnedShape.lineTo(x3bStart, y3bStart);
+  const arcSteps = 44;
+  for (let i = 1; i <= arcSteps; i++) {
+    const a = arcStartA + (i / arcSteps) * (arcEndA - arcStartA);
+    skinnedShape.lineTo(arcCx + Math.cos(a) * arcR, arcCy + Math.sin(a) * arcR);
+  }
+  skinnedShape.lineTo(12.5, 4.5);
+  skinnedShape.quadraticCurveTo(0, -10.5, -12.5, 4.5);
+  skinnedShape.closePath();
+
+  const infieldDirt = new THREE.Mesh(new THREE.ShapeGeometry(skinnedShape), dirtMat);
   infieldDirt.rotation.x = -Math.PI / 2;
-  infieldDirt.position.set(0, 0.02, -55);
+  infieldDirt.position.set(0, 0.022, 0);
   infieldDirt.receiveShadow = true;
   fieldGroup.add(infieldDirt);
 
+  // True Regulation Inner Infield Turf Diamond (+sy -> -z toward center field!) with smooth carved dirt bag aprons
   const diamondShape = new THREE.Shape();
-  diamondShape.moveTo(0, -14);
-  diamondShape.lineTo(54, -64);
-  diamondShape.lineTo(0, -116);
-  diamondShape.lineTo(-54, -64);
+  diamondShape.moveTo(-9.5, 19.5);
+  diamondShape.quadraticCurveTo(0, 15.0, 9.5, 19.5);   // curved cut above home plate 26ft circle
+  diamondShape.lineTo(50.5, 58.0);
+  diamondShape.quadraticCurveTo(46.0, 64.0, 50.5, 70.0); // 1B curved dirt cutout
+  diamondShape.lineTo(8.5, 112.0);
+  diamondShape.quadraticCurveTo(0, 108.0, -8.5, 112.0);  // 2B curved dirt cutout
+  diamondShape.lineTo(-50.5, 70.0);
+  diamondShape.quadraticCurveTo(-46.0, 64.0, -50.5, 58.0); // 3B curved dirt cutout
   diamondShape.closePath();
+
   const innerGrass = new THREE.Mesh(new THREE.ShapeGeometry(diamondShape), turfMat);
   innerGrass.rotation.x = -Math.PI / 2;
-  innerGrass.position.y = 0.035;
+  innerGrass.position.y = 0.036;
   innerGrass.receiveShadow = true;
   fieldGroup.add(innerGrass);
 
-  // Authentic College Dirt Sliding-Pit Cutouts around 1B, 2B, 3B + Dirt Baselines
+  // Authentic College Dirt Sliding-Pit Circles around 1B, 2B, 3B + 18-ft Mound Dirt Apron
   [
-    [63.64, -63.64, 12],
-    [0, -127.28, 13],
-    [-63.64, -63.64, 12]
+    [63.64, -63.64, 12.2],
+    [0, -127.28, 13.4],
+    [-63.64, -63.64, 12.2],
+    [0, -60.5, 10.6]
   ].forEach(([bx, bz, rad]) => {
-    const pit = new THREE.Mesh(new THREE.CircleGeometry(rad, 24), dirtMat);
+    const pit = new THREE.Mesh(new THREE.CircleGeometry(rad, 28), dirtMat);
     pit.rotation.x = -Math.PI / 2;
     pit.position.set(bx, 0.042, bz);
     pit.receiveShadow = true;
     fieldGroup.add(pit);
   });
 
-  const homeDirt = new THREE.Mesh(new THREE.CircleGeometry(15, 28), dirtMat);
+  const homeDirt = new THREE.Mesh(new THREE.CircleGeometry(14.5, 32), dirtMat);
   homeDirt.rotation.x = -Math.PI / 2;
-  homeDirt.position.set(0, 0.04, 0);
+  homeDirt.position.set(0, 0.041, 0.8);
   homeDirt.receiveShadow = true;
   fieldGroup.add(homeDirt);
 
-  // Home-to-Mound Dirt Keyhole Runner Strip
-  const keyhole = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 58), dirtMat);
+  // Subtle dirt runner lane / keyhole from home dirt toward mound
+  const keyhole = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 48), dirtMat);
   keyhole.rotation.x = -Math.PI / 2;
-  keyhole.position.set(0, 0.041, -30);
+  keyhole.position.set(0, 0.04, -36.0);
   keyhole.receiveShadow = true;
   fieldGroup.add(keyhole);
 
@@ -2252,55 +2287,136 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     const warnMat = new THREE.MeshStandardMaterial({ map: dirtTex, color: '#7c4728', roughness: 0.94, side: THREE.DoubleSide });
 
     if (stSpec.id === 'cage') {
-      // D1 Indoor Rapsodo / HitTrax Performance Lab + 3D Rapsodo Optical Tripod Unit
-      const netMat = new THREE.MeshBasicMaterial({ map: cageNetTex, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+      // True Enclosed Pro D1 Indoor Batting Cage & HitTrax Performance Facility (Zero open gaps or ball pass-through!)
+      const netMat = new THREE.MeshBasicMaterial({ map: cageNetTex, transparent: true, opacity: 0.72, side: THREE.DoubleSide, depthWrite: false });
       const glowMat = new THREE.MeshBasicMaterial({ color: '#e0f2fe' });
-      const archWallMat = new THREE.MeshStandardMaterial({ color: '#142947', roughness: 0.72, side: THREE.DoubleSide });
+      const darkDeckMat = new THREE.MeshStandardMaterial({ color: '#0f1c30', roughness: 0.78, side: THREE.DoubleSide });
+      const padWallMat = new THREE.MeshStandardMaterial({ color: '#142947', roughness: 0.72, side: THREE.DoubleSide });
 
-      [80, 160, 240, 320, 400].forEach((dist) => {
-        const z = -dist;
-        const archCurve = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(-88, 0, z),
-          new THREE.Vector3(-84, 30, z),
-          new THREE.Vector3(0, 46, z),
-          new THREE.Vector3(84, 30, z),
-          new THREE.Vector3(88, 0, z)
-        ]);
-        grp.add(new THREE.Mesh(new THREE.TubeGeometry(archCurve, 32, 1.25, 10, false), steelMat));
+      // Indoor Pro Hitting Turf Mat with crisp White Home-Plate Apron under Batter & Catcher
+      const hitMat = new THREE.Mesh(
+        new THREE.BoxGeometry(16, 0.09, 20),
+        new THREE.MeshStandardMaterial({ color: '#134e2a', roughness: 0.85 })
+      );
+      hitMat.position.set(0, 0.045, 0);
+      grp.add(hitMat);
 
-        const lightCurve = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(-56, 36, z),
-          new THREE.Vector3(0, 43.2, z),
-          new THREE.Vector3(56, 36, z)
-        ]);
-        grp.add(new THREE.Mesh(new THREE.TubeGeometry(lightCurve, 18, 0.55, 8, false), glowMat));
+      // Enclosed Steel Truss Portals from Behind Catcher (+18 ft) to Deep Back Wall (-296 ft)
+      const cageW = 58;
+      const cagePeak = 34;
+      [-296, -240, -180, -120, -60, 0, 16].forEach((z) => {
+        const archPts = [];
+        for (let s = 0; s <= 16; s++) {
+          const t = (s / 16) * 2 - 1; // -1..1
+          const ax = t * cageW;
+          const ay = cagePeak * (1 - 0.36 * t * t);
+          if (s === 0) archPts.push(new THREE.Vector3(-cageW, 0, z));
+          archPts.push(new THREE.Vector3(ax, ay, z));
+          if (s === 16) archPts.push(new THREE.Vector3(cageW, 0, z));
+        }
+        const archCurve = new THREE.CatmullRomCurve3(archPts);
+        grp.add(new THREE.Mesh(new THREE.TubeGeometry(archCurve, 28, 0.85, 8, false), steelMat));
 
-        const yardRing = new THREE.Mesh(
-          new THREE.RingGeometry(dist - 0.9, dist + 0.9, 56, 1, -Math.PI * 0.72, Math.PI * 0.44),
-          dist === 400 ? yellowMat : chalkMat
-        );
-        yardRing.rotation.x = -Math.PI / 2;
-        yardRing.position.set(0, 0.06, 0);
-        grp.add(yardRing);
+        if (z <= 0) {
+          const lightCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-34, cagePeak - 5.5, z),
+            new THREE.Vector3(0, cagePeak - 1.2, z),
+            new THREE.Vector3(34, cagePeak - 5.5, z)
+          ]);
+          grp.add(new THREE.Mesh(new THREE.TubeGeometry(lightCurve, 14, 0.42, 6, false), glowMat));
+        }
       });
 
-      const backWallGeom = createSweptWallGeometry(() => 406, () => 18, -0.44, 0.44, 44, 2.5);
-      grp.add(new THREE.Mesh(backWallGeom, archWallMat));
-      grp.add(buildTopCopingTube(() => 406, () => 18, -0.44, 0.44, 40, 0.85, yellowMat));
+      // Longitudinal Ridge & Side Support Rails
+      [-cageW, 0, cageW].forEach((rx) => {
+        const ry = rx === 0 ? cagePeak : cagePeak * 0.64;
+        const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 314, 8), steelMat);
+        rail.rotation.x = Math.PI / 2;
+        rail.position.set(rx, ry, -140);
+        grp.add(rail);
+      });
 
-      const backNetGeom = createSweptWallGeometry(() => 405, () => 44, -0.44, 0.44, 40, 0.2);
-      grp.add(new THREE.Mesh(backNetGeom, netMat));
+      // Full Roof Netting Vault Mesh (completely encloses top!)
+      const roofPos = [];
+      const roofUv = [];
+      const roofIdx = [];
+      const rSlices = 18;
+      for (let zStep = 0; zStep <= 1; zStep++) {
+        const z = zStep === 0 ? 16 : -296;
+        for (let s = 0; s <= rSlices; s++) {
+          const t = (s / rSlices) * 2 - 1;
+          const ax = t * cageW;
+          const ay = cagePeak * (1 - 0.36 * t * t);
+          roofPos.push(ax, ay, z);
+          roofUv.push(s / rSlices, zStep * 4);
+        }
+      }
+      for (let s = 0; s < rSlices; s++) {
+        const a = s;
+        const b = s + 1;
+        const c = rSlices + 1 + s;
+        const d = rSlices + 1 + s + 1;
+        roofIdx.push(a, c, b, b, c, d);
+      }
+      const roofNetGeom = new THREE.BufferGeometry();
+      roofNetGeom.setAttribute('position', new THREE.Float32BufferAttribute(roofPos, 3));
+      roofNetGeom.setAttribute('uv', new THREE.Float32BufferAttribute(roofUv, 2));
+      roofNetGeom.setIndex(roofIdx);
+      roofNetGeom.computeVertexNormals();
+      grp.add(new THREE.Mesh(roofNetGeom, netMat));
 
+      // Continuous Side Padding Base Walls (6ft tall) + Upper Side Nets all the way from +16 to -296
       [-1, 1].forEach((side) => {
-        const net = new THREE.Mesh(new THREE.PlaneGeometry(410, 34), netMat);
-        net.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
-        net.position.set(side * 86, 17, -195);
-        grp.add(net);
+        const sidePad = new THREE.Mesh(new THREE.BoxGeometry(1.4, 6.2, 314), padWallMat);
+        sidePad.position.set(side * (cageW + 0.6), 3.1, -140);
+        const sideNet = new THREE.Mesh(new THREE.PlaneGeometry(314, cagePeak * 0.64 - 5.5), netMat);
+        sideNet.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+        sideNet.position.set(side * cageW, 5.8 + (cagePeak * 0.64 - 5.5) * 0.5, -140);
+        grp.add(sidePad, sideNet);
       });
 
-      // Physical 3D Rapsodo HITTING 2.0 Optical Camera Unit on Tripod behind Pitching Rubber
+      // Enclosed Backstop Net & Wall Behind Catcher (z = +16) + Deep 296ft HitTrax Target Net & Padded Wall
+      const backstopPad = new THREE.Mesh(new THREE.BoxGeometry(cageW * 2, 5.5, 1.5), padWallMat);
+      backstopPad.position.set(0, 2.75, 16);
+      const backstopNet = new THREE.Mesh(new THREE.PlaneGeometry(cageW * 2, cagePeak - 5), netMat);
+      backstopNet.position.set(0, 5.5 + (cagePeak - 5) * 0.5, 16);
+
+      const farWall = new THREE.Mesh(new THREE.BoxGeometry(cageW * 2 + 2, 14, 2.2), padWallMat);
+      farWall.position.set(0, 7, -296);
+      const farTopCap = new THREE.Mesh(new THREE.BoxGeometry(cageW * 2 + 2, 1.0, 2.5), yellowMat);
+      farTopCap.position.set(0, 14.3, -296);
+      const farNet = new THREE.Mesh(new THREE.PlaneGeometry(cageW * 2, cagePeak - 13), netMat);
+      farNet.position.set(0, 14 + (cagePeak - 13) * 0.5, -295.5);
+      grp.add(backstopPad, backstopNet, farWall, farTopCap, farNet);
+
+      // Distance Marker Lines on Turf at 100 / 200 / 280 FT
+      [100, 200, 280].forEach((d) => {
+        const stripe = new THREE.Mesh(new THREE.PlaneGeometry(cageW * 1.9, 1.2), d === 280 ? yellowMat : chalkMat);
+        stripe.rotation.x = -Math.PI / 2;
+        stripe.position.set(0, 0.06, -d);
+        grp.add(stripe);
+      });
+
+      // Pro Steel Frame + Nylon Protective Pitcher L-Screen next to Mound
+      const lScreen = new THREE.Group();
+      lScreen.position.set(-2.9, 0.82, -55.0);
+      const lPostL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 7.0, 8), steelMat);
+      lPostL.position.set(-1.6, 3.5, 0);
+      const lPostR = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 4.2, 8), steelMat);
+      lPostR.position.set(1.6, 2.1, 0);
+      const lNet = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 5.2), netMat);
+      lNet.position.set(0, 3.6, 0);
+      lScreen.add(lPostL, lPostR, lNet);
+      grp.add(lScreen);
+
+      // Dark structural ceiling exterior cladding behind netting
+      const extRoof = new THREE.Mesh(roofNetGeom, darkDeckMat);
+      extRoof.position.y = 0.6;
+      grp.add(extRoof);
+
+      // Physical 3D Rapsodo HITTING 2.0 Optical Camera Unit on Tripod
       const rapGrp = new THREE.Group();
-      rapGrp.position.set(4.5, 0, -14.5);
+      rapGrp.position.set(5.2, 0, -14.5);
       for (let t = 0; t < 3; t++) {
         const a = (t / 3) * Math.PI * 2;
         const legCurve = new THREE.CatmullRomCurve3([
@@ -2321,7 +2437,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       return grp;
     }
 
-    // 1. Continuous Warning Track Strip (16 ft deep inside wall)
+    // 1. Continuous Warning Track Strip (16 ft deep inside wall + home plate foul apron)
     const warnGeom = createSweptStripGeometry(
       (phi) => stSpec.wallDist(phi) - 16,
       (phi) => stSpec.wallDist(phi) + 1.5,
@@ -2350,6 +2466,43 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     grp.add(wallMesh);
     grp.add(buildTopCopingTube(stSpec.wallDist, stSpec.wallHeight, -0.785, 0.785, 96, 0.82, yellowMat));
 
+    // Padded Foul-Territory Knee Wall & Protective Backstop Screen Behind Home Plate + Baselines
+    const backstopRadius = 56;
+    const backstopWallMat = new THREE.MeshStandardMaterial({
+      color: stSpec.id === 'omaha' ? '#102a4e' : stSpec.id === 'lsu' ? '#3b156b' : '#5d1725',
+      roughness: 0.65,
+      side: THREE.DoubleSide
+    });
+    const backWallGeom = createSweptWallGeometry(
+      () => backstopRadius,
+      () => 4.5,
+      Math.PI * 0.72,
+      Math.PI * 1.28,
+      36,
+      2.0
+    );
+    grp.add(new THREE.Mesh(backWallGeom, backstopWallMat));
+    const backNetGeom = createSweptWallGeometry(
+      () => backstopRadius + 0.5,
+      () => 24,
+      Math.PI * 0.76,
+      Math.PI * 1.24,
+      28,
+      0.2
+    );
+    grp.add(new THREE.Mesh(backNetGeom, new THREE.MeshBasicMaterial({ map: cageNetTex, transparent: true, opacity: 0.44, side: THREE.DoubleSide, depthWrite: false })));
+
+    // Clean Foul-Line Masonry Knee Walls from Backstop to LF / RF Foul Poles
+    [-1, 1].forEach((side) => {
+      const poleD = stSpec.wallDist(side * 0.785);
+      const px = Math.sin(side * 0.785) * poleD;
+      const pz = -Math.cos(side * 0.785) * poleD;
+      const sx = side * 42;
+      const sz = 28;
+      const wallCurve = new THREE.CatmullRomCurve3([new THREE.Vector3(sx, 2.4, sz), new THREE.Vector3(px, 2.4, pz)]);
+      grp.add(new THREE.Mesh(new THREE.TubeGeometry(wallCurve, 12, 2.2, 6, false), backstopWallMat));
+    });
+
     // 3. Sculpted Tapered Lathe Foul Poles + Screens
     const foulPoleProfile = [
       new THREE.Vector2(0.58, 0),
@@ -2371,30 +2524,35 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       grp.add(pole, screen);
     });
 
-    // 4. Completely EMPTY 3D Stepped Concrete College Grandstands + Handrails (Zero flat sheets or crowd!)
+    // 4. Completely EMPTY 3D Stepped Concrete College Grandstands + 3D Instanced Stadium Chairs & Bleachers
     const seatsTex =
       stSpec.id === 'omaha' ? omahaSeatsTex : stSpec.id === 'lsu' ? lsuSeatsTex : missStSeatsTex;
     const seatsMat = new THREE.MeshStandardMaterial({ map: seatsTex, roughness: 0.78, side: THREE.DoubleSide });
     const railMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', metalness: 0.68, roughness: 0.28 });
+    const chairHex =
+      stSpec.id === 'omaha' ? '#1d4ed8' : stSpec.id === 'lsu' ? '#581c87' : '#6b1829';
+    const chairMat = new THREE.MeshStandardMaterial({ color: chairHex, roughness: 0.42, metalness: 0.12 });
 
     const tierConfigs =
       stSpec.id === 'omaha'
         ? [
-            { startPhi: -0.82, endPhi: 0.82, dOff: 12, dSpan: 48, y0: 9, y1: 31, steps: 8 },
-            { startPhi: -0.88, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 },
-            { startPhi: 0.22, endPhi: 0.88, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 }
+            { startPhi: -0.78, endPhi: 0.78, dOff: 12, dSpan: 48, y0: 9, y1: 31, steps: 8 },
+            { startPhi: -0.78, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 },
+            { startPhi: 0.22, endPhi: 0.78, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 }
           ]
         : stSpec.id === 'lsu'
           ? [
-              { startPhi: -0.82, endPhi: 0.82, dOff: 10, dSpan: 50, y0: 10, y1: 34, steps: 8 },
-              { startPhi: -0.88, endPhi: 0.88, dOff: 66, dSpan: 38, y0: 39, y1: 57, steps: 6 }
+              { startPhi: -0.78, endPhi: 0.78, dOff: 10, dSpan: 50, y0: 10, y1: 34, steps: 8 },
+              { startPhi: -0.78, endPhi: 0.78, dOff: 66, dSpan: 38, y0: 39, y1: 57, steps: 6 }
             ]
           : [
-              { startPhi: -0.82, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, steps: 6, isLounge: true },
-              { startPhi: 0.18, endPhi: 0.82, dOff: 10, dSpan: 46, y0: 10, y1: 32, steps: 7 },
-              { startPhi: -0.9, endPhi: 0.9, dOff: 62, dSpan: 40, y0: 38, y1: 58, steps: 6 }
+              { startPhi: -0.76, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, steps: 6, isLounge: true },
+              { startPhi: 0.18, endPhi: 0.76, dOff: 10, dSpan: 46, y0: 10, y1: 32, steps: 7 },
+              { startPhi: -0.78, endPhi: 0.78, dOff: 62, dSpan: 40, y0: 38, y1: 58, steps: 6 }
             ];
 
+    // Collect 3D Contoured Seat Placements across every tier so balls visibly land in real 3D seats
+    const seatTransforms = [];
     for (const tc of tierConfigs) {
       const steps = tc.steps || 6;
       const stepD = tc.dSpan / steps;
@@ -2410,11 +2568,21 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
           () => yStep + 0.35,
           tc.startPhi,
           tc.endPhi,
-          48
+          44
         );
         const treadMesh = new THREE.Mesh(tread, seatsMat);
         treadMesh.receiveShadow = true;
         grp.add(treadMesh);
+
+        // Place actual 3D molded stadium chairs along concrete steps (every ~7.5ft arc spacing for crisp read & low draw cost)
+        const dMid = dIn + stepD * 0.52;
+        const nChairs = Math.max(12, Math.floor((tc.endPhi - tc.startPhi) * 42));
+        for (let ci = 1; ci < nChairs; ci++) {
+          if (ci % 9 === 0) continue; // concrete walking aisle
+          const phi = tc.startPhi + (ci / nChairs) * (tc.endPhi - tc.startPhi);
+          const dist = stSpec.wallDist(clamp(phi, -0.785, 0.785)) + dMid;
+          seatTransforms.push({ x: Math.sin(phi) * dist, y: yStep + 1.4, z: -Math.cos(phi) * dist, ry: -phi });
+        }
 
         if (s > 0) {
           const riserGeom = createSweptWallGeometry(
@@ -2422,7 +2590,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
             () => stepH + 0.35,
             tc.startPhi,
             tc.endPhi,
-            40,
+            38,
             0.8
           );
           const riserMesh = new THREE.Mesh(riserGeom, concreteMat);
@@ -2437,7 +2605,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         () => tc.y0 + 1.2,
         tc.startPhi,
         tc.endPhi,
-        48,
+        44,
         2.0
       );
       grp.add(new THREE.Mesh(fasciaGeom, concreteMat));
@@ -2447,7 +2615,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
           () => tc.y0 + 2.4,
           tc.startPhi,
           tc.endPhi,
-          40,
+          38,
           0.32,
           railMat
         )
@@ -2459,30 +2627,55 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
           () => tc.y0 + 3.8,
           tc.startPhi,
           tc.endPhi,
-          40,
+          36,
           0.35
         );
         grp.add(new THREE.Mesh(glassRailGeom, glassMat));
       }
     }
 
-    // 5. Continuous Side Baseline Extension Empty Bowls down 1B & 3B Lines + Foul Bullpen Mounds
-    [-1, 1].forEach((side) => {
-      const startP = side < 0 ? -1.48 : 0.785;
-      const endP = side < 0 ? -0.785 : 1.48;
-      const baseD = stSpec.wallDist(side * 0.785);
-      const wingBowl = createSweptStripGeometry(
-        () => baseD * 0.52,
-        () => baseD * 0.68,
-        () => 6,
-        () => 28,
-        startP,
-        endP,
-        24
+    // Add real 3D Empty Infield & Home-Plate Grandstand Tiers wrapping behind 1B / Home / 3B!
+    const infSteps = 7;
+    for (let s = 0; s < infSteps; s++) {
+      const rIn = 60 + s * 6.5;
+      const rOut = rIn + 6.5;
+      const yInf = 4.5 + s * 3.1;
+      const infTread = createSweptStripGeometry(
+        () => rIn,
+        () => rOut,
+        () => yInf,
+        () => yInf + 0.25,
+        Math.PI * 0.64,
+        Math.PI * 1.36,
+        36
       );
-      grp.add(new THREE.Mesh(wingBowl, seatsMat));
+      grp.add(new THREE.Mesh(infTread, seatsMat));
+    }
 
-      // Foul Territory Warmup Bullpen Mound & Rubber
+    if (seatTransforms.length > 0) {
+      const chairShape = makeRoundedRectShape(2.4, 2.3, 0.45);
+      const chairGeom = new THREE.ExtrudeGeometry(chairShape, {
+        depth: 0.48,
+        bevelEnabled: true,
+        bevelThickness: 0.08,
+        bevelSize: 0.08,
+        bevelSegments: 2
+      });
+      const chairInst = new THREE.InstancedMesh(chairGeom, chairMat, seatTransforms.length);
+      const cDummy = new THREE.Object3D();
+      seatTransforms.forEach((stf, idx) => {
+        cDummy.position.set(stf.x, stf.y, stf.z);
+        cDummy.rotation.set(0.14, stf.ry, 0);
+        cDummy.updateMatrix();
+        chairInst.setMatrixAt(idx, cDummy.matrix);
+      });
+      chairInst.instanceMatrix.needsUpdate = true;
+      chairInst.computeBoundingSphere();
+      grp.add(chairInst);
+    }
+
+    // 5. Foul Territory Warmup Bullpen Mounds & Plates (NO floating diagonal wing ramps!)
+    [-1, 1].forEach((side) => {
       const bpMound = new THREE.Mesh(new THREE.LatheGeometry(moundPts, 20), dirtMat);
       bpMound.scale.set(0.65, 0.72, 0.65);
       bpMound.position.set(side * 124, 0, -108);
@@ -2639,9 +2832,15 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   const _camCurLook = new THREE.Vector3(0, 3.1, -55);
   const _projVec = new THREE.Vector3();
   const _batUp = new THREE.Vector3(0, 1, 0);
+  const _batDown = new THREE.Vector3(0, -1, 0);
   const _batKnob = new THREE.Vector3();
   const _batDir = new THREE.Vector3();
   const _batHandsLocal = new THREE.Vector3();
+  const _armVec = new THREE.Vector3();
+  const _armDir = new THREE.Vector3();
+  const _armQuat = new THREE.Quaternion();
+  const _elbowVec = new THREE.Vector3();
+  const _elbowDir = new THREE.Vector3();
   const _batStanceK = new THREE.Vector3(-2.46, 4.18, 0.62);
   const _batStanceD = new THREE.Vector3(-0.18, 0.94, 0.29).normalize();
   const _batSlotK = new THREE.Vector3(-2.55, 3.24, 0.72);
@@ -2796,11 +2995,29 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     batPivot.position.copy(_batKnob);
     batPivot.quaternion.setFromUnitVectors(_batUp, _batDir);
 
-    // Glue batter's hands directly to the bat grip in torso local coordinates
+    // Glue batter's hands directly to the bat grip + dynamically aim upper/forearms smoothly via 2-bone elbow IK!
     batter.torsoPivot.updateMatrixWorld(true);
     _batHandsLocal.copy(_batKnob).addScaledVector(_batDir, 0.34);
     batter.torsoPivot.worldToLocal(_batHandsLocal);
     batter.handsGroup.position.copy(_batHandsLocal);
+
+    const aimArmToGrip = (armPivot, elbowPivot, gripOffsetY, elbowPushZ) => {
+      _armVec.copy(_batHandsLocal).sub(armPivot.position);
+      _armVec.y += gripOffsetY;
+      _armVec.z += elbowPushZ;
+      const reach = _armVec.length();
+      if (reach > 0.05) {
+        _armDir.copy(_armVec).multiplyScalar(1 / reach);
+        _armQuat.setFromUnitVectors(_batDown, _armDir);
+        armPivot.quaternion.copy(_armQuat);
+        elbowPivot.position.set(0, -Math.min(0.84, reach * 0.52), 0);
+        _elbowVec.set(0, Math.min(0.82, Math.max(0.25, reach * 0.52)), 0);
+        _elbowDir.copy(_elbowVec).normalize();
+        elbowPivot.quaternion.setFromUnitVectors(_batDown, _batDown);
+      }
+    };
+    aimArmToGrip(batter.topArm, batter.topElbow, 0.1, 0.14);
+    aimArmToGrip(batter.bottomArm, batter.botElbow, -0.1, -0.1);
 
     if (simState.phase === 'pitch' && simState.pitchPos) {
       plateCrew.mitt.position.x = THREE.MathUtils.damp(plateCrew.mitt.position.x, clamp(simState.pitchPos.x, -1.2, 1.2), 14, dt);
@@ -2878,9 +3095,10 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         apexMarker.visible = false;
       }
 
-      if (fl && fl.playTime >= fl.totalTime * 0.92) {
+      if (fl && fl.points && fl.points.length > 0 && fl.playTime >= fl.totalTime * 0.92) {
+        const lastPt = fl.points[fl.points.length - 1];
         landingRing.visible = true;
-        landingRing.position.set(fl.endX, 0.15, -fl.endY);
+        landingRing.position.set(lastPt.x, Math.max(0.15, lastPt.z), -lastPt.y);
         landingRing.material.color.set(fl.color || '#38bdf8');
       } else {
         landingRing.visible = false;
