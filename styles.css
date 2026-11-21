@@ -104,6 +104,10 @@ html {
   scroll-behavior: smooth;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -664,6 +668,7 @@ a:hover {
    (High-contrast dark scoreboard bezel + flowing RGB LED top strip)
    ========================================================= */
 .gameday-studio {
+  scroll-margin-top: 76px;
   --bg-surface: rgb(21, 31, 50);
   --bg-subtle: rgb(14, 22, 36);
   --bg-muted: rgb(38, 53, 80);
@@ -780,6 +785,62 @@ a:hover {
   pointer-events: none;
 }
 
+.studio-command-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.command-dock-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem 0.95rem;
+}
+
+.command-dock-row + .command-dock-row {
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+}
+
+.hitlab-stage--wide {
+  padding: 0.9rem 1rem;
+  gap: 0.7rem;
+}
+
+.hitlab-stage--wide .cage-canvas-wrap {
+  width: 100%;
+  max-height: 495px;
+  box-shadow: 0 14px 36px rgba(4, 9, 18, 0.55);
+}
+
+.studio-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+  gap: 1.25rem;
+  margin-top: 1.15rem;
+  align-items: stretch;
+}
+
+#cage-track-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+#cage-track-btn[aria-pressed="false"] {
+  border-color: rgba(251, 191, 36, 0.55);
+  background: rgba(251, 191, 36, 0.12);
+  color: var(--gold);
+}
+
 .studio-venue-bar {
   display: flex;
   flex-wrap: wrap;
@@ -797,14 +858,16 @@ a:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .venue-label {
   font-family: var(--font-mono);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .cage-action-row {
@@ -820,6 +883,16 @@ a:hover {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.45rem;
   margin-bottom: 1.1rem;
+}
+
+.bat-rack--locker {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.95rem;
+}
+
+.bat-rack--locker .bat-btn:last-child {
+  grid-column: 1 / -1;
 }
 
 .bat-btn {
@@ -924,9 +997,15 @@ a:hover {
 
 .spray-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.5rem 0.85rem;
+}
+
+.spray-head > div:last-child {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .btn-link-clear {
@@ -1165,8 +1244,8 @@ input[type="range"] {
 .bento-side-stack {
   grid-column: span 5;
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 1.15rem;
+  grid-template-rows: auto;
+  gap: 1.05rem;
 }
 
 .explore-card {
@@ -2511,6 +2590,7 @@ textarea:focus {
 @media (max-width: 1023px) {
   .hero-editorial,
   .hitlab-grid,
+  .studio-lower-grid,
   .detail-stage-grid,
   .expert-roster-layout,
   .playbook-layout,

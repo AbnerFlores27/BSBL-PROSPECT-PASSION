@@ -21,6 +21,7 @@
 }
 </script>
 <script type="module" src="stadium3d.js"></script>
+<script src="physics.js" defer></script>
 <script src="ui.js" defer></script>
 </head>
 <body>
@@ -60,17 +61,17 @@
 </header>
 
 <main id="home" class="container">
-  <section class="hero-editorial" aria-label="Welcome and Quick Scoreboard">
+  <section class="hero-editorial hero-broadcast" aria-label="Welcome and Quick Scoreboard">
     <div class="hero-copy-col">
       <div>
-        <div class="kicker-line">Five Experts · One Pitch</div>
-        <h1>Baseball rules &amp; stats, made clear for everyone.</h1>
-        <p class="hero-lead">Skip confusing rulebooks. Test Statcast swing physics live, walk through real diamond plays step by step, and read five plain-English viewpoints on every play.</p>
+        <div class="kicker-line">MLB The Show Camera Views · True 120Hz RK4 Physics · Coach Jax AI</div>
+        <h1>Step into the box. Master every pitch &amp; play.</h1>
+        <p class="hero-lead">Face RHP, LHP, or Pitching Machine across 15 realistic Pro, College &amp; High School ballparks, track real cowhide-on-wood &amp; BBCOR bat acoustics, and get instant fixes from Coach Jax.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="scenarios.html">Explore All 8 Plays</a>
-          <a class="btn btn-secondary" href="onboarding.html">AI Player Checkup</a>
+          <a class="btn btn-primary" href="#gameday-studio" id="hero-open-hitlab">Step Into Broadcast Studio</a>
+          <button type="button" class="btn btn-secondary" data-open-jax data-jax-prompt="Give me a quick 3-step hitting & fielding checkup to start today's session.">Ask Coach Jax</button>
           <a class="btn btn-secondary" href="training.html">Drill Videos &amp; 20-Q Quiz</a>
-          <a class="btn btn-secondary" href="#gameday-studio" id="hero-open-hitlab">Open Broadcast Studio</a>
+          <a class="btn btn-secondary" href="scenarios.html">All 8 Game Plays</a>
         </div>
       </div>
 
@@ -108,11 +109,14 @@
         <div class="meta-line" style="color:rgb(186,214,255);margin-bottom:0.35rem;">
           <span>Featured Breakdown</span>
           <span aria-hidden="true">·</span>
-          <span>Fundamental</span>
+          <span>Live Diamond Walkthrough</span>
         </div>
         <h2>Force Out vs. Tag Out</h2>
-        <p>Learn why stepping on 2nd base beats chasing the runner.</p>
-        <a class="btn btn-primary btn-sm" href="#gameday-studio" id="hero-open-featured">Watch Play Diagram</a>
+        <p>Step through real infield timing, relay angles, and why stepping on 2nd beats chasing the runner.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+          <a class="btn btn-primary btn-sm" href="#gameday-studio" id="hero-open-featured">Watch Play Diagram</a>
+          <a class="btn btn-secondary btn-sm" href="onboarding.html">Take AI Checkup</a>
+        </div>
       </div>
     </div>
   </section>
@@ -121,207 +125,223 @@
     <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
     <div class="studio-topbar">
       <div>
-        <h2 id="studio-heading">Pro, College &amp; High School 3D Stadiums · Rapsodo Studio</h2>
-        <p>Step into 15 authentic ballparks (5 Pro, 5 College, 5 High School) or D1 Cage, face Pitching Machine or Pitcher, hear outdoor stadium echoes, and track PCI-driven swings &amp; ball flight.</p>
+        <h2 id="studio-heading">Gameday 3D Broadcast Studio · Rapsodo &amp; HitTrax</h2>
+        <p>15 unique Pro, College &amp; HS ballparks + D1 Cage · Authentic maple &amp; BBCOR acoustics · Real ground roll &amp; MLB The Show views.</p>
       </div>
-      <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
-        <button type="button" class="segmented-btn" data-studio="hitlab" aria-pressed="true">Rapsodo / HitTrax</button>
-        <button type="button" class="segmented-btn" data-studio="play" aria-pressed="false">Featured Play: Force vs. Tag</button>
+      <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;">
+        <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
+          <button type="button" class="segmented-btn" data-studio="hitlab" aria-pressed="true">3D Ballpark &amp; Rapsodo</button>
+          <button type="button" class="segmented-btn" data-studio="play" aria-pressed="false">Featured Play: Force vs. Tag</button>
+        </div>
+        <button type="button" id="studio-ask-jax-btn" class="btn btn-secondary btn-sm" data-open-jax data-jax-prompt="Analyze my current cage setup and give me 2 actionable swing cues.">Ask Coach Jax</button>
       </div>
     </div>
 
     <div class="studio-body">
       <div id="studio-panel-hitlab">
-        <div class="bat-rack" id="bat-rack" role="group" aria-label="Choose a baseball bat">
-          <button type="button" class="bat-btn" data-bat="baum-gold" aria-pressed="false">
-            <span class="bat-btn-top">
-              <span class="bat-swatch" style="background:linear-gradient(90deg,#090a0d 34%,#eab308 42%,#fef08a 50%,#eab308 58%,#090a0d 66%);"></span>
-              <span class="bat-btn-name">Baum Bat Gold</span>
-            </span>
-            <span class="bat-btn-meta">Gloss Black/Gold Oval · -3</span>
-          </button>
-
-          <button type="button" class="bat-btn" data-bat="goods-2026" aria-pressed="true">
-            <span class="bat-btn-top">
-              <span class="bat-swatch" style="background:linear-gradient(90deg,#0f1116 34%,#9beae4 37%,#9beae4 62%,#ef4444 74%,#9beae4 86%,#0f1116 100%);"></span>
-              <span class="bat-btn-name">2026 The Goods</span>
-            </span>
-            <span class="bat-btn-meta">Ice Blue/Black/Red Hybrid · -3</span>
-          </button>
-
-          <button type="button" class="bat-btn" data-bat="goods-2022" aria-pressed="false">
-            <span class="bat-btn-top">
-              <span class="bat-swatch" style="background:linear-gradient(90deg,#111318 33%,#cbd5e1 37%,#f8fafc 64%,#111318 76%,#cbd5e1 92%,#111318 100%);"></span>
-              <span class="bat-btn-name">2022 The Goods</span>
-            </span>
-            <span class="bat-btn-meta">Brushed Chrome/Black Hybrid · -3</span>
-          </button>
-
-          <button type="button" class="bat-btn" data-bat="combat-rodeo" aria-pressed="false">
-            <span class="bat-btn-top">
-              <span class="bat-swatch" style="background:linear-gradient(90deg,#991b1b 30%,#f2e3be 34%,#faf2dc 64%,#b91c1c 76%,#f2e3be 94%);"></span>
-              <span class="bat-btn-name">Combat Spec-A1 Rodeo</span>
-            </span>
-            <span class="bat-btn-meta">Cream/Crimson Red 1-Pc · -3</span>
-          </button>
-
-          <button type="button" class="bat-btn" data-bat="combat-blue" aria-pressed="false">
-            <span class="bat-btn-top">
-              <span class="bat-swatch" style="background:linear-gradient(90deg,#1e3a8a 6%,#87defb 10%,#87defb 82%,#eab308 87%,#1e3a8a 93%);"></span>
-              <span class="bat-btn-name">Combat Members Club Blue</span>
-            </span>
-            <span class="bat-btn-meta">Sky Blue/Royal Club 1-Pc · -3</span>
-          </button>
-        </div>
-
-        <div class="studio-venue-bar">
-          <div class="venue-group">
-            <span class="venue-label">Tier</span>
-            <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
-              <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (5)</button>
-              <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (5)</button>
-              <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (5)</button>
-              <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
-            </div>
-          </div>
-
-          <div class="venue-group">
-            <span class="venue-label">Ballpark</span>
-            <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose stadium or cage">
-              <button type="button" class="segmented-btn" data-stadium="omaha" aria-pressed="true">Omaha CWS</button>
-              <button type="button" class="segmented-btn" data-stadium="lsu" aria-pressed="false">LSU Alex Box</button>
-              <button type="button" class="segmented-btn" data-stadium="missst" aria-pressed="false">Miss St Noble</button>
-              <button type="button" class="segmented-btn" data-stadium="vandy" aria-pressed="false">Vandy Hawkins</button>
-              <button type="button" class="segmented-btn" data-stadium="texas" aria-pressed="false">Texas Disch-Falk</button>
-            </div>
-          </div>
-
-          <div class="venue-group">
-            <span class="venue-label">Delivery</span>
-            <div class="segmented-group" id="delivery-tabs" role="group" aria-label="Choose pitcher or pitching machine">
-              <button type="button" class="segmented-btn" data-delivery="pitcher" aria-pressed="true">Pitcher</button>
-              <button type="button" class="segmented-btn" data-delivery="machine" aria-pressed="false">Machine</button>
-            </div>
-          </div>
-
-          <div class="venue-group">
-            <span class="venue-label">Pitch</span>
-            <div class="segmented-group" id="pitch-tabs" role="group" aria-label="Choose pitch type">
-              <button type="button" class="segmented-btn" data-pitch="mix" aria-pressed="true">Mix</button>
-              <button type="button" class="segmented-btn" data-pitch="fastball" aria-pressed="false">Fastball</button>
-              <button type="button" class="segmented-btn" data-pitch="slider" aria-pressed="false">Slider</button>
-              <button type="button" class="segmented-btn" data-pitch="curve" aria-pressed="false">Curve</button>
-              <button type="button" class="segmented-btn" data-pitch="changeup" aria-pressed="false">Change</button>
-            </div>
-          </div>
-
-          <div class="venue-group">
-            <span class="venue-label">Wind</span>
-            <div class="segmented-group" id="wind-tabs" role="group" aria-label="Choose stadium wind">
-              <button type="button" class="segmented-btn" data-wind="calm" aria-pressed="true">Calm</button>
-              <button type="button" class="segmented-btn" data-wind="out10" aria-pressed="false">10 Out</button>
-              <button type="button" class="segmented-btn" data-wind="in12" aria-pressed="false">12 In</button>
-              <button type="button" class="segmented-btn" data-wind="cross8" aria-pressed="false">8 Cross</button>
-            </div>
-          </div>
-
-          <div class="venue-group">
-            <span class="venue-label">Batter</span>
-            <div class="segmented-group" id="batter-hand-tabs" role="group" aria-label="Choose batter handedness">
-              <button type="button" class="segmented-btn" data-bhand="R" aria-pressed="true">RHB</button>
-              <button type="button" class="segmented-btn" data-bhand="L" aria-pressed="false">LHB</button>
-            </div>
-          </div>
-
-          <div class="venue-group">
-            <span class="venue-label">Pitcher</span>
-            <div class="segmented-group" id="pitcher-hand-tabs" role="group" aria-label="Choose pitcher handedness">
-              <button type="button" class="segmented-btn" data-phand="R" aria-pressed="true">RHP</button>
-              <button type="button" class="segmented-btn" data-phand="L" aria-pressed="false">LHP</button>
-            </div>
-          </div>
-
-          <div class="venue-group">
-            <span class="venue-label">Camera</span>
-            <div class="segmented-group" id="camera-tabs" role="group" aria-label="Choose 3D camera view">
-              <button type="button" class="segmented-btn" data-cam="pov" aria-pressed="true">Catcher POV</button>
-              <button type="button" class="segmented-btn" data-cam="broadcast" aria-pressed="false">Broadcast</button>
-              <button type="button" class="segmented-btn" data-cam="track" aria-pressed="false">Ball Track</button>
-              <button type="button" class="segmented-btn" data-cam="side" aria-pressed="false">Swing Lab</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="hitlab-grid">
-          <div class="hitlab-stage">
-            <div class="cage-canvas-wrap">
-              <canvas id="cage-canvas" role="img" aria-label="Interactive 3D college stadium and Rapsodo simulator with pitch tracking and mini PCI"></canvas>
-              <canvas id="pci-hud-canvas" aria-hidden="true"></canvas>
-            </div>
-            <div class="cage-action-row">
-              <div style="display:flex;flex-wrap:wrap;gap:0.45rem;align-items:center;">
-                <button type="button" id="cage-swing-btn" class="btn btn-primary btn-sm">Throw Pitch</button>
-                <button type="button" id="cage-demo-btn" class="btn btn-secondary btn-sm">Demo High HR</button>
-                <button type="button" id="cage-pci-mode-btn" class="btn btn-secondary btn-sm" aria-pressed="false">PCI: Manual</button>
-                <button type="button" id="cage-sound-btn" class="btn btn-secondary btn-sm" aria-pressed="true">Sound: On</button>
+        <div class="studio-command-dock" aria-label="Ballpark, Pitch, Wind, Matchup, and Camera Controls">
+          <div class="command-dock-row">
+            <div class="venue-group">
+              <span class="venue-label">Tier</span>
+              <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
+                <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (5)</button>
+                <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (5)</button>
+                <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (5)</button>
+                <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
               </div>
+            </div>
+
+            <div class="venue-group">
+              <span class="venue-label">Ballpark</span>
+              <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose stadium or cage">
+                <button type="button" class="segmented-btn" data-stadium="omaha" aria-pressed="true">Omaha CWS</button>
+                <button type="button" class="segmented-btn" data-stadium="lsu" aria-pressed="false">LSU Alex Box</button>
+                <button type="button" class="segmented-btn" data-stadium="missst" aria-pressed="false">Miss St Noble</button>
+                <button type="button" class="segmented-btn" data-stadium="vandy" aria-pressed="false">Vandy Hawkins</button>
+                <button type="button" class="segmented-btn" data-stadium="texas" aria-pressed="false">Texas Disch-Falk</button>
+              </div>
+            </div>
+
+            <div class="venue-group">
+              <span class="venue-label">Wind</span>
+              <div class="segmented-group" id="wind-tabs" role="group" aria-label="Choose stadium wind">
+                <button type="button" class="segmented-btn" data-wind="calm" aria-pressed="true">Calm</button>
+                <button type="button" class="segmented-btn" data-wind="out10" aria-pressed="false">10 Out</button>
+                <button type="button" class="segmented-btn" data-wind="in12" aria-pressed="false">12 In</button>
+                <button type="button" class="segmented-btn" data-wind="cross8" aria-pressed="false">8 Cross</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="command-dock-row">
+            <div class="venue-group">
+              <span class="venue-label">Delivery</span>
+              <div class="segmented-group" id="delivery-tabs" role="group" aria-label="Choose pitcher or pitching machine">
+                <button type="button" class="segmented-btn" data-delivery="pitcher" aria-pressed="true">Pitcher</button>
+                <button type="button" class="segmented-btn" data-delivery="machine" aria-pressed="false">Machine</button>
+              </div>
+            </div>
+
+            <div class="venue-group">
+              <span class="venue-label">Pitch</span>
+              <div class="segmented-group" id="pitch-tabs" role="group" aria-label="Choose pitch type">
+                <button type="button" class="segmented-btn" data-pitch="mix" aria-pressed="true">Mix</button>
+                <button type="button" class="segmented-btn" data-pitch="fastball" aria-pressed="false">Fastball</button>
+                <button type="button" class="segmented-btn" data-pitch="slider" aria-pressed="false">Slider</button>
+                <button type="button" class="segmented-btn" data-pitch="curve" aria-pressed="false">Curve</button>
+                <button type="button" class="segmented-btn" data-pitch="changeup" aria-pressed="false">Change</button>
+              </div>
+            </div>
+
+            <div class="venue-group">
+              <span class="venue-label">Matchup</span>
+              <div style="display:flex;gap:0.35rem;align-items:center;">
+                <div class="segmented-group" id="batter-hand-tabs" role="group" aria-label="Choose batter handedness">
+                  <button type="button" class="segmented-btn" data-bhand="R" aria-pressed="true">RHB</button>
+                  <button type="button" class="segmented-btn" data-bhand="L" aria-pressed="false">LHB</button>
+                </div>
+                <div class="segmented-group" id="pitcher-hand-tabs" role="group" aria-label="Choose pitcher handedness">
+                  <button type="button" class="segmented-btn" data-phand="R" aria-pressed="true">RHP</button>
+                  <button type="button" class="segmented-btn" data-phand="L" aria-pressed="false">LHP</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="venue-group">
+              <span class="venue-label">Camera</span>
+              <div class="segmented-group" id="camera-tabs" role="group" aria-label="Choose 3D camera view">
+                <button type="button" class="segmented-btn" data-cam="strike-zone" aria-pressed="true">Strike Zone</button>
+                <button type="button" class="segmented-btn" data-cam="fish-eye" aria-pressed="false">Fish Eye</button>
+                <button type="button" class="segmented-btn" data-cam="show-15" aria-pressed="false">Show 15</button>
+                <button type="button" class="segmented-btn" data-cam="broadcast" aria-pressed="false">Broadcast</button>
+                <button type="button" class="segmented-btn" data-cam="swing-lab" aria-pressed="false">Swing Lab</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hitlab-stage hitlab-stage--wide">
+          <div class="cage-canvas-wrap">
+            <canvas id="cage-canvas" role="img" aria-label="Interactive 3D ballpark and Rapsodo simulator with pitch tracking and mini PCI"></canvas>
+            <canvas id="pci-hud-canvas" aria-hidden="true"></canvas>
+          </div>
+
+          <div class="cage-action-row">
+            <div style="display:flex;flex-wrap:wrap;gap:0.45rem;align-items:center;">
+              <button type="button" id="cage-swing-btn" class="btn btn-primary btn-sm">Throw Pitch</button>
+              <button type="button" id="cage-demo-btn" class="btn btn-secondary btn-sm">Demo High HR</button>
+              <button type="button" id="cage-track-btn" class="btn btn-secondary btn-sm" aria-pressed="true">Track Ball: On</button>
+              <button type="button" id="cage-pci-mode-btn" class="btn btn-secondary btn-sm" aria-pressed="false">PCI: Manual</button>
+              <button type="button" id="cage-sound-btn" class="btn btn-secondary btn-sm" aria-pressed="true">Sound: On</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;">
               <span id="cage-pitch-note" class="tabular-nums" style="font-size:0.82rem;color:var(--text-secondary);">Aim PCI with mouse or WASD · Press Space to pitch &amp; swing</span>
-            </div>
-            <div class="hitlab-readout hitlab-readout--six">
-              <div>
-                <div class="hitlab-stat-label">Exit Velo</div>
-                <div class="hitlab-stat-val tabular-nums" id="hitlab-ev">-- mph</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Launch Angle</div>
-                <div class="hitlab-stat-val tabular-nums" id="hitlab-la">--°</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Total Dist</div>
-                <div class="hitlab-stat-val tabular-nums" id="hitlab-dist">-- ft</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Peak / Hang</div>
-                <div class="hitlab-stat-val tabular-nums" id="hitlab-apex">-- ft</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Batted Spin</div>
-                <div class="hitlab-stat-val tabular-nums" id="hitlab-spin">-- rpm</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Rapsodo Call</div>
-                <div class="hitlab-stat-val" id="hitlab-outcome">Step In Box</div>
-              </div>
-            </div>
-            <div class="rapsodo-substrip" aria-label="Rapsodo optical swing and pitch metrics">
-              <div>
-                <div class="hitlab-stat-label">Bat Speed</div>
-                <div class="rapsodo-subval tabular-nums" id="rapsodo-batspeed">-- mph</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Smash Factor</div>
-                <div class="rapsodo-subval tabular-nums" id="rapsodo-smash">--</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Attack Angle</div>
-                <div class="rapsodo-subval tabular-nums" id="rapsodo-attack">--°</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Pitch IVB / HB</div>
-                <div class="rapsodo-subval tabular-nums" id="rapsodo-break">-- / --</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Spin Axis · Eff</div>
-                <div class="rapsodo-subval tabular-nums" id="rapsodo-axis">-- · --%</div>
-              </div>
-              <div>
-                <div class="hitlab-stat-label">Carry · xBA</div>
-                <div class="rapsodo-subval tabular-nums" id="rapsodo-carry">-- ft · .---</div>
-              </div>
+              <span class="tabular-nums" id="count-readout" style="font-size:0.84rem;font-weight:700;color:var(--gold);padding:0.2rem 0.55rem;border-radius:6px;background:var(--bg-subtle);border:1px solid var(--border);">Count: 0-0 · Outs: 0</span>
             </div>
           </div>
 
+          <div class="hitlab-readout hitlab-readout--six">
+            <div>
+              <div class="hitlab-stat-label">Exit Velo</div>
+              <div class="hitlab-stat-val tabular-nums" id="hitlab-ev">-- mph</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Launch Angle</div>
+              <div class="hitlab-stat-val tabular-nums" id="hitlab-la">--°</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Total Dist</div>
+              <div class="hitlab-stat-val tabular-nums" id="hitlab-dist">-- ft</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Peak / Hang</div>
+              <div class="hitlab-stat-val tabular-nums" id="hitlab-apex">-- ft</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Batted Spin</div>
+              <div class="hitlab-stat-val tabular-nums" id="hitlab-spin">-- rpm</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Rapsodo Call</div>
+              <div class="hitlab-stat-val" id="hitlab-outcome">Step In Box</div>
+            </div>
+          </div>
+
+          <div class="rapsodo-substrip" aria-label="Rapsodo optical swing and pitch metrics">
+            <div>
+              <div class="hitlab-stat-label">Bat Speed</div>
+              <div class="rapsodo-subval tabular-nums" id="rapsodo-batspeed">-- mph</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Smash Factor</div>
+              <div class="rapsodo-subval tabular-nums" id="rapsodo-smash">--</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Attack Angle</div>
+              <div class="rapsodo-subval tabular-nums" id="rapsodo-attack">--°</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Pitch IVB / HB</div>
+              <div class="rapsodo-subval tabular-nums" id="rapsodo-break">-- / --</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Spin Axis · Eff</div>
+              <div class="rapsodo-subval tabular-nums" id="rapsodo-axis">-- · --%</div>
+            </div>
+            <div>
+              <div class="hitlab-stat-label">Carry · xBA</div>
+              <div class="rapsodo-subval tabular-nums" id="rapsodo-carry">-- ft · .---</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-lower-grid">
           <div class="studio-controls-card">
+            <div>
+              <div class="kicker-line" style="margin-bottom:0.45rem;">Bat Locker &amp; Acoustic Lab</div>
+              <div class="bat-rack bat-rack--locker" id="bat-rack" role="group" aria-label="Choose a baseball bat">
+                <button type="button" class="bat-btn" data-bat="baum-gold" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#090a0d 34%,#eab308 42%,#fef08a 50%,#eab308 58%,#090a0d 66%);"></span>
+                    <span class="bat-btn-name">Baum Bat Gold</span>
+                  </span>
+                  <span class="bat-btn-meta">Gloss Black/Gold Composite Wood · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="goods-2026" aria-pressed="true">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#0f1116 34%,#9beae4 37%,#9beae4 62%,#ef4444 74%,#9beae4 86%,#0f1116 100%);"></span>
+                    <span class="bat-btn-name">2026 The Goods</span>
+                  </span>
+                  <span class="bat-btn-meta">Ice Blue/Black/Red Hybrid · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="goods-2022" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#111318 33%,#cbd5e1 37%,#f8fafc 64%,#111318 76%,#cbd5e1 92%,#111318 100%);"></span>
+                    <span class="bat-btn-name">2022 The Goods</span>
+                  </span>
+                  <span class="bat-btn-meta">Brushed Chrome/Black Hybrid · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="combat-rodeo" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#991b1b 30%,#f2e3be 34%,#faf2dc 64%,#b91c1c 76%,#f2e3be 94%);"></span>
+                    <span class="bat-btn-name">Combat Spec-A1 Rodeo</span>
+                  </span>
+                  <span class="bat-btn-meta">Cream/Crimson Red 1-Pc · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="combat-blue" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#1e3a8a 6%,#87defb 10%,#87defb 82%,#eab308 87%,#1e3a8a 93%);"></span>
+                    <span class="bat-btn-name">Combat Members Club Blue</span>
+                  </span>
+                  <span class="bat-btn-meta">Sky Blue/Royal Club 1-Pc · -3</span>
+                </button>
+              </div>
+            </div>
+
             <div class="bat-spec-box" id="bat-spec-box">
               <div class="meta-line" id="bat-spec-meta" style="margin-bottom:0.25rem;">2-Piece Hybrid · Heavy End-Load · 2 5/8" Barrel</div>
               <div class="bat-spec-head">
@@ -331,8 +351,10 @@
               <div id="bat-preview-svg" class="bat-preview-wrap" aria-hidden="true"></div>
               <p id="bat-spec-desc">Pale ice-blue X14 Alloy barrel paired with black 1375 composite handle, red arrow/stencil graphics, notched black Tremor end cap, and deep damped thud.</p>
             </div>
+          </div>
 
-            <div class="hittrax-spray-box">
+          <div class="studio-controls-card">
+            <div class="hittrax-spray-box" style="flex:1;">
               <div class="spray-head">
                 <div>
                   <div class="kicker-line" style="margin-bottom:0.1rem;">Rapsodo / HitTrax Console</div>
@@ -348,12 +370,12 @@
                 <button type="button" class="segmented-btn" data-rview="arc" aria-pressed="false" style="flex:1;">Flight Arc</button>
                 <button type="button" class="segmented-btn" data-rview="zone" aria-pressed="false" style="flex:1;">Rapsodo Zone</button>
               </div>
-              <canvas id="hittrax-spray-canvas" width="340" height="218" aria-label="Rapsodo and HitTrax live telemetry display"></canvas>
+              <canvas id="hittrax-spray-canvas" width="420" height="236" aria-label="Rapsodo and HitTrax live telemetry display"></canvas>
             </div>
 
             <div style="display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center;justify-content:space-between;">
-              <span class="tabular-nums" id="count-readout" style="font-size:0.85rem;font-weight:600;color:var(--text-primary);">Count: 0-0 · Outs: 0</span>
               <a class="btn btn-secondary btn-sm" href="detail.html?id=launch-angle-exit-velo">Open Barrel Lesson</a>
+              <a class="btn btn-primary btn-sm" href="training.html#video-clinic-section">Fix Swing Flaws in Training Lab</a>
             </div>
           </div>
         </div>
@@ -386,6 +408,75 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section-block" aria-labelledby="explore-heading">
+    <div class="section-head">
+      <div>
+        <h2 id="explore-heading">Explore DiamondIQ</h2>
+        <p class="section-subtitle">Diagnose swing &amp; fielding flaws, study all 8 core game scenarios, and save dugout notes.</p>
+      </div>
+    </div>
+
+    <div class="bento-explore">
+      <article class="card bento-feature">
+        <div class="bento-feature-media">
+          <img
+            src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg"
+            alt="Baserunner sliding into second base as the shortstop fires a relay throw"
+            referrerpolicy="no-referrer"
+          >
+        </div>
+        <div class="bento-feature-body">
+          <div>
+            <div class="meta-line">Search &amp; Filter · 8 Lessons</div>
+            <h3 style="font-size:1.45rem;">Scenario Library</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Browse all 8 baseball plays and Statcast concepts, filter by category, star your favorites, and test yourself with trivia checks.</p>
+          </div>
+          <a class="btn btn-primary btn-sm" href="scenarios.html" style="align-self:flex-start;">Open Scenario Library</a>
+        </div>
+      </article>
+
+      <div class="bento-side-stack">
+        <article class="card explore-card">
+          <div>
+            <div class="meta-line">8 Videos · 20-Q Diagnosis</div>
+            <h3>Training Lab &amp; Flaw Quiz</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Watch side-by-side swing &amp; fielding fix videos and get custom drills from the 20-question quiz.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            <a class="btn btn-primary btn-sm" href="training.html">Watch Drills</a>
+            <a class="btn btn-secondary btn-sm" href="training.html#diagnostic-quiz-section">Take 20-Q Quiz</a>
+          </div>
+        </article>
+
+        <article class="card explore-card">
+          <div>
+            <div class="meta-line">Side by Side</div>
+            <h3>Compare Two Plays</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Pick any two plays and compare skill level, tactical risk, and scoring impact.</p>
+          </div>
+          <a class="btn btn-secondary btn-sm" href="compare.html" style="align-self:flex-start;">Compare Plays</a>
+        </article>
+
+        <article class="card explore-card">
+          <div>
+            <div class="meta-line">Your Account &amp; Saved Quiz</div>
+            <h3>My Playbook</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Write, edit, and organize your own game-day notes, AI checkup results, and favorite plays.</p>
+          </div>
+          <a class="btn btn-secondary btn-sm" href="playbook.html" style="align-self:flex-start;">Open Playbook</a>
+        </article>
+      </div>
+    </div>
+
+    <div class="fact-bar" aria-labelledby="fact-heading">
+      <div class="fact-copy">
+        <div class="fact-label" id="fact-heading">Baseball Fun Fact</div>
+        <p class="fact-text" id="fun-fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
+      </div>
+      <button type="button" id="next-fact-btn" class="btn btn-secondary btn-sm">Next Fact</button>
     </div>
   </section>
 
@@ -434,75 +525,6 @@
         </div>
         <a class="btn btn-primary btn-sm" href="detail.html?id=force-vs-tag" style="align-self:flex-start;">See All 5 in Action</a>
       </div>
-    </div>
-  </section>
-
-  <section class="section-block" aria-labelledby="explore-heading">
-    <div class="section-head">
-      <div>
-        <h2 id="explore-heading">Explore DiamondIQ</h2>
-        <p class="section-subtitle">Search plays, compare strategies side by side, and save personal dugout notes.</p>
-      </div>
-    </div>
-
-    <div class="bento-explore">
-      <article class="card bento-feature">
-        <div class="bento-feature-media">
-          <img
-            src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg"
-            alt="Baserunner sliding into second base as the shortstop fires a relay throw"
-            referrerpolicy="no-referrer"
-          >
-        </div>
-        <div class="bento-feature-body">
-          <div>
-            <div class="meta-line">Search &amp; Filter · 8 Lessons</div>
-            <h3 style="font-size:1.45rem;">Scenario Library</h3>
-            <p style="color:var(--text-secondary);margin-bottom:0;">Browse all 8 baseball plays and Statcast concepts, filter by category, star your favorites, and test yourself with trivia checks.</p>
-          </div>
-          <a class="btn btn-primary btn-sm" href="scenarios.html" style="align-self:flex-start;">Open Scenario Library</a>
-        </div>
-      </article>
-
-      <div class="bento-side-stack">
-        <article class="card explore-card">
-          <div>
-            <div class="meta-line">8 Videos · 20-Q Diagnosis</div>
-            <h3>Training Lab &amp; Flaw Quiz</h3>
-            <p style="color:var(--text-secondary);margin-bottom:0;">Watch side-by-side swing &amp; fielding fix videos and get custom drills from the 20-question quiz.</p>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-            <a class="btn btn-primary btn-sm" href="training.html">Watch Drills</a>
-            <a class="btn btn-secondary btn-sm" href="training.html#diagnostic-quiz-section">Take 20-Q Quiz</a>
-          </div>
-        </article>
-
-        <article class="card explore-card">
-          <div>
-            <div class="meta-line">Side by Side</div>
-            <h3>Compare Two Plays</h3>
-            <p style="color:var(--text-secondary);margin-bottom:0;">Pick any two plays and compare skill level, tactical risk, and scoring impact.</p>
-          </div>
-          <a class="btn btn-secondary btn-sm" href="compare.html" style="align-self:flex-start;">Compare Plays</a>
-        </article>
-
-        <article class="card explore-card">
-          <div>
-            <div class="meta-line">Your Account</div>
-            <h3>My Playbook</h3>
-            <p style="color:var(--text-secondary);margin-bottom:0;">Write, edit, and organize your own game-day notes and favorite plays.</p>
-          </div>
-          <a class="btn btn-secondary btn-sm" href="playbook.html" style="align-self:flex-start;">Open Playbook</a>
-        </article>
-      </div>
-    </div>
-
-    <div class="fact-bar" aria-labelledby="fact-heading">
-      <div class="fact-copy">
-        <div class="fact-label" id="fact-heading">Baseball Fun Fact</div>
-        <p class="fact-text" id="fun-fact-text">A regulation MLB baseball has exactly 108 double stitches of red waxed thread.</p>
-      </div>
-      <button type="button" id="next-fact-btn" class="btn btn-secondary btn-sm">Next Fact</button>
     </div>
   </section>
 </main>

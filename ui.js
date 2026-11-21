@@ -1271,8 +1271,10 @@
     const cameraTabs = document.getElementById('camera-tabs');
     const swingBtn = document.getElementById('cage-swing-btn');
     const demoBtn = document.getElementById('cage-demo-btn');
+    const trackBallBtn = document.getElementById('cage-track-btn');
     const pciModeBtn = document.getElementById('cage-pci-mode-btn');
     const soundBtn = document.getElementById('cage-sound-btn');
+    const studioAskJaxBtn = document.getElementById('studio-ask-jax-btn');
     const pitchNote = document.getElementById('cage-pitch-note');
     const evEl = document.getElementById('hitlab-ev');
     const laEl = document.getElementById('hitlab-la');
@@ -1422,7 +1424,8 @@
       let batterHand = savedUserPrefs.battingHand === 'L' ? 'L' : 'R'; // 'R' | 'L'
       let pitcherHand = 'R'; // 'R' | 'L'
       let activeDeliveryMode = 'pitcher'; // 'pitcher' | 'machine'
-      let activeCameraMode = 'pov';
+      let activeCameraMode = 'strike-zone';
+      let followBallMode = true;
       let autoPciMode = false;
       let soundOn = true;
       let audioCtx = null;
@@ -1522,6 +1525,7 @@
           engine3D.setPitcherHand(pitcherHand);
           if (engine3D.setDeliveryMode) engine3D.setDeliveryMode(activeDeliveryMode);
           engine3D.setCameraMode(activeCameraMode);
+          if (engine3D.setFollowBall) engine3D.setFollowBall(followBallMode);
           sync3DSize();
           if (typeof ResizeObserver === 'function' && !sizeObserver) {
             sizeObserver = new ResizeObserver(sync3DSize);
@@ -1661,144 +1665,18 @@
         return audioCtx;
       }
 
-      // Sample-rate-independent RBJ 2nd-order Biquad Bandpass filter factory
-      function makeBiquadBP(fc, q, sr) {
-        const w0 = (2 * Math.PI * fc) / sr;
-        const alpha = Math.sin(w0) / (2 * q);
-        const a0 = 1 + alpha;
-        const b0 = alpha / a0;
-        const b2 = -alpha / a0;
-        const a1 = (-2 * Math.cos(w0)) / a0;
-        const a2 = (1 - alpha) / a0;
-        let x1 = 0;
-        let x2 = 0;
-        let y1 = 0;
-        let y2 = 0;
-        return (x) => {
-          const y = b0 * x + b2 * x2 - a1 * y1 - a2 * y2;
-          x2 = x1;
-          x1 = x;
-          y2 = y1;
-          y1 = y;
-          return y;
-        };
-      }
-
-      // True Physical Baseball-on-Bat Acoustic PCM Synthesis:
-      // 1) Sub-millisecond Hertzian cowhide collision N-wave (0.55 ms)
-      // 2) Multi-band cowhide & grain crack noise shaped at exact sample-rate-invariant bands (no plastic 808 pitch drop!)
-      // 3) Barrel-accurate structural acoustics:
-      //    - Baum Bat Gold: Pure dry broadband maple gunshot CRACK (~25ms dry, stadium echo carries tail); dead wood bend clunk on mishits
-      //    - 2026 The Goods: Explosive thick cowhide THWACK + tightly damped high-frequency X14 hoop bite (~2060/2690 Hz, ~75ms)
-      //    - 2022 The Goods: Heavy leather crack + bright ringing NCAA X14 alley-cat PING (~2180/2845/3480 Hz, ~185ms)
-      //    - Combat Spec-A1 (Rodeo / Members Blue): Massive SFX shotgun THWACK-KRRACK + tight dry-clipped high barrel sheen (~110ms)
+      // Authentic Dry-Crack Bat Audio PCM Synthesis (powered by DiamondPhysics)
       function getBatImpactBuffer(ctx, kind, barrelFactor) {
         const sweetBucket = barrelFactor < 0.62 ? 'jam' : 'sweet';
-        const key = `${kind}:${sweetBucket}:v3`;
+        const key = `${kind}:${sweetBucket}:v4`;
         if (batSoundCache[key]) return batSoundCache[key];
 
         const sr = ctx.sampleRate;
-        const durSec =
-          kind === 'goods-2022' || kind === 'hybrid'
-            ? 0.24
-            : kind === 'combat-rodeo' || kind === 'combat-blue'
-              ? 0.14
-              : kind === 'goods-2026'
-                ? 0.105
-                : 0.055;
-        const len = Math.floor(sr * durSec);
-        const buf = ctx.createBuffer(1, len, sr);
-        const ch = buf.getChannelData(0);
-        const rnd = makeSeededRand(kind.length * 9137 + (sweetBucket === 'sweet' ? 42 : 99));
-
-        const isOffCenter = barrelFactor < 0.62;
-        const fScale = isOffCenter ? 0.91 : 1.0;
-
-        const bpPunch = makeBiquadBP(isOffCenter ? 420 : 620, 0.95, sr);
-        const bpCrack = makeBiquadBP(isOffCenter ? 1550 : 2150, 1.05, sr);
-        const bpSnap = makeBiquadBP(4600, 0.85, sr);
-        const bpWoodBody = makeBiquadBP(1180, 1.85, sr);
-
-        for (let i = 0; i < len; i++) {
-          const t = i / sr;
-
-          // 1. Real 0.55ms Hertzian half-sine ball compression pulse + rarefaction snap (sharp front!)
-          let hertz = 0;
-          if (t < 0.00058) {
-            const u = t / 0.00058;
-            hertz = Math.sin(u * Math.PI) * 1.15;
-          } else if (t < 0.00115) {
-            const u = (t - 0.00058) / 0.00057;
-            hertz = -Math.sin(u * Math.PI) * 0.42;
-          }
-
-          // 2. Sample-rate-invariant multi-band broadband cowhide crack
-          const nRaw = rnd();
-          const fPunch = bpPunch(nRaw);
-          const fCrack = bpCrack(nRaw);
-          const fSnap = bpSnap(nRaw);
-          const fWood = bpWoodBody(nRaw);
-
-          const dryPunch = fPunch * Math.exp(-t * 145);
-          const dryCrack = fCrack * Math.exp(-t * 175) + fSnap * Math.exp(-t * 285);
-          const modeEnvIn = 1 - Math.exp(-t * 1500);
-
-          let sample = 0;
-          if (kind === 'baum-gold' || kind === 'wood') {
-            // Baum Bat Gold (Hard Maple over Composite Core):
-            // Pure dry broadband wooden CRACK — zero sustained tonal sine!
-            const woodyBody = fWood * Math.exp(-t * 165) * 1.65;
-            if (isOffCenter) {
-              // Penn State measured wood mis-hit bending modes (~168 Hz + ~538 Hz clunk)
-              const bend1 = Math.sin(2 * Math.PI * 168 * t) * Math.exp(-t * 72) * 0.24;
-              const bend2 = Math.sin(2 * Math.PI * 538 * t) * Math.exp(-t * 95) * 0.16;
-              sample = hertz * 0.72 + dryPunch * 1.45 + dryCrack * 0.9 + woodyBody + bend1 + bend2;
-            } else {
-              sample = hertz * 1.25 + dryPunch * 1.35 + dryCrack * 2.4 + woodyBody;
-            }
-          } else if (kind === 'goods-2026') {
-            // 2026 DeMarini The Goods: Stiff Direct-Connection 2pc Hybrid —
-            // Heavy chesty THWACK + tightly damped high-frequency X14 barrel bite (>2000 Hz)
-            const crackMix = hertz * 1.18 + dryPunch * 1.55 + dryCrack * 2.1 + fWood * Math.exp(-t * 135) * 1.05;
-            const hoopA = Math.sin(2 * Math.PI * (2055 * fScale) * t) * Math.exp(-t * 52) * 0.14;
-            const hoopB = Math.sin(2 * Math.PI * (2071 * fScale) * t) * Math.exp(-t * 54) * 0.10;
-            const hoop2 = Math.sin(2 * Math.PI * (2695 * fScale) * t) * Math.exp(-t * 64) * 0.09;
-            sample = crackMix + modeEnvIn * (hoopA + hoopB + hoop2);
-          } else if (kind === 'goods-2022' || kind === 'hybrid') {
-            // 2022 DeMarini The Goods: Bright metallic X14 alloy CRACK-PING! (2178/2845/3480 Hz true hoop spectrum)
-            const crackMix = hertz * 1.12 + dryPunch * 1.35 + dryCrack * 1.95 + fWood * Math.exp(-t * 140) * 0.85;
-            const h1a = Math.sin(2 * Math.PI * (2178 * fScale) * t) * Math.exp(-t * 19.5) * 0.19;
-            const h1b = Math.sin(2 * Math.PI * (2191 * fScale) * t) * Math.exp(-t * 20.5) * 0.14;
-            const h2 = Math.sin(2 * Math.PI * (2845 * fScale) * t) * Math.exp(-t * 24.0) * 0.14;
-            const h3 = Math.sin(2 * Math.PI * (3480 * fScale) * t) * Math.exp(-t * 34.0) * 0.08;
-            sample = crackMix + modeEnvIn * (h1a + h1b + h2 + h3);
-          } else {
-            // Combat MFG Spec-A1 Rodeo & Members Club Blue:
-            // Thick SFX alloy wall -> Explosive composite-like booming shotgun THWACK + crisp brief upper barrel sheen
-            const brightMul = kind === 'combat-blue' ? 1.055 : 1.0;
-            const crackMix = hertz * 1.2 + dryPunch * 1.85 + dryCrack * 2.2 + fWood * Math.exp(-t * 125) * 1.35;
-            const sfxA = Math.sin(2 * Math.PI * (2140 * brightMul * fScale) * t) * Math.exp(-t * 32.0) * 0.13;
-            const sfxB = Math.sin(2 * Math.PI * (2153 * brightMul * fScale) * t) * Math.exp(-t * 34.0) * 0.09;
-            const sfx2 = Math.sin(2 * Math.PI * (2890 * brightMul * fScale) * t) * Math.exp(-t * 42.0) * 0.08;
-            sample = crackMix + modeEnvIn * (sfxA + sfxB + sfx2);
-          }
-
-          if (isOffCenter && kind !== 'baum-gold' && kind !== 'wood') {
-            sample += Math.sin(2 * Math.PI * 192 * t) * Math.exp(-t * 58) * 0.1;
-          }
-          ch[i] = sample;
-        }
-
-        // Preserve natural acoustic crest factor (no peak squashing so crack punches cleanly above resonance)
-        let peak = 0;
-        for (let i = 0; i < len; i++) {
-          const a = Math.abs(ch[i]);
-          if (a > peak) peak = a;
-        }
-        const norm = peak > 0 ? 0.94 / peak : 1;
-        for (let i = 0; i < len; i++) {
-          ch[i] *= norm;
-        }
+        const chSamples = window.DiamondPhysics
+          ? window.DiamondPhysics.synthesizeBatImpactSamples(kind, sweetBucket, sr)
+          : new Float32Array(Math.floor(sr * 0.08));
+        const buf = ctx.createBuffer(1, chSamples.length, sr);
+        buf.getChannelData(0).set(chSamples);
 
         batSoundCache[key] = buf;
         return buf;
@@ -2391,545 +2269,36 @@
         });
       }
 
-      // Exact Empty Stadium Stepped Seat Surface Query matching stadium3d.js tiers
-      function getSeatTierInfo(st, phi, pastWall) {
-        if (pastWall < 8) return null;
-        let tiers;
-        if (st.tier === 'pro') {
-          tiers = [
-            { startPhi: -0.78, endPhi: 0.78, dOff: 12, dSpan: 56, y0: 9, y1: 34, steps: 9 },
-            { startPhi: -0.78, endPhi: -0.18, dOff: 74, dSpan: 44, y0: 40, y1: 64, steps: 7 },
-            { startPhi: 0.18, endPhi: 0.78, dOff: 74, dSpan: 44, y0: 40, y1: 64, steps: 7 }
-          ];
-        } else if (st.tier === 'hs') {
-          tiers = [
-            { startPhi: -0.74, endPhi: -0.26, dOff: 12, dSpan: 22, y0: 3.5, y1: 14, steps: 5 },
-            { startPhi: 0.26, endPhi: 0.74, dOff: 12, dSpan: 22, y0: 3.5, y1: 14, steps: 5 }
-          ];
-        } else if (st.id === 'omaha' || st.id === 'vandy') {
-          tiers = [
-            { startPhi: -0.78, endPhi: 0.78, dOff: 12, dSpan: 48, y0: 9, y1: 31, steps: 8 },
-            { startPhi: -0.78, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 },
-            { startPhi: 0.22, endPhi: 0.78, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 }
-          ];
-        } else if (st.id === 'lsu' || st.id === 'texas') {
-          tiers = [
-            { startPhi: -0.78, endPhi: 0.78, dOff: 10, dSpan: 50, y0: 10, y1: 34, steps: 8 },
-            { startPhi: -0.78, endPhi: 0.78, dOff: 66, dSpan: 38, y0: 39, y1: 57, steps: 6 }
-          ];
-        } else {
-          tiers = [
-            { startPhi: -0.76, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, steps: 6 },
-            { startPhi: 0.18, endPhi: 0.76, dOff: 10, dSpan: 46, y0: 10, y1: 32, steps: 7 },
-            { startPhi: -0.78, endPhi: 0.78, dOff: 62, dSpan: 40, y0: 38, y1: 58, steps: 6 }
-          ];
-        }
-
-        for (const tc of tiers) {
-          if (phi >= tc.startPhi && phi <= tc.endPhi && pastWall >= tc.dOff && pastWall <= tc.dOff + tc.dSpan) {
-            const frac = (pastWall - tc.dOff) / tc.dSpan;
-            const stepIdx = Math.min(tc.steps - 1, Math.floor(frac * tc.steps));
-            const stepH = (tc.y1 - tc.y0) / tc.steps;
-            return {
-              floorZ: tc.y0 + stepIdx * stepH + 1.45,
-              isSeat: st.tier !== 'hs' && (stepIdx % 2 === 0 || frac < 0.85),
-              isUpper: tc.dOff > 50
-            };
-          }
-        }
-        return { floorZ: Math.min(58, 12 + pastWall * 0.44), isSeat: false, isUpper: pastWall > 62 };
-      }
-
-      // Unrestricted Outdoor RK4 Projection (used for Rapsodo virtual outdoor distance when hitting inside Enclosed Batting Cage)
-      function simulateOutdoorProjection(exitVelo, launchDeg, sprayDeg, backspinRpm, sidespinRpm, startPos, targetSt) {
-        const st = targetSt || STADIUMS.omaha;
-        const wind = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
-        const v0 = exitVelo * 1.46667;
-        const theta = (launchDeg * Math.PI) / 180;
-        const phi = (sprayDeg * Math.PI) / 180;
-        let x = startPos ? startPos.x : 0;
-        let y = startPos ? startPos.y : 1.4;
-        let z = startPos ? Math.max(1.2, startPos.z) : 2.65;
-        let vx = v0 * Math.cos(theta) * Math.sin(phi);
-        let vy = v0 * Math.cos(theta) * Math.cos(phi);
-        let vz = v0 * Math.sin(theta);
-        const K = 0.00531 * (st.airDensity || 1.0);
-        let wx = (backspinRpm * 2 * Math.PI) / 60;
-        let wz = -(sidespinRpm * 2 * Math.PI) / 60;
-        const dt = 1 / 90;
-        let apex = z;
-        let t = 0;
-        let isHr = false;
-        let wallHit = false;
-        let carryDist = null;
-        const fair = Math.abs(sprayDeg) <= 45;
-        const deriv = (cvx, cvy, cvz, cwx, cwz) => {
-          const rvx = cvx - wind.vx;
-          const rvy = cvy - wind.vy;
-          const rvz = cvz;
-          const rsp = Math.hypot(rvx, rvy, rvz);
-          if (rsp < 0.05) return { ax: 0, ay: 0, az: -32.174 };
-          const spinMag = Math.hypot(cwx, cwz);
-          const spinFactor = (0.12 * spinMag) / rsp;
-          const cd = 0.295 + 0.145 * Math.min(0.48, spinFactor);
-          const cl = spinFactor > 0.004 ? 1 / (2.32 + 0.4 / spinFactor) : 0;
-          const drag = K * cd * rsp;
-          const mag = spinMag > 0.1 ? (K * cl * rsp) / spinMag : 0;
-          return {
-            ax: -drag * rvx + mag * (-cwz * rvy),
-            ay: -drag * rvy + mag * (cwz * rvx - cwx * rvz),
-            az: -32.174 - drag * rvz + mag * (cwx * rvy)
-          };
-        };
-        for (let step = 0; step < 720; step++) {
-          t += dt;
-          if (Math.hypot(vx, vy, vz) < 1.8 && z <= 0.16) break;
-          if (z <= 0.16 && Math.abs(vz) < 4.5 && step > 10) {
-            vx *= Math.max(0, 1 - 2.4 * dt);
-            vy *= Math.max(0, 1 - 2.4 * dt);
-            vz = 0;
-            z = 0.14;
-            x += vx * dt;
-            y += vy * dt;
-          } else {
-            const k1 = deriv(vx, vy, vz, wx, wz);
-            const k2 = deriv(vx + 0.5 * dt * k1.ax, vy + 0.5 * dt * k1.ay, vz + 0.5 * dt * k1.az, wx, wz);
-            const k3 = deriv(vx + 0.5 * dt * k2.ax, vy + 0.5 * dt * k2.ay, vz + 0.5 * dt * k2.az, wx, wz);
-            const k4 = deriv(vx + dt * k3.ax, vy + dt * k3.ay, vz + dt * k3.az, wx, wz);
-            vx += (dt / 6) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax);
-            vy += (dt / 6) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay);
-            vz += (dt / 6) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az);
-            x += vx * dt;
-            y += vy * dt;
-            z += vz * dt;
-          }
-          if (z > apex) apex = z;
-          const horiz = Math.hypot(x, y);
-          const curPhi = Math.atan2(x, Math.max(1, y));
-          if (fair && !isHr && !wallHit && Math.abs(curPhi) <= 0.785) {
-            const wDist = st.wallDist(curPhi);
-            if (horiz >= wDist) {
-              if (z > st.wallHeight(curPhi)) isHr = true;
-              else {
-                wallHit = true;
-                if (carryDist === null) carryDist = Math.round(horiz);
-                vx *= -0.55;
-                vy *= -0.55;
-                vz = Math.max(2, vz * 0.5);
-              }
-            }
-          }
-          if (z <= 0.14 && vz < 0) {
-            if (carryDist === null) carryDist = Math.round(horiz);
-            if (!isHr && Math.abs(vz) > 4.5) {
-              z = 0.16;
-              vz = Math.abs(vz) * 0.4;
-              vx *= 0.72;
-              vy *= 0.72;
-            } else {
-              z = 0.14;
-              vz = 0;
-            }
-          }
-        }
-        return {
-          dist: Math.round(Math.hypot(x, y)),
-          carryDist: carryDist || Math.round(Math.hypot(x, y)),
-          apex: Math.round(apex),
-          hangTime: Number(t.toFixed(2)),
-          isHr,
-          wallHit,
-          endX: x,
-          endY: y
-        };
-      }
-
-      // True 4th-Order Runge-Kutta (RK4) 120Hz Aerodynamics with Cage Net Containment & Stadium Seat Bounces
+      // True 4th-Order Runge-Kutta (RK4) 120Hz Batted-Ball Flight & Pitch Trajectories (via DiamondPhysics)
       function simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg, backspinRpm = 1900, sidespinRpm = 0, startPos = null) {
         const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
-        const isCage = st.id === 'cage';
-        const wind = isCage ? { vx: 0, vy: 0 } : WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
-        const v0 = exitVelo * 1.46667; // mph -> ft/s
-        const theta = (launchDeg * Math.PI) / 180;
-        const phi = (sprayDeg * Math.PI) / 180;
-
-        let x = startPos ? startPos.x : 0;
-        let y = startPos ? startPos.y : 1.4;
-        let z = startPos ? Math.max(1.2, startPos.z) : 2.65;
-        let vx = v0 * Math.cos(theta) * Math.sin(phi);
-        let vy = v0 * Math.cos(theta) * Math.cos(phi);
-        let vz = v0 * Math.sin(theta);
-
-        const airDensity = st.airDensity || 1.0;
-        const K = 0.00531 * airDensity;
-        let wx = (backspinRpm * 2 * Math.PI) / 60;
-        let wz = -(sidespinRpm * 2 * Math.PI) / 60;
-
-        const dt = 1 / 120;
-        const points = [{ x, y, z, t: 0 }];
-        let apex = z;
-        let apexTime = 0;
-        let apexPos = { x, y, z };
-        let t = 0;
-        let isHr = false;
-        let wallHit = false;
-        let wallHitTime = null;
-        let netHitTime = null;
-        let netHit2Time = null;
-        let seatHitTime = null;
-        let seatBounce2Time = null;
-        let seatSoundType = 'seat';
-        let seatBounces = 0;
-        let hangTime = null;
-        let carryDist = null;
-        let fenceClearTime = null;
-        const fair = Math.abs(sprayDeg) <= 45;
-
-        const deriv = (cvx, cvy, cvz, cwx, cwz) => {
-          const rvx = cvx - wind.vx;
-          const rvy = cvy - wind.vy;
-          const rvz = cvz;
-          const rsp = Math.hypot(rvx, rvy, rvz);
-          if (rsp < 0.05) return { ax: 0, ay: 0, az: -32.174 };
-          const spinMag = Math.hypot(cwx, cwz);
-          const spinFactor = (0.12 * spinMag) / rsp;
-          const cd = 0.295 + 0.145 * Math.min(0.48, spinFactor);
-          const cl = spinFactor > 0.004 ? 1 / (2.32 + 0.4 / spinFactor) : 0;
-          const drag = K * cd * rsp;
-          const mag = spinMag > 0.1 ? (K * cl * rsp) / spinMag : 0;
-          return {
-            ax: -drag * rvx + mag * (-cwz * rvy),
-            ay: -drag * rvy + mag * (cwz * rvx - cwx * rvz),
-            az: -32.174 - drag * rvz + mag * (cwx * rvy)
-          };
-        };
-
-        const CAGE_HALF_W = 57.5;
-        const CAGE_FAR_Y = 294.5;
-        const CAGE_BACKSTOP_Y = -15.2;
-
-        for (let step = 0; step < 1020; step++) {
-          t += dt;
-          const sp = Math.hypot(vx, vy, vz);
-          if (sp < 1.8 && z <= 0.16) break;
-
-          if (z <= 0.16 && Math.abs(vz) < 4.5 && step > 10) {
-            const onDirt = Math.hypot(x, y) < 135;
-            const friction = onDirt ? 1.85 : 2.55;
-            vx *= Math.max(0, 1 - friction * dt);
-            vy *= Math.max(0, 1 - friction * dt);
-            vz = 0;
-            z = 0.14;
-            x += vx * dt;
-            y += vy * dt;
-          } else {
-            const k1 = deriv(vx, vy, vz, wx, wz);
-            const k2 = deriv(vx + 0.5 * dt * k1.ax, vy + 0.5 * dt * k1.ay, vz + 0.5 * dt * k1.az, wx, wz);
-            const k3 = deriv(vx + 0.5 * dt * k2.ax, vy + 0.5 * dt * k2.ay, vz + 0.5 * dt * k2.az, wx, wz);
-            const k4 = deriv(vx + dt * k3.ax, vy + dt * k3.ay, vz + dt * k3.az, wx, wz);
-
-            const vxMid = vx + (dt / 12) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax);
-            const vyMid = vy + (dt / 12) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay);
-            const vzMid = vz + (dt / 12) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az);
-
-            vx += (dt / 6) * (k1.ax + 2 * k2.ax + 2 * k3.ax + k4.ax);
-            vy += (dt / 6) * (k1.ay + 2 * k2.ay + 2 * k3.ay + k4.ay);
-            vz += (dt / 6) * (k1.az + 2 * k2.az + 2 * k3.az + k4.az);
-
-            x += vxMid * dt;
-            y += vyMid * dt;
-            z += vzMid * dt;
-
-            wx *= 1 - 0.06 * dt;
-            wz *= 1 - 0.06 * dt;
-          }
-
-          if (z > apex) {
-            apex = z;
-            apexTime = t;
-            apexPos = { x, y, z };
-          }
-
-          // Strict Physical Containment inside Enclosed Pro Batting Cage (walls, curved ceiling net, back wall/net & catcher net)
-          if (isCage) {
-            let hitCageMesh = false;
-            if (Math.abs(x) >= CAGE_HALF_W) {
-              x = Math.sign(x) * CAGE_HALF_W;
-              vx = -vx * 0.24;
-              vy *= 0.42;
-              vz *= 0.65;
-              hitCageMesh = true;
-            }
-            const roofH = 33.4 * (1 - 0.36 * Math.min(1, (x / 58) * (x / 58)));
-            if (z >= roofH) {
-              z = roofH - 0.15;
-              vz = -Math.max(4, Math.abs(vz) * 0.28);
-              vx *= 0.48;
-              vy *= 0.48;
-              hitCageMesh = true;
-            }
-            if (y >= CAGE_FAR_Y) {
-              y = CAGE_FAR_Y - 0.15;
-              vy = -Math.max(5, Math.abs(vy) * (z < 14 ? 0.45 : 0.22));
-              vx *= 0.45;
-              vz *= 0.55;
-              hitCageMesh = true;
-            }
-            if (y <= CAGE_BACKSTOP_Y) {
-              y = CAGE_BACKSTOP_Y + 0.15;
-              vy = Math.abs(vy) * 0.28;
-              vx *= 0.45;
-              vz *= 0.6;
-              hitCageMesh = true;
-            }
-            if (hitCageMesh) {
-              if (netHitTime === null) {
-                netHitTime = t;
-                if (hangTime === null) hangTime = t;
-                if (carryDist === null) carryDist = Math.round(Math.hypot(x, y));
-              } else if (netHit2Time === null && t - netHitTime > 0.18) {
-                netHit2Time = t;
-              }
-              wx *= 0.2;
-              wz *= 0.2;
-            }
-          }
-
-          if (step % 2 === 0) points.push({ x, y, z: Math.max(0.14, z), t });
-
-          const horiz = Math.hypot(x, y);
-          const curPhi = Math.atan2(x, Math.max(1, y));
-
-          if (!isCage && fair && !isHr && !wallHit && Math.abs(curPhi) <= 0.785) {
-            const wDist = st.wallDist(curPhi);
-            const wH = st.wallHeight(curPhi);
-            if (horiz >= wDist) {
-              if (z > wH) {
-                isHr = true;
-                fenceClearTime = t;
-              } else {
-                wallHit = true;
-                wallHitTime = t;
-                if (carryDist === null) carryDist = Math.round(horiz);
-                const nx = -x / Math.max(1, horiz);
-                const ny = -y / Math.max(1, horiz);
-                const vn = vx * nx + vy * ny;
-                if (vn < 0) {
-                  vx -= 1.48 * vn * nx;
-                  vy -= 1.48 * vn * ny;
-                }
-                vx *= 0.82;
-                vy *= 0.82;
-                vz = Math.max(2, vz * 0.52);
-              }
-            }
-          }
-
-          // Stepped Empty Stadium Seat / Bleacher Ricochet Physics (MLB The Show seat bounces!)
-          if (!isCage && isHr) {
-            const curWall = st.wallDist(Math.max(-0.785, Math.min(0.785, curPhi)));
-            const pastWall = Math.max(0, horiz - curWall);
-            const seatInfo = getSeatTierInfo(st, curPhi, pastWall);
-            if (seatInfo && z <= seatInfo.floorZ && vz < 0) {
-              z = seatInfo.floorZ;
-              if (hangTime === null) hangTime = t;
-              if (carryDist === null) carryDist = Math.round(horiz);
-              if (seatHitTime === null) {
-                seatHitTime = t;
-                seatSoundType = seatInfo.isSeat ? 'seat' : 'concrete';
-              } else if (seatBounce2Time === null && t - seatHitTime > 0.16) {
-                seatBounce2Time = t;
-              }
-              seatBounces++;
-              if (Math.abs(vz) > 5.5 && seatBounces < 3) {
-                vz = Math.abs(vz) * 0.44;
-                // Ricochet forward/sideways slightly off molded seat back or concrete step
-                vx *= 0.56;
-                vy *= 0.56;
-                z += 0.25;
-                points.push({ x, y, z, t });
-              } else {
-                points.push({ x, y, z, t });
-                break;
-              }
-            }
-          }
-
-          if (z <= 0.14 && vz < 0) {
-            if (hangTime === null) hangTime = t;
-            if (carryDist === null) carryDist = Math.round(horiz);
-            if (!isHr && Math.abs(vz) > 4.5 && points.length < 360) {
-              z = 0.16;
-              const onDirt = horiz < 135;
-              const eVert = onDirt ? 0.48 : 0.38;
-              vz = Math.abs(vz) * eVert;
-              const spinKick = backspinRpm < -200 ? 1.04 : backspinRpm > 1600 ? 0.74 : 0.86;
-              vx *= (onDirt ? 0.84 : 0.74) * spinKick;
-              vy *= (onDirt ? 0.84 : 0.74) * spinKick;
-              wx *= 0.35;
-              wz *= 0.4;
-            } else {
-              z = 0.14;
-              vz = 0;
-            }
-          }
-        }
-
-        const last = points[points.length - 1];
-        // When inside the D1 Rapsodo Lab Cage, compute true virtual outdoor projection for Rapsodo stats while keeping 3D ball inside cage!
-        const outdoorProj = isCage
-          ? simulateOutdoorProjection(exitVelo, launchDeg, sprayDeg, backspinRpm, sidespinRpm, startPos, STADIUMS.omaha)
-          : null;
-
-        const finalDist = outdoorProj ? outdoorProj.dist : Math.round(Math.hypot(last.x, last.y));
-        const finalCarry = outdoorProj ? outdoorProj.carryDist : carryDist != null ? carryDist : finalDist;
-        const finalApex = outdoorProj ? Math.max(Math.round(apex), outdoorProj.apex) : Math.round(apex);
-        const finalHang = outdoorProj ? outdoorProj.hangTime : Number((hangTime != null ? hangTime : t).toFixed(2));
-        const reportIsHr = fair && (outdoorProj ? outdoorProj.isHr : isHr);
-        const reportWallHit = fair && (outdoorProj ? outdoorProj.wallHit : wallHit);
-        const reportEndX = outdoorProj ? outdoorProj.endX : last.x;
-        const reportEndY = outdoorProj ? outdoorProj.endY : last.y;
-
-        // Expected Batting Average (xBA) heuristic matching Statcast EV/LA buckets
-        let xbaNum = 0.08;
-        if (fair) {
-          if (reportIsHr) xbaNum = 0.99;
-          else if (launchDeg >= 10 && launchDeg <= 28 && exitVelo >= 94) xbaNum = 0.68 + Math.min(0.27, (exitVelo - 94) * 0.025);
-          else if (launchDeg >= 8 && launchDeg <= 22 && exitVelo >= 85) xbaNum = 0.44 + (exitVelo - 85) * 0.02;
-          else if (launchDeg < 6 && exitVelo >= 95) xbaNum = 0.38;
-          else if (launchDeg > 40) xbaNum = 0.06;
-          else xbaNum = 0.21;
-        }
-        const xba = fair ? `.${String(Math.round(Math.min(0.999, Math.max(0.01, xbaNum)) * 1000)).padStart(3, '0')}` : '.000';
-
-        let outcome = 'Out';
-        let color = '#94a3b8';
-        if (!fair) {
-          outcome = 'Foul Ball';
-          color = '#fbbf24';
-        } else if (reportIsHr) {
-          outcome = finalDist >= 425 ? 'UPPER DECK BOMB!' : 'HOME RUN!';
-          color = '#38bdf8';
-        } else if (reportWallHit) {
-          outcome = 'DOUBLE OFF WALL!';
-          color = '#22c55e';
-        } else if (launchDeg < 8) {
-          outcome = exitVelo >= 95 ? 'Hard Single!' : 'Ground Out';
-          color = exitVelo >= 95 ? '#22c55e' : '#fbbf24';
-        } else if (launchDeg <= 22 && exitVelo >= 92) {
-          outcome = finalDist >= 260 ? 'Gap Double!' : 'Line Drive Single!';
-          color = '#22c55e';
-        } else if (launchDeg > 42 && finalDist < 220) {
-          outcome = 'Infield Pop-Up';
-          color = '#f87171';
-        } else {
-          outcome = finalDist >= 325 ? 'Deep Warning-Track Fly' : 'Fly Out';
-          color = '#fbbf24';
-        }
-
-        // Exact Post-Flight Reveal Time so Rapsodo telemetry & score never spoil the hit immediately at contact!
-        const revealTime = isCage
-          ? Math.max(0.55, netHitTime != null ? netHitTime : Math.min(t, 0.9))
-          : !fair
-            ? Math.min(t, Math.max(0.75, hangTime != null ? hangTime : 1.15))
-            : reportIsHr
-              ? Math.max(0.9, seatHitTime != null ? seatHitTime : fenceClearTime != null ? fenceClearTime + 0.25 : t * 0.85)
-              : reportWallHit
-                ? Math.max(0.9, wallHitTime != null ? wallHitTime + 0.15 : t * 0.8)
-                : Math.max(0.75, hangTime != null ? hangTime : t * 0.85);
-
-        return {
-          points,
-          dist: finalDist,
-          carryDist: finalCarry,
-          apex: finalApex,
-          apexTime,
-          apexPos,
-          hangTime: finalHang,
-          xba,
-          exitVelo: Number(exitVelo.toFixed(1)),
-          launchAngle: Math.round(launchDeg),
-          sprayDeg: Math.round(sprayDeg),
-          backspinRpm: Math.round(backspinRpm),
-          sidespinRpm: Math.round(sidespinRpm),
-          outcome,
-          isHr: reportIsHr,
-          wallHit: reportWallHit,
-          wallHitTime,
-          wallThudPlayed: false,
-          netHitTime,
-          netThudPlayed: false,
-          netHit2Time,
-          net2Played: false,
-          seatHitTime,
-          seatBounce2Time,
-          seatSoundType,
-          seatSoundPlayed: false,
-          seatBounce2Played: false,
-          fair,
-          color,
-          endX: reportEndX,
-          endY: reportEndY,
-          revealTime,
-          telemetryRevealed: false,
-          totalTime: t
-        };
+        const wind = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
+        return window.DiamondPhysics.simulateBattedBallRK4({
+          stadium: st,
+          outdoorFallbackStadium: STADIUMS.omaha,
+          wind,
+          exitVelo,
+          launchDeg,
+          sprayDeg,
+          backspinRpm,
+          sidespinRpm,
+          startPos
+        });
       }
 
-      function mirrorClockLabel(clockStr) {
-        const parts = String(clockStr || '12:00').split(':');
-        const h = Number(parts[0]) || 12;
-        const m = Number(parts[1]) || 0;
-        const totalMin = ((12 * 60 - ((h % 12) * 60 + m)) + 720) % 720;
-        const mh = Math.floor(totalMin / 60) || 12;
-        const mm = totalMin % 60;
-        return `${mh}:${String(mm).padStart(2, '0')}`;
-      }
-
-      // Precompute realistic RK4 pitched baseball path from RHP (+0.88), LHP (-0.88), or Dual-Wheel Pitching Machine (0, 3.85)
       function precomputePitchTrajectory(mph, typeKey, endX, endY, isDemo, hand = pitcherHand, deliveryMode = activeDeliveryMode) {
+        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
         const spec = PITCH_TYPES[typeKey] || PITCH_TYPES.fastball;
-        const isMachine = deliveryMode === 'machine';
-        const pSign = hand === 'L' ? -1 : 1;
-        const speedFtS = mph * 1.46667;
-        const targetX = endX * 0.88;
-        const targetY = 2.65 - endY * 1.0;
-        const dur = isDemo ? 0.68 : Math.max(0.54, Math.min(0.84, 57 / speedFtS));
-
-        const magX = isDemo ? 0 : isMachine ? spec.magX * pSign * 0.52 : spec.magX * pSign;
-        const magY = isDemo ? 16.5 : spec.magY;
-
-        const startX = isMachine ? 0 : 0.88 * pSign;
-        const startY = isMachine ? 3.85 : 6.12;
-        const startZ = isMachine ? -54.5 : -55.0;
-        const ayTotal = -32.174 + magY;
-        const axTotal = magX;
-        const vx0 = (targetX - startX - 0.5 * axTotal * dur * dur) / dur;
-        const vy0 = (targetY - startY - 0.5 * ayTotal * dur * dur) / dur;
-        const vz0 = (0 - startZ) / dur;
-
-        const samples = [];
-        const steps = 60;
-        for (let i = 0; i <= steps; i++) {
-          const p = (i / steps) * 1.06;
-          const t = p * dur;
-          const dragScale = 1 - 0.036 * t;
-          samples.push({
-            x: startX + vx0 * t * dragScale + 0.5 * axTotal * t * t,
-            y: Math.max(0.32, startY + vy0 * t + 0.5 * ayTotal * t * t),
-            z: startZ + vz0 * t * (1 - 0.025 * t)
-          });
-        }
-        return {
-          dur,
-          samples,
-          targetX,
-          targetY,
-          hbIn: Number((spec.hbIn * pSign * (isMachine ? 0.52 : 1)).toFixed(1)),
-          spinAxisDeg: pSign === 1 ? spec.spinAxisDeg : (360 - spec.spinAxisDeg) % 360,
-          spinAxisClock: pSign === 1 ? spec.spinAxisClock : mirrorClockLabel(spec.spinAxisClock),
-          descendDeg: Math.atan2(vy0 + ayTotal * dur, vz0) * (180 / Math.PI)
-        };
+        return window.DiamondPhysics.simulatePitchRK4({
+          mph,
+          spec,
+          endX,
+          endY,
+          isDemo,
+          hand,
+          deliveryMode,
+          airDensity: st.airDensity || 1.0
+        });
       }
 
       function launchPitch(isDemoHr = false) {
@@ -3040,6 +2409,9 @@
         sim.calloutTimer = 2.9;
 
         updateSessionDom(rep);
+        if (studioAskJaxBtn) {
+          studioAskJaxBtn.dataset.jaxPrompt = `I just hit a ${fl.outcome} (${fl.exitVelo} mph EV, ${fl.launchAngle}° launch angle, ${fl.dist} ft) with the ${(BATS[activeBatId] || {}).name || activeBatId}. What mechanical tweak helps me square up more barrels?`;
+        }
         if (pitchNote) {
           const spinWord = fl.backspinRpm >= 0 ? `${fl.backspinRpm} rpm backspin` : `${Math.abs(fl.backspinRpm)} rpm topspin`;
           pitchNote.textContent = `${fl.outcome} — ${fl.dist} ft (${fl.carryDist} ft carry · ${fl.launchAngle}° · ${spinWord})`;
@@ -3094,13 +2466,15 @@
           sim.calloutText = call.toUpperCase();
           sim.calloutSub = absTime > 0.24 ? (timingErr < 0 ? 'Too Early' : 'Too Late') : 'Missed PCI';
           sim.calloutTimer = 1.4;
+          if (studioAskJaxBtn) {
+            studioAskJaxBtn.dataset.jaxPrompt = `I missed on a ${sim.pitch.mph} mph ${sim.pitch.name} (${sim.calloutSub}). How do I fix my timing and barrel tracking?`;
+          }
           updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, hangTime: null, backspinRpm: null, outcome: call, color: '#f87171' });
           if (swingBtn) swingBtn.textContent = 'Throw Pitch';
           return;
         }
 
-        // Refined MOI / COR Bat-Ball Physics:
-        // Low-MOI 1-piece SFX bats swing fastest; High-MOI X14 end-load Goods bats convert mass into peak EV; Wood punishes off-center miss hits sharply.
+        // Calibrated Bat-Ball Impact Kinematics (via DiamondPhysics — realistic 66-77 mph swing & 96-111.5 mph clean barrels)
         const radialRatio = distFromSweet / maxReach;
         const isTrueBarrel = radialRatio <= 0.39 && absTime <= 0.11;
         const sharpness = bat.taperSharpness || 1.0;
@@ -3110,40 +2484,21 @@
         const timingCurve = absTime <= 0.085 ? 1.0 : Math.max(0.44, 1 - (absTime - 0.085) * 2.25);
         const sweetSpotEff = Math.max(0.2, radialCurve * timingCurve);
 
-        const swingMph = Number((sim.demoAutoSwing ? 82.0 * bat.weightMod : (73.5 + sweetSpotEff * 10.6) * bat.weightMod).toFixed(1));
-        const moiInertiaBoost = 1 + ((bat.moi || 1.0) - 1.0) * 0.12 * sweetSpotEff;
-        const collisionQ = (bat.cor || 0.5) * 0.425 * bat.popMod * (0.94 + 0.09 * sweetSpotEff);
-        const exitVelo = Math.min(
-          117.5,
-          collisionQ * sim.pitch.mph + (1 + collisionQ) * swingMph * moiInertiaBoost * (0.81 + 0.22 * sweetSpotEff)
-        );
-        const smashFactor = Number((exitVelo / Math.max(55, swingMph)).toFixed(2));
-        const attackAngle = Math.round((isTrueBarrel ? 11 : 9 + Math.max(-4, Math.min(8, underBallOffset * 14))) + (bat.launchLift || 0));
-
-        // Oblique Bat-Ball Gear Effect: attack angle + vertical offset + end-load loft drives launch angle & backspin RPM
-        const pitchDesc = sim.pitch.descendDeg || -7.5;
-        let launchDeg = sim.demoAutoSwing
-          ? 27 + (bat.launchLift || 0) * 0.4
-          : isTrueBarrel
-            ? 24 + (bat.launchLift || 0) + Math.max(-4, Math.min(7, underBallOffset * 26)) + (Math.random() - 0.5) * 2.0
-            : 14.5 + (bat.launchLift || 0) * 0.6 + underBallOffset * 42 - pitchDesc * 0.2 + (Math.random() - 0.5) * 2.4;
-        launchDeg = Math.max(-10, Math.min(56, launchDeg));
-
-        const backspinRpm = sim.demoAutoSwing
-          ? 2220
-          : isTrueBarrel
-            ? Math.round(2060 + underBallOffset * 950)
-            : Math.max(-1900, Math.min(3500, 1340 + underBallOffset * 2900 + (launchDeg - 15) * 26));
-
-        // Handedness-accurate spray physics: RHB early timing pulls LF (-sprayDeg), LHB early timing pulls RF (+sprayDeg)!
-        let sprayDeg = sim.demoAutoSwing ? -14 * hSign : timingErr * 148 * hSign + dx * 20;
-        if (isTrueBarrel && Math.abs(sprayDeg) > 36) sprayDeg = Math.sign(sprayDeg) * 34;
-        if (absTime > 0.165) {
-          sprayDeg = (timingErr < 0 ? -56 : 56) * hSign;
-        }
-        sprayDeg = Math.max(-68, Math.min(68, sprayDeg));
-
-        const sidespinRpm = Math.max(-1450, Math.min(1450, sprayDeg * 25 + dx * 420));
+        const kin = window.DiamondPhysics.computeSwingKinematics({
+          bat,
+          pitchMph: sim.pitch.mph,
+          pitchDescendDeg: sim.pitch.descendDeg || -7.5,
+          sweetSpotEff,
+          isTrueBarrel,
+          demoAutoSwing: sim.demoAutoSwing,
+          underBallOffset,
+          timingErr,
+          dx,
+          hSign,
+          randA: Math.random(),
+          randB: Math.random()
+        });
+        const { swingMph, exitVelo, smashFactor, attackAngle, launchDeg, backspinRpm, sprayDeg, sidespinRpm } = kin;
 
         const contactStart = {
           x: sim.pitch.endX * 0.88,
@@ -3212,18 +2567,22 @@
         if (swingBtn) swingBtn.textContent = 'Throw Pitch';
       }
 
-      // Compute pixel-exact Strike Zone HUD rectangle projected through live 3D camera!
+      // Compute pixel-exact Strike Zone HUD rectangle projected cleanly across all MLB The Show cameras
       function getStrikeZoneHudRect() {
-        if (engine3D) {
+        if (engine3D && activeCameraMode !== 'swing-lab') {
           const tl = engine3D.projectWorldToNorm(-0.88, 3.65, 0);
           const br = engine3D.projectWorldToNorm(0.88, 1.65, 0);
-          const x = tl.nx * LOG_W;
-          const y = tl.ny * LOG_H;
-          const w = Math.max(76, (br.nx - tl.nx) * LOG_W);
-          const h = Math.max(76, (br.ny - tl.ny) * LOG_H);
-          return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
+          const rawW = (br.nx - tl.nx) * LOG_W;
+          const rawH = (br.ny - tl.ny) * LOG_H;
+          if (rawW >= 42 && rawW <= 340 && rawH >= 48 && rawH <= 340 && tl.nx > -0.2 && br.nx < 1.2) {
+            const w = Math.max(82, Math.min(250, rawW));
+            const h = Math.max(88, Math.min(250, rawH));
+            const x = Math.max(24, Math.min(LOG_W - w - 24, tl.nx * LOG_W));
+            const y = Math.max(46, Math.min(LOG_H - h - 24, tl.ny * LOG_H));
+            return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
+          }
         }
-        return { x: LOG_W / 2 - 58, y: 222, w: 116, h: 110, cx: LOG_W / 2, cy: 277 };
+        return { x: LOG_W / 2 - 62, y: 175, w: 124, h: 132, cx: LOG_W / 2, cy: 241 };
       }
 
       function scheduleNextFrame() {
@@ -3235,7 +2594,7 @@
       }
 
       function renderFrame(ts) {
-        const dt = sim.lastTs ? Math.min(0.05, (ts - sim.lastTs) / 1000) : 0.016;
+        const dt = sim.lastTs ? Math.min(0.085, (ts - sim.lastTs) / 1000) : 0.016;
         sim.lastTs = ts;
 
         // Keyboard PCI movement
@@ -3553,21 +2912,24 @@
             hctx.restore();
           }
 
-          // Clean Broadcast Bat & Stadium Corner Tags
-          hctx.fillStyle = 'rgba(10, 18, 32, 0.82)';
-          hctx.fillRect(14, 12, 248, 28);
-          hctx.strokeStyle = bat.accentColor;
-          hctx.lineWidth = 1.4;
-          hctx.strokeRect(14, 12, 248, 28);
+          // Clean Broadcast Bat & Stadium Corner Tags (sleek translucent glass + subtle accent bar)
+          hctx.fillStyle = 'rgba(10, 18, 32, 0.76)';
+          hctx.fillRect(14, 12, 246, 28);
+          hctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+          hctx.lineWidth = 1;
+          hctx.strokeRect(14, 12, 246, 28);
+          hctx.fillStyle = bat.accentColor || '#38bdf8';
+          hctx.fillRect(14, 12, 4, 28);
           hctx.fillStyle = '#f8fafc';
           hctx.font = '700 11px "Outfit", sans-serif';
           hctx.textAlign = 'left';
-          hctx.fillText(`${bat.name.toUpperCase()}`, 24, 30);
+          hctx.fillText(`${bat.name.toUpperCase()}`, 26, 30);
 
-          hctx.fillStyle = 'rgba(10, 18, 32, 0.82)';
-          hctx.fillRect(LOG_W - 184, 12, 170, 28);
-          hctx.strokeStyle = 'rgba(255,255,255,0.22)';
-          hctx.strokeRect(LOG_W - 184, 12, 170, 28);
+          hctx.fillStyle = 'rgba(10, 18, 32, 0.76)';
+          hctx.fillRect(LOG_W - 190, 12, 176, 28);
+          hctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+          hctx.lineWidth = 1;
+          hctx.strokeRect(LOG_W - 190, 12, 176, 28);
           hctx.fillStyle = '#fde68a';
           hctx.font = '700 10.5px "IBM Plex Mono", monospace';
           hctx.textAlign = 'right';
@@ -3794,6 +3156,21 @@
           cageEngaged = true;
           if (sim.phase === 'windup' || sim.phase === 'pitch') return;
           launchPitch(true);
+        };
+      }
+
+      if (trackBallBtn) {
+        trackBallBtn.onclick = () => {
+          cageEngaged = true;
+          followBallMode = !followBallMode;
+          trackBallBtn.setAttribute('aria-pressed', String(followBallMode));
+          trackBallBtn.textContent = followBallMode ? 'Track Ball: On' : 'Let It Fly';
+          if (engine3D && engine3D.setFollowBall) engine3D.setFollowBall(followBallMode);
+          if (pitchNote) {
+            pitchNote.textContent = followBallMode
+              ? 'Ball tracking active — camera follows flight to apex & landing spot.'
+              : 'Let It Fly mode — camera holds steady at home plate to watch the ball soar out.';
+          }
         };
       }
 

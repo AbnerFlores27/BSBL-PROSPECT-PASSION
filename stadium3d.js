@@ -2576,7 +2576,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     sctx.fillStyle = g;
     sctx.fillRect(0, 0, 4, 256);
     skyTex.needsUpdate = true;
-    scene.fog = new THREE.Fog(lowHex, 320, 980);
+    scene.fog = new THREE.Fog(lowHex, 520, 1280);
   }
 
   /* =========================================================
@@ -2592,7 +2592,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   const dugoutRoofMat = new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.65 });
   const dugoutTrimMat = new THREE.MeshStandardMaterial({ color: '#0ea5e9', roughness: 0.45 });
 
-  const turfGround = new THREE.Mesh(new THREE.CircleGeometry(600, 72), turfMat);
+  const turfGround = new THREE.Mesh(new THREE.CircleGeometry(990, 96), turfMat);
   turfGround.rotation.x = -Math.PI / 2;
   turfGround.receiveShadow = true;
   fieldGroup.add(turfGround);
@@ -2603,20 +2603,19 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   const arcCx = 0;
   const arcCy = 60.5;
   const arcR = 95.0;
-  // Sweep along the outer 95ft skinned dirt boundary from 3B foul apron (-11 ft outside foul line) to 1B foul apron
   const arcStartA = Math.PI - 0.54;
   const arcEndA = 0.54;
   const x3bStart = arcCx + Math.cos(arcStartA) * arcR;
   const y3bStart = arcCy + Math.sin(arcStartA) * arcR;
-  skinnedShape.moveTo(-12.5, 4.5);
+  skinnedShape.moveTo(-14.5, 4.5);
   skinnedShape.lineTo(x3bStart, y3bStart);
-  const arcSteps = 44;
+  const arcSteps = 56;
   for (let i = 1; i <= arcSteps; i++) {
     const a = arcStartA + (i / arcSteps) * (arcEndA - arcStartA);
     skinnedShape.lineTo(arcCx + Math.cos(a) * arcR, arcCy + Math.sin(a) * arcR);
   }
-  skinnedShape.lineTo(12.5, 4.5);
-  skinnedShape.quadraticCurveTo(0, -10.5, -12.5, 4.5);
+  skinnedShape.lineTo(14.5, 4.5);
+  skinnedShape.quadraticCurveTo(0, -14.5, -14.5, 4.5);
   skinnedShape.closePath();
 
   const infieldDirt = new THREE.Mesh(new THREE.ShapeGeometry(skinnedShape), dirtMat);
@@ -2625,16 +2624,16 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   infieldDirt.receiveShadow = true;
   fieldGroup.add(infieldDirt);
 
-  // True Regulation Inner Infield Turf Diamond (+sy -> -z toward center field!) with smooth carved dirt bag aprons
+  // Contoured Inner Infield Turf Diamond with Clean Curved Bag Cutouts & Keyhole Dirt Apron (zero z-fighting!)
   const diamondShape = new THREE.Shape();
-  diamondShape.moveTo(-9.5, 19.5);
-  diamondShape.quadraticCurveTo(0, 15.0, 9.5, 19.5);   // curved cut above home plate 26ft circle
-  diamondShape.lineTo(50.5, 58.0);
-  diamondShape.quadraticCurveTo(46.0, 64.0, 50.5, 70.0); // 1B curved dirt cutout
-  diamondShape.lineTo(8.5, 112.0);
-  diamondShape.quadraticCurveTo(0, 108.0, -8.5, 112.0);  // 2B curved dirt cutout
-  diamondShape.lineTo(-50.5, 70.0);
-  diamondShape.quadraticCurveTo(-46.0, 64.0, -50.5, 58.0); // 3B curved dirt cutout
+  diamondShape.moveTo(-10.5, 19.2);
+  diamondShape.quadraticCurveTo(0, 14.5, 10.5, 19.2);    // curved front of 26-ft plate circle
+  diamondShape.lineTo(50.2, 57.6);
+  diamondShape.quadraticCurveTo(45.5, 64.0, 50.2, 70.4);   // 1B curved sliding-pit cutout
+  diamondShape.lineTo(9.0, 111.6);
+  diamondShape.quadraticCurveTo(0, 107.2, -9.0, 111.6);    // 2B curved sliding-pit cutout
+  diamondShape.lineTo(-50.2, 70.4);
+  diamondShape.quadraticCurveTo(-45.5, 64.0, -50.2, 57.6); // 3B curved sliding-pit cutout
   diamondShape.closePath();
 
   const innerGrass = new THREE.Mesh(new THREE.ShapeGeometry(diamondShape), turfMat);
@@ -2643,32 +2642,21 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   innerGrass.receiveShadow = true;
   fieldGroup.add(innerGrass);
 
-  // Authentic College Dirt Sliding-Pit Circles around 1B, 2B, 3B + 18-ft Mound Dirt Apron
-  [
-    [63.64, -63.64, 12.2],
-    [0, -127.28, 13.4],
-    [-63.64, -63.64, 12.2],
-    [0, -60.5, 10.6]
-  ].forEach(([bx, bz, rad]) => {
-    const pit = new THREE.Mesh(new THREE.CircleGeometry(rad, 28), dirtMat);
-    pit.rotation.x = -Math.PI / 2;
-    pit.position.set(bx, 0.042, bz);
-    pit.receiveShadow = true;
-    fieldGroup.add(pit);
-  });
+  // Unified Home-Plate Dirt Circle + Tapered Keyhole Runner Lane + Mound Apron (single non-overlapping ShapeGeometry!)
+  const keyholeShape = new THREE.Shape();
+  keyholeShape.absarc(0, -0.5, 13.8, 0.16, Math.PI - 0.16, true); // home plate circle
+  keyholeShape.lineTo(-2.1, 14.0);
+  keyholeShape.lineTo(-2.1, 52.0);
+  keyholeShape.absarc(0, 60.5, 10.2, Math.PI + 1.36, -1.36, true); // smooth blend into 18-ft mound ring
+  keyholeShape.lineTo(2.1, 52.0);
+  keyholeShape.lineTo(2.1, 14.0);
+  keyholeShape.closePath();
 
-  const homeDirt = new THREE.Mesh(new THREE.CircleGeometry(14.5, 32), dirtMat);
-  homeDirt.rotation.x = -Math.PI / 2;
-  homeDirt.position.set(0, 0.041, 0.8);
-  homeDirt.receiveShadow = true;
-  fieldGroup.add(homeDirt);
-
-  // Subtle dirt runner lane / keyhole from home dirt toward mound
-  const keyhole = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 48), dirtMat);
-  keyhole.rotation.x = -Math.PI / 2;
-  keyhole.position.set(0, 0.04, -36.0);
-  keyhole.receiveShadow = true;
-  fieldGroup.add(keyhole);
+  const homeKeyholeMesh = new THREE.Mesh(new THREE.ShapeGeometry(keyholeShape), dirtMat);
+  homeKeyholeMesh.rotation.x = -Math.PI / 2;
+  homeKeyholeMesh.position.y = 0.041;
+  homeKeyholeMesh.receiveShadow = true;
+  fieldGroup.add(homeKeyholeMesh);
 
   // Contoured Bell-Curve Pitcher's Mound (LatheGeometry — zero sharp cylinder frustum)
   const moundPts = [
@@ -3206,25 +3194,32 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       ? new THREE.MeshStandardMaterial({ map: masonryTex, roughness: 0.82, side: THREE.DoubleSide })
       : new THREE.MeshStandardMaterial({ color: id === 'dodger' ? '#475569' : '#2c3a4f', roughness: 0.85, side: THREE.DoubleSide });
 
-    // Exterior Appron / Plaza Pavement beyond the playing wall (eliminates endless mowed turf outside parks!)
-    if (!isHs || id === 'hs-metro') {
-      const plazaStrip = createSweptStripGeometry(
-        (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + 2,
-        () => 620,
-        () => 0.02,
-        () => 0.02,
-        -Math.PI,
-        Math.PI,
-        96
-      );
-      const plazaColor = id === 'oracle' ? '#1e293b' : id === 'texas' ? '#3f3830' : '#1b2432';
-      const plazaMesh = new THREE.Mesh(
-        plazaStrip,
-        new THREE.MeshStandardMaterial({ color: plazaColor, roughness: 0.94, side: THREE.DoubleSide })
-      );
-      plazaMesh.receiveShadow = true;
-      grp.add(plazaMesh);
-    }
+    // Exterior Apron / Plaza Pavement extending cleanly out to horizon (zero abrupt hollow edge!)
+    const outerGroundR = 990;
+    const outerRadiusFn = (phi) => {
+      const aPhi = Math.abs(phi);
+      if (aPhi <= 0.785) return stSpec.wallDist(phi) + 2;
+      // Smoothly taper along 1B/3B foul walls back to home plate
+      const foulT = clamp((aPhi - 0.785) / (Math.PI * 0.56 - 0.785), 0, 1);
+      const poleD = stSpec.wallDist(phi >= 0 ? 0.785 : -0.785);
+      return poleD * (1 - foulT) + (isHs ? 44 : 58) * foulT;
+    };
+    const plazaStrip = createSweptStripGeometry(
+      outerRadiusFn,
+      () => outerGroundR,
+      () => 0.02,
+      () => 0.02,
+      -Math.PI,
+      Math.PI,
+      108
+    );
+    const plazaColor = isHs ? '#1b3526' : id === 'oracle' ? '#1a2736' : id === 'texas' ? '#3a342c' : '#1b2432';
+    const plazaMesh = new THREE.Mesh(
+      plazaStrip,
+      new THREE.MeshStandardMaterial({ color: plazaColor, roughness: 0.94, side: THREE.DoubleSide })
+    );
+    plazaMesh.receiveShadow = true;
+    grp.add(plazaMesh);
 
     // 2. Outfield Perimeter Wall (HS = Authentic Chain-Link + Windscreen + Steel Posts; Pro/Col = Solid Padded Wall)
     if (isHs) {
@@ -3536,6 +3531,63 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       suiteGlass.position.y = suiteY + 3.2;
       grp.add(suiteGlass);
 
+      // Smooth Baseline Concave Interpolation so 1B & 3B grandstands seamlessly bridge Infield Corner -> Foul Pole!
+      const baselineDistFn = (phi) => {
+        const aPhi = Math.abs(phi);
+        const startA = 0.79;
+        const endA = Math.PI * 0.55;
+        const u = clamp((aPhi - startA) / (endA - startA), 0, 1);
+        const poleD = stSpec.wallDist(phi >= 0 ? 0.785 : -0.785);
+        const cornerD = infRadiusFn();
+        // Smooth foul-line apron curve that stays just outside foul territory
+        return poleD * Math.pow(1 - u, 1.35) + cornerD * (1 - Math.pow(1 - u, 1.35)) + 16;
+      };
+
+      // Close 3B (-1.72..-0.79) and 1B (+0.79..+1.72) Seating Wings so ZERO hollow gaps exist behind left & right seats!
+      addBowlSection(baselineDistFn, {
+        startPhi: -Math.PI * 0.55,
+        endPhi: -0.79,
+        dOff: 0,
+        dSpan: isPro ? 52 : 42,
+        y0: 5.5,
+        y1: isPro ? 30 : 24,
+        yBase: 0,
+        steps: isPro ? 8 : 6,
+        slices: 26,
+        backDepth: 12,
+        rearExtraH: 7
+      });
+      addBowlSection(baselineDistFn, {
+        startPhi: 0.79,
+        endPhi: Math.PI * 0.55,
+        dOff: 0,
+        dSpan: isPro ? 52 : 42,
+        y0: 5.5,
+        y1: isPro ? 30 : 24,
+        yBase: 0,
+        steps: isPro ? 8 : 6,
+        slices: 26,
+        backDepth: 12,
+        rearExtraH: 7
+      });
+
+      // Outer 360-Degree Architectural Stadium Concourse Perimeter & Colonnade Wall (eliminates "floating open void" behind stands!)
+      const perimeterR = (phi) => {
+        const aPhi = Math.abs(phi);
+        if (aPhi <= 0.785) return stSpec.wallDist(phi) + (isPro ? 94 : 74);
+        if (aPhi <= Math.PI * 0.55) return baselineDistFn(phi) + (isPro ? 58 : 48);
+        return infRadiusFn() + (isPro ? 96 : 62);
+      };
+      const concourseWall = new THREE.Mesh(
+        createSweptWallGeometry(perimeterR, () => (isPro ? 44 : 30), -Math.PI, Math.PI, 96, 8),
+        exteriorMat
+      );
+      concourseWall.castShadow = true;
+      concourseWall.receiveShadow = true;
+      grp.add(concourseWall);
+      grp.add(buildTopCopingTube(perimeterR, () => (isPro ? 44.5 : 30.5), -Math.PI, Math.PI, 96, 1.3, masonryTex ? concreteMat : railMat));
+      grp.add(buildSupportColumns(perimeterR, -4, 0, isPro ? 44 : 30, -Math.PI + 0.08, Math.PI - 0.08, 42, 1.9, concreteMat));
+
       // Park-Specific Infield Grandstand Upper Deck / Signature Canopy Roof
       if (isPro) {
         if (id === 'dodger') {
@@ -3549,28 +3601,26 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
             roughness: 0.75,
             side: THREE.DoubleSide
           });
-          addBowlSection(infRadiusFn, { startPhi: Math.PI * 0.58, endPhi: Math.PI * 1.42, dOff: 62, dSpan: 34, y0: 40, y1: 58, yBase: 36, steps: 6, slices: 38, noChairs: true }, resMat);
-          addBowlSection(infRadiusFn, { startPhi: Math.PI * 0.74, endPhi: Math.PI * 1.26, dOff: 98, dSpan: 24, y0: 62, y1: 76, yBase: 58, steps: 4, slices: 26, noChairs: true }, topMat);
+          addBowlSection(infRadiusFn, { startPhi: Math.PI * 0.54, endPhi: Math.PI * 1.46, dOff: 60, dSpan: 36, y0: 40, y1: 58, yBase: 36, steps: 6, slices: 38, noChairs: true }, resMat);
+          addBowlSection(infRadiusFn, { startPhi: Math.PI * 0.72, endPhi: Math.PI * 1.28, dOff: 98, dSpan: 24, y0: 62, y1: 76, yBase: 58, steps: 4, slices: 26, noChairs: true }, topMat);
         } else {
-          addBowlSection(infRadiusFn, { startPhi: Math.PI * 0.58, endPhi: Math.PI * 1.42, dOff: 60, dSpan: 42, y0: 41, y1: 66, yBase: 36, steps: 7, slices: 38, noChairs: true });
+          addBowlSection(infRadiusFn, { startPhi: Math.PI * 0.54, endPhi: Math.PI * 1.46, dOff: 58, dSpan: 44, y0: 41, y1: 66, yBase: 36, steps: 7, slices: 38, noChairs: true });
         }
-        // Pro Infield Roof Canopy Ring
         const roofHex = id === 'fenway' ? '#1e3a2f' : id === 'wrigley' ? '#14532d' : id === 'dodger' ? '#f8fafc' : '#0f172a';
         grp.add(
           new THREE.Mesh(
-            createSweptStripGeometry(() => infRadiusFn() + 56, () => infRadiusFn() + 114, () => 74, () => 78, Math.PI * 0.62, Math.PI * 1.38, 42),
+            createSweptStripGeometry(() => infRadiusFn() + 56, () => infRadiusFn() + 114, () => 74, () => 78, Math.PI * 0.58, Math.PI * 1.42, 42),
             new THREE.MeshStandardMaterial({ color: roofHex, roughness: 0.45, side: THREE.DoubleSide })
           )
         );
       } else {
-        // Distinct College Infield Press Roofs per Program!
         const canopyColor = id === 'omaha' ? '#f8fafc' : id === 'lsu' ? '#461d7c' : id === 'missst' ? '#5d1725' : id === 'vandy' ? '#18181b' : '#bf5700';
         const infRoof = new THREE.Mesh(
-          createSweptStripGeometry(() => infRadiusFn() + 34, () => infRadiusFn() + 68, () => 40, () => 44, Math.PI * 0.64, Math.PI * 1.36, 36),
+          createSweptStripGeometry(() => infRadiusFn() + 34, () => infRadiusFn() + 68, () => 40, () => 44, Math.PI * 0.62, Math.PI * 1.38, 36),
           new THREE.MeshStandardMaterial({ color: canopyColor, roughness: 0.42, side: THREE.DoubleSide })
         );
         grp.add(infRoof);
-        grp.add(buildSupportColumns(infRadiusFn, 56, 25, 43, Math.PI * 0.68, Math.PI * 1.32, 9, 1.35, steelMat));
+        grp.add(buildSupportColumns(infRadiusFn, 56, 25, 43, Math.PI * 0.66, Math.PI * 1.34, 9, 1.35, steelMat));
       }
     }
 
@@ -3613,8 +3663,59 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     if (isHs) lightGroup.scale.set(1, 0.68, 1);
     grp.add(lightGroup);
 
-    // 7. Park-Specific Scoreboard & Batter's Eye (Zero copy-paste CF rectangle on Dodger/Wrigley!)
+    // 7. Crisp High-Contrast CF Batter's Eye (Essential for picking up white baseball seams on EVERY park!) + Scoreboards
     const cfDist = stSpec.wallDist(0);
+    const buildBattersEye = (width, height, distFromOrigin, eyeColorHex, isHedge = false) => {
+      const beGrp = new THREE.Group();
+      beGrp.position.set(0, 0, -distFromOrigin);
+      const matteMat = new THREE.MeshStandardMaterial({
+        color: eyeColorHex,
+        roughness: 0.96,
+        metalness: 0.0
+      });
+      const frameMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.65 });
+      const centerFace = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(width * 0.64, height, 1.4), {
+          depth: 4.5,
+          bevelEnabled: true,
+          bevelThickness: 0.5,
+          bevelSize: 0.5,
+          bevelSegments: 2
+        }),
+        matteMat
+      );
+      centerFace.position.set(0, height * 0.5, 0);
+      beGrp.add(centerFace);
+
+      // Angled Wing Baffles framing the Batter's Eye cleanly without boxy look
+      [-1, 1].forEach((side) => {
+        const wing = new THREE.Mesh(
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(width * 0.24, height * 0.92, 1.2), {
+            depth: 3.8,
+            bevelEnabled: true,
+            bevelThickness: 0.4,
+            bevelSize: 0.4,
+            bevelSegments: 2
+          }),
+          matteMat
+        );
+        wing.position.set(side * (width * 0.39), height * 0.46, 2.8);
+        wing.rotation.y = -side * 0.24;
+        beGrp.add(wing);
+      });
+      if (isHedge) {
+        // Terraced sculpted hedge planters on Dodger Batter's Eye
+        const planter = new THREE.Mesh(new THREE.BoxGeometry(width + 8, 4.2, 12), concreteMat);
+        planter.position.set(0, 2.1, 4.5);
+        beGrp.add(planter);
+      } else {
+        const headerCap = new THREE.Mesh(new THREE.BoxGeometry(width * 0.68, 1.8, 5.4), frameMat);
+        headerCap.position.set(0, height + 0.9, 2.2);
+        beGrp.add(headerCap);
+      }
+      return beGrp;
+    };
+
     const boardTex = makeCollegeVideoboardTexture(
       stSpec.name.toUpperCase(),
       stSpec.dimsLabel,
@@ -3635,10 +3736,10 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
           bevelSize: 0.6,
           bevelSegments: 2
         }),
-        new THREE.MeshStandardMaterial({ color: padHex, roughness: 0.42 })
+        new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.68, metalness: 0.25 })
       );
-      const face = new THREE.Mesh(new THREE.PlaneGeometry(w - 7, h - 5), new THREE.MeshBasicMaterial({ map: boardTex }));
-      face.position.z = 3.8;
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(w - 7, h - 5), new THREE.MeshBasicMaterial({ map: boardTex, fog: false }));
+      face.position.z = 4.35;
       const pL = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.4, y * 1.15, 10), pylonMat);
       pL.position.set(-w * 0.28, -y * 0.56, 1.6);
       const pR = pL.clone();
@@ -3648,7 +3749,6 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     };
 
     if (id === 'dodger') {
-      // Dodger Stadium: Two Authentic 1962 Hexagonal Pavilion Scoreboards over LF & RF Pavilions + Hedged CF Batter's Eye!
       const hexShape = new THREE.Shape();
       hexShape.moveTo(-28, -22);
       hexShape.lineTo(28, -22);
@@ -3666,24 +3766,23 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         hg.position.set(hx, 54, hz);
         hg.rotation.y = -phi;
         const hFrame = new THREE.Mesh(hexGeom, new THREE.MeshStandardMaterial({ color: '#005a9c', roughness: 0.42 }));
-        const hFace = new THREE.Mesh(new THREE.PlaneGeometry(52, 34), new THREE.MeshBasicMaterial({ map: boardTex }));
-        hFace.position.z = 3.9;
+        const hFace = new THREE.Mesh(new THREE.PlaneGeometry(52, 34), new THREE.MeshBasicMaterial({ map: boardTex, fog: false }));
+        hFace.position.z = 4.45;
         hg.add(hFrame, hFace);
         grp.add(hg);
       });
-      const hedgeEye = new THREE.Mesh(new THREE.BoxGeometry(82, 22, 16), new THREE.MeshStandardMaterial({ color: '#0f3d23', roughness: 0.88 }));
-      hedgeEye.position.set(0, 11, -(cfDist + 14));
-      grp.add(hedgeEye);
+      grp.add(buildBattersEye(88, 30, cfDist + 14, '#0b2919', true));
     } else if (id === 'wrigley') {
-      // Wrigley: Classic Art-Deco Green Centerfield Manual Scoreboard + Analog Clock + Red Arch Marquee!
+      // Sculpted dark ivy CF Batter's Eye right beneath classic green manual scoreboard
+      grp.add(buildBattersEye(80, 28, cfDist + 12, '#092415', true));
       const wrigBoard = new THREE.Group();
-      wrigBoard.position.set(0, 44, -(cfDist + 22));
+      wrigBoard.position.set(0, 52, -(cfDist + 24));
       const wbBody = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(makeRoundedRectShape(84, 34, 1.5), { depth: 4, bevelEnabled: false }),
-        new THREE.MeshStandardMaterial({ color: '#14532d', roughness: 0.52 })
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(84, 34, 1.5), { depth: 4, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments: 2 }),
+        new THREE.MeshStandardMaterial({ color: '#14532d', roughness: 0.58 })
       );
-      const wbFace = new THREE.Mesh(new THREE.PlaneGeometry(76, 28), new THREE.MeshBasicMaterial({ map: boardTex }));
-      wbFace.position.z = 4.2;
+      const wbFace = new THREE.Mesh(new THREE.PlaneGeometry(76, 28), new THREE.MeshBasicMaterial({ map: boardTex, fog: false }));
+      wbFace.position.z = 4.75;
       const clockFace = new THREE.Mesh(new THREE.CircleGeometry(7.5, 24), new THREE.MeshBasicMaterial({ color: '#fef9c3' }));
       clockFace.position.set(0, 23.5, 2.2);
       const clockRim = new THREE.Mesh(new THREE.TorusGeometry(7.8, 1.1, 8, 24), new THREE.MeshStandardMaterial({ color: '#b91c1c', roughness: 0.4 }));
@@ -3694,18 +3793,22 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       wrigBoard.add(wbBody, wbFace, clockFace, clockRim, handH);
       grp.add(wrigBoard);
     } else if (isHs) {
-      // High School Fields: Compact 44ft Prep Scoreboard off to Left-Center so CF view stays open to campus/coast/mountains!
+      // Crisp Dark Green Varsity Windscreen Batter's Eye in Dead CF + Compact Prep Scoreboard in Left-Center
+      grp.add(buildBattersEye(58, 21, cfDist + 8, '#0b2617', false));
       const hsPhi = -0.24;
       const hsD = stSpec.wallDist(hsPhi) + 22;
       grp.add(buildVideoboardAt(Math.sin(hsPhi) * hsD, 25, -Math.cos(hsPhi) * hsD, 46, 22, -hsPhi, steelMat));
     } else {
-      grp.add(buildVideoboardAt(0, isPro ? 62 : 54, -(cfDist + (isPro ? 44 : 38)), isPro ? 108 : 88, isPro ? 50 : 42, 0, masonryTex ? exteriorMat : concreteMat));
+      // Crisp Matte CF Batter's Eye framing below elevated Videoboard on EVERY Pro & College Ballpark!
+      const eyeHex = id === 'oracle' || id === 'vandy' || id === 'yankee' ? '#0b131e' : '#092416';
+      grp.add(buildBattersEye(isPro ? 88 : 78, isPro ? 32 : 29, cfDist + 14, eyeHex, false));
+      grp.add(buildVideoboardAt(0, isPro ? 72 : 62, -(cfDist + (isPro ? 44 : 38)), isPro ? 108 : 88, isPro ? 46 : 38, 0, masonryTex ? exteriorMat : concreteMat));
     }
 
     const trunkMat = new THREE.MeshStandardMaterial({ color: '#4b3626', roughness: 0.92 });
     const leafMat = new THREE.MeshStandardMaterial({ roughness: 0.8 });
 
-    // 8. Signature Stadium Landmarks & Backdrops Across ALL 15 Ballparks (ZERO shared copy-paste!)
+    // 8. Signature Stadium Landmarks & Backdrops Across ALL 15 Ballparks (Sculpted Multi-Part Architecture — zero plain boxes!)
     if (id === 'dodger') {
       const zigMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.38, side: THREE.DoubleSide });
       const zigTrim = new THREE.MeshStandardMaterial({ color: '#005a9c', roughness: 0.42, side: THREE.DoubleSide });
@@ -3718,34 +3821,40 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         grp.add(p);
       });
     } else if (id === 'fenway') {
-      // Illuminated Red-Triangle CITGO Sign over Left Field + Lansdowne Street Brick Facade
       const citgoGrp = new THREE.Group();
-      citgoGrp.position.set(-225, 92, -315);
+      citgoGrp.position.set(-255, 76, -365);
       citgoGrp.rotation.y = 0.56;
-      const signBack = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(makeRoundedRectShape(50, 42, 3), { depth: 2.5, bevelEnabled: false }),
-        new THREE.MeshBasicMaterial({ color: '#f8fafc' })
+      const signTruss = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(46, 38, 2.5), { depth: 2.0, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 2 }),
+        new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.55 })
       );
-      const redTri = new THREE.Mesh(new THREE.CircleGeometry(15, 3), new THREE.MeshBasicMaterial({ color: '#dc2626' }));
-      redTri.position.set(0, 3, 2.8);
+      const signBack = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(40, 32, 2.0), { depth: 0.8, bevelEnabled: false }),
+        new THREE.MeshBasicMaterial({ color: '#f8fafc', fog: false })
+      );
+      signBack.position.z = 2.4;
+      const redTri = new THREE.Mesh(new THREE.CircleGeometry(13, 3), new THREE.MeshBasicMaterial({ color: '#dc2626', fog: false }));
+      redTri.position.set(0, 2, 3.4);
       redTri.rotation.z = Math.PI / 6;
-      citgoGrp.add(signBack, redTri);
+      citgoGrp.add(signTruss, signBack, redTri);
       grp.add(citgoGrp);
     } else if (id === 'oracle') {
-      // McCovey Cove Bay Water + Moored Sailboats + Bay Bridge Tower + Giant Coca-Cola Bottle & Vintage Leather Glove!
       const bayWater = new THREE.Mesh(
-        new THREE.PlaneGeometry(560, 480),
+        new THREE.PlaneGeometry(720, 620),
         new THREE.MeshPhysicalMaterial({ color: '#0369a1', roughness: 0.14, metalness: 0.35, clearcoat: 0.85 })
       );
       bayWater.rotation.x = -Math.PI / 2;
-      bayWater.position.set(365, 0.25, -245);
+      bayWater.position.set(425, 0.25, -265);
       grp.add(bayWater);
-      // 3 Moored Sailboats in McCovey Cove
       [[275, -210], [325, -175], [355, -255]].forEach(([bx, bz], i) => {
         const boat = new THREE.Group();
         boat.position.set(bx, 0.5, bz);
         boat.rotation.y = 0.4 + i * 0.5;
-        const hull = new THREE.Mesh(new THREE.BoxGeometry(6, 2.2, 16), new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.4 }));
+        const hull = new THREE.Mesh(
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(5.8, 15, 1.8), { depth: 2.0, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 2 }),
+          new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.4 })
+        );
+        hull.rotation.x = -Math.PI / 2;
         const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.25, 18, 8), steelMat);
         mast.position.y = 9.5;
         const sail = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([
@@ -3755,11 +3864,10 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         boat.add(hull, mast, sail);
         grp.add(boat);
       });
-      // Bay Bridge Suspension Tower on the SF Bay Horizon
       const brTower = new THREE.Group();
       brTower.position.set(420, 0, -490);
-      const bLeg1 = new THREE.Mesh(new THREE.BoxGeometry(6, 135, 6), steelMat);
-      bLeg1.position.set(-14, 67.5, 0);
+      const bLeg1 = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.8, 138, 10), steelMat);
+      bLeg1.position.set(-14, 69, 0);
       const bLeg2 = bLeg1.clone();
       bLeg2.position.x = 14;
       const bCross1 = new THREE.Mesh(new THREE.BoxGeometry(34, 5, 5), steelMat);
@@ -3768,7 +3876,6 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       bCross2.position.y = 115;
       brTower.add(bLeg1, bLeg2, bCross1, bCross2);
       grp.add(brTower);
-      // Giant Coca-Cola Bottle & Vintage Leather Glove Sculpture in Left Field
       const cokeBottle = new THREE.Mesh(
         new THREE.LatheGeometry([new THREE.Vector2(3, 0), new THREE.Vector2(4.2, 18), new THREE.Vector2(2.2, 32), new THREE.Vector2(1.4, 42), new THREE.Vector2(0, 42.5)], 16),
         new THREE.MeshStandardMaterial({ color: '#b91c1c', roughness: 0.35 })
@@ -3779,7 +3886,6 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       gloveMonument.rotation.y = 0.45;
       grp.add(cokeBottle, gloveMonument);
     } else if (id === 'wrigley') {
-      // Continuous Top-of-Wall Chain-Link HR Basket + Volumetric 3D Ivy Clusters + Sheffield Ave Brownstone Rooftops
       grp.add(buildTopCopingTube(stSpec.wallDist, (phi) => stSpec.wallHeight(phi) + 1.1, -0.785, 0.785, 72, 0.28, railMat));
       const ivyLeaf = new THREE.IcosahedronGeometry(2.1, 1);
       const ivyInst = new THREE.InstancedMesh(ivyLeaf, new THREE.MeshStandardMaterial({ color: '#166534', roughness: 0.86 }), 140);
@@ -3796,43 +3902,76 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       ivyInst.instanceMatrix.needsUpdate = true;
       ivyInst.computeBoundingSphere();
       grp.add(ivyInst);
-      // Sheffield & Waveland Avenue 3-Story Brownstones with Rooftop Bleachers
+      // Sheffield & Waveland Sculpted Brick Townhouses with Cornices, Window Lintels & Rooftop Bleachers
       [-0.64, -0.44, 0.44, 0.64].forEach((phi) => {
         const bd = stSpec.wallDist(phi) + 86;
-        const bx = Math.sin(phi) * bd;
-        const bz = -Math.cos(phi) * bd;
         const brown = new THREE.Group();
-        brown.position.set(bx, 0, bz);
+        brown.position.set(Math.sin(phi) * bd, 0, -Math.cos(phi) * bd);
         brown.rotation.y = -phi;
-        const bldg = new THREE.Mesh(new THREE.BoxGeometry(58, 46, 36), exteriorMat);
-        bldg.position.y = 23;
+        const bldg = new THREE.Mesh(
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(58, 46, 1.8), { depth: 36, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.6, bevelSegments: 2 }),
+          exteriorMat
+        );
+        bldg.position.set(0, 23, -18);
+        const cornice = new THREE.Mesh(new THREE.BoxGeometry(62, 2.8, 39), concreteMat);
+        cornice.position.set(0, 46.5, 0);
+        for (let wy = 14; wy <= 34; wy += 10) {
+          for (let wx = -18; wx <= 18; wx += 12) {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(5.5, 6.2, 0.6), glassMat);
+            win.position.set(wx, wy, 18.2);
+            brown.add(win);
+          }
+        }
         const roofStand = buildAluminumBleacherSection(44, 4, steelMat, seatsMat);
-        roofStand.position.set(0, 46, -6);
+        roofStand.position.set(0, 47.8, -4);
         roofStand.rotation.y = Math.PI;
-        brown.add(bldg, roofStand);
+        brown.add(bldg, cornice, roofStand);
         grp.add(brown);
       });
     } else if (id === 'yankee') {
-      // Signature White Scalloped Upper-Deck Frieze + Monument Park Masonry Box + Elevated Metro-North RF Viaduct
+      // Signature White Scalloped Upper-Deck Frieze + Monument Park Limestone Rotunda + Trussed Steel Viaduct
       const frieze = new THREE.Mesh(
         createSweptWallGeometry((phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + 74, () => 6.8, -0.82, 0.82, 64, 1.8),
         new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.34 })
       );
       frieze.position.y = 62;
       grp.add(frieze);
-      const monPark = new THREE.Mesh(new THREE.BoxGeometry(76, 22, 22), new THREE.MeshStandardMaterial({ color: '#0b192e', roughness: 0.65 }));
-      monPark.position.set(0, 11, -(cfDist + 14));
-      grp.add(monPark);
-      // Elevated NYC Steel Metro Viaduct beyond RF
-      const viaduct = new THREE.Mesh(new THREE.BoxGeometry(16, 12, 520), steelMat);
-      viaduct.position.set(340, 46, -240);
-      viaduct.rotation.y = -0.35;
-      grp.add(viaduct);
+      const monGrp = new THREE.Group();
+      monGrp.position.set(0, 0, -(cfDist + 24));
+      const terrace = new THREE.Mesh(new THREE.CylinderGeometry(42, 46, 12, 24, 1, false, -0.7, 1.4), concreteMat);
+      terrace.position.y = 6;
+      const pilasterG = new THREE.CylinderGeometry(1.1, 1.3, 18, 10);
+      [-28, -14, 0, 14, 28].forEach((px) => {
+        const pil = new THREE.Mesh(pilasterG, new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.5 }));
+        pil.position.set(px, 16, 12);
+        monGrp.add(pil);
+      });
+      grp.add(monGrp);
+      // Elevated NYC Steel Truss Viaduct with Arched Concrete Piers beyond RF
+      const viaductGrp = new THREE.Group();
+      viaductGrp.position.set(350, 0, -240);
+      viaductGrp.rotation.y = -0.35;
+      const deckSpan = new THREE.Mesh(new THREE.BoxGeometry(16, 5.5, 520), steelMat);
+      deckSpan.position.y = 46;
+      const railSpan = new THREE.Mesh(new THREE.BoxGeometry(17.5, 2.2, 520), concreteMat);
+      railSpan.position.y = 49.8;
+      viaductGrp.add(deckSpan, railSpan);
+      for (let vz = -220; vz <= 220; vz += 88) {
+        [-5, 5].forEach((vx) => {
+          const pier = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.6, 46, 12), concreteMat);
+          pier.position.set(vx, 23, vz);
+          viaductGrp.add(pier);
+        });
+      }
+      grp.add(viaductGrp);
     } else if (id === 'omaha') {
-      // Omaha CWS Signature Brick Clock/Light Pylons flanking CF Board + Brick Batter's Eye + Downtown Omaha Skyline Towers
       [-64, 64].forEach((px) => {
-        const pylon = new THREE.Mesh(new THREE.BoxGeometry(14, 72, 14), exteriorMat);
-        pylon.position.set(px, 36, -(cfDist + 36));
+        const pylon = new THREE.Mesh(
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(14, 14, 1.4), { depth: 72, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments: 2 }),
+          exteriorMat
+        );
+        pylon.rotation.x = -Math.PI / 2;
+        pylon.position.set(px, 0, -(cfDist + 36));
         const cap = new THREE.Mesh(new THREE.ConeGeometry(11, 8, 4), yellowMat);
         cap.rotation.y = Math.PI / 4;
         cap.position.set(px, 76, -(cfDist + 36));
@@ -3841,13 +3980,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       const towerMat = new THREE.MeshPhysicalMaterial({ color: '#1e293b', roughness: 0.25, metalness: 0.6, clearcoat: 0.5 });
       [[-240, -560, 46, 145], [-145, -595, 54, 195], [150, -585, 50, 170], [245, -550, 42, 130]].forEach(([tx, tz, tw, th]) => {
         const bldg = new THREE.Mesh(
-          new THREE.ExtrudeGeometry(makeRoundedRectShape(tw, tw * 0.75, 4), {
-            depth: th,
-            bevelEnabled: true,
-            bevelThickness: 1.5,
-            bevelSize: 1.5,
-            bevelSegments: 2
-          }),
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(tw, tw * 0.75, 4), { depth: th, bevelEnabled: true, bevelThickness: 1.5, bevelSize: 1.5, bevelSegments: 2 }),
           towerMat
         );
         bldg.rotation.x = -Math.PI / 2;
@@ -3855,13 +3988,18 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         grp.add(bldg);
       });
     } else if (id === 'lsu') {
-      // LSU Alex Box: Right-Center Stacked "INTIMIDATOR" National Champions Billboard + Purple & Gold Ribbon + Bayou Cypress Trees!
       const intimGrp = new THREE.Group();
       intimGrp.position.set(148, 0, -(cfDist - 6));
       intimGrp.rotation.y = -0.36;
-      const frame = new THREE.Mesh(new THREE.BoxGeometry(58, 44, 4), new THREE.MeshStandardMaterial({ color: '#461d7c', roughness: 0.45 }));
+      const frame = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(58, 44, 2.4), { depth: 4, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments: 2 }),
+        new THREE.MeshStandardMaterial({ color: '#461d7c', roughness: 0.45 })
+      );
       frame.position.y = 38;
-      const goldTrim = new THREE.Mesh(new THREE.BoxGeometry(60, 46, 2.5), new THREE.MeshStandardMaterial({ color: '#fdd023', roughness: 0.35 }));
+      const goldTrim = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(60, 46, 2.8), { depth: 2.5, bevelEnabled: false }),
+        new THREE.MeshStandardMaterial({ color: '#fdd023', roughness: 0.35 })
+      );
       goldTrim.position.y = 38;
       const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.8, 36, 10), steelMat);
       leg1.position.set(-18, 18, 0);
@@ -3869,103 +4007,99 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       leg2.position.x = 18;
       const intimTex = makeCollegeVideoboardTexture('LSU NATIONAL CHAMPIONS', "'91 · '93 · '96 · '97 · '00 · '09 · '23", 'ALEX BOX INTIMIDATOR', '#461d7c', '#fdd023', maxAniso);
       const intimFace = new THREE.Mesh(new THREE.PlaneGeometry(52, 38), new THREE.MeshBasicMaterial({ map: intimTex }));
-      intimFace.position.set(0, 38, 2.3);
+      intimFace.position.set(0, 38, 4.3);
       intimGrp.add(goldTrim, frame, leg1, leg2, intimFace);
       grp.add(intimGrp);
-      grp.add(
-        buildNaturalPineOrOakGrove(
-          [[-310, -350], [-235, -430], [-145, -475], [165, -468], [250, -425], [320, -340], [-355, -245], [355, -245]],
-          trunkMat,
-          leafMat,
-          false
-        )
-      );
+      grp.add(buildNaturalPineOrOakGrove([[-310, -350], [-235, -430], [-145, -475], [165, -468], [250, -425], [320, -340], [-355, -245], [355, -245]], trunkMat, leafMat, false));
     } else if (id === 'missst') {
-      // Miss State Dudy Noble: Golden Cowbell-Arch Scoreboard Crown + Mississippi Pine Forest!
       const cowArch = new THREE.Mesh(
         new THREE.TorusGeometry(28, 3.2, 8, 24, Math.PI),
         new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.35 })
       );
       cowArch.position.set(0, 74, -(cfDist + 36));
       grp.add(cowArch);
-      grp.add(
-        buildNaturalPineOrOakGrove(
-          [[-320, -340], [-255, -420], [-165, -468], [165, -468], [260, -415], [328, -330], [-360, -260], [360, -260]],
-          trunkMat,
-          leafMat,
-          true
-        )
-      );
+      grp.add(buildNaturalPineOrOakGrove([[-320, -340], [-255, -420], [-165, -468], [165, -468], [260, -415], [328, -330], [-360, -260], [360, -260]], trunkMat, leafMat, true));
     } else if (id === 'vandy') {
-      // Vanderbilt Hawkins Field: Iconic Red-Brick Arched Memorial Gymnasium Behind LCF + Nashville Trees!
       const memGym = new THREE.Group();
       memGym.position.set(-185, 0, -395);
       memGym.rotation.y = 0.42;
       const brickGymMat = new THREE.MeshStandardMaterial({ map: makeMasonryTexture('#7f2e24', '#d6cbc2', false, maxAniso), roughness: 0.82 });
-      const gymBody = new THREE.Mesh(new THREE.BoxGeometry(108, 56, 62), brickGymMat);
-      gymBody.position.y = 28;
-      const archRoof = new THREE.Mesh(new THREE.CylinderGeometry(31, 31, 108, 16, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: '#d6d3d1', roughness: 0.5 }));
-      archRoof.rotation.z = Math.PI / 2;
-      archRoof.scale.set(0.45, 1, 1);
-      archRoof.position.y = 56;
-      memGym.add(gymBody, archRoof);
-      grp.add(memGym);
-      grp.add(
-        buildNaturalPineOrOakGrove(
-          [[145, -450], [235, -410], [310, -330], [345, -240]],
-          trunkMat,
-          leafMat,
-          false
-        )
+      const gymBody = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(108, 56, 2.2), { depth: 62, bevelEnabled: true, bevelThickness: 0.8, bevelSize: 0.8, bevelSegments: 2 }),
+        brickGymMat
       );
+      gymBody.position.set(0, 28, -31);
+      const gymCornice = new THREE.Mesh(new THREE.BoxGeometry(114, 3.6, 66), concreteMat);
+      gymCornice.position.y = 56;
+      const archRoof = new THREE.Mesh(new THREE.CylinderGeometry(30, 30, 108, 20, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.5 }));
+      archRoof.rotation.z = Math.PI / 2;
+      archRoof.scale.set(0.42, 1, 1);
+      archRoof.position.y = 57.5;
+      [-36, -18, 0, 18, 36].forEach((px) => {
+        const col = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.0, 54, 12), new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.45 }));
+        col.position.set(px, 27, 32);
+        memGym.add(col);
+      });
+      memGym.add(gymBody, gymCornice, archRoof);
+      grp.add(memGym);
+      grp.add(buildNaturalPineOrOakGrove([[145, -450], [235, -410], [310, -330], [345, -240]], trunkMat, leafMat, false));
     } else if (id === 'texas') {
-      // UT Austin Disch-Falk: Signature UT Main Building Limestone Clock Tower Beyond CF!
       const utTower = new THREE.Group();
       utTower.position.set(118, 0, -(cfDist + 165));
-      const tBase = new THREE.Mesh(new THREE.BoxGeometry(34, 95, 34), exteriorMat);
-      tBase.position.y = 47.5;
-      const tShaft = new THREE.Mesh(new THREE.BoxGeometry(22, 65, 22), exteriorMat);
-      tShaft.position.y = 122;
-      const tBelfry = new THREE.Mesh(new THREE.BoxGeometry(14, 24, 14), new THREE.MeshBasicMaterial({ color: '#bf5700' }));
-      tBelfry.position.y = 166;
-      const tSpire = new THREE.Mesh(new THREE.ConeGeometry(10, 18, 4), yellowMat);
-      tSpire.rotation.y = Math.PI / 4;
-      tSpire.position.y = 186;
-      utTower.add(tBase, tShaft, tBelfry, tSpire);
-      grp.add(utTower);
-      grp.add(
-        buildNaturalPineOrOakGrove(
-          [[-310, -340], [-235, -420], [-145, -470], [265, -415], [325, -335]],
-          trunkMat,
-          leafMat,
-          false
-        )
+      const tBase = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(38, 38, 2.4), { depth: 92, bevelEnabled: true, bevelThickness: 1.0, bevelSize: 1.0, bevelSegments: 2 }),
+        exteriorMat
       );
+      tBase.rotation.x = -Math.PI / 2;
+      const tLedge = new THREE.Mesh(new THREE.BoxGeometry(42, 4, 42), concreteMat);
+      tLedge.position.y = 92;
+      const tShaft = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(24, 24, 2.0), { depth: 66, bevelEnabled: true, bevelThickness: 0.7, bevelSize: 0.7, bevelSegments: 2 }),
+        exteriorMat
+      );
+      tShaft.rotation.x = -Math.PI / 2;
+      tShaft.position.y = 92;
+      const clockDial = new THREE.Mesh(new THREE.CircleGeometry(4.2, 20), new THREE.MeshBasicMaterial({ color: '#fef3c7' }));
+      clockDial.position.set(0, 146, 12.6);
+      const tBelfry = new THREE.Mesh(new THREE.CylinderGeometry(8.5, 9.5, 22, 8), new THREE.MeshBasicMaterial({ color: '#bf5700' }));
+      tBelfry.position.y = 169;
+      const tSpire = new THREE.Mesh(new THREE.ConeGeometry(9.5, 20, 8), yellowMat);
+      tSpire.position.y = 189;
+      utTower.add(tBase, tLedge, tShaft, clockDial, tBelfry, tSpire);
+      grp.add(utTower);
+      grp.add(buildNaturalPineOrOakGrove([[-310, -340], [-235, -420], [-145, -470], [265, -415], [325, -335]], trunkMat, leafMat, false));
     } else if (id === 'hs-central') {
-      // Central High Field: Classic Red-Brick High School Gymnasium Campus Building Beyond CF + Oaks
       const hsGym = new THREE.Group();
       hsGym.position.set(85, 0, -(cfDist + 82));
       hsGym.rotation.y = -0.22;
-      const gymWall = new THREE.Mesh(new THREE.BoxGeometry(120, 32, 54), exteriorMat);
-      gymWall.position.y = 16;
+      const gymWall = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(122, 32, 1.8), { depth: 54, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.6, bevelSegments: 2 }),
+        exteriorMat
+      );
+      gymWall.position.set(0, 16, -27);
+      const trimBand = new THREE.Mesh(new THREE.BoxGeometry(126, 2.8, 56), concreteMat);
+      trimBand.position.y = 32;
       const pitchRoof = new THREE.Mesh(new THREE.ConeGeometry(72, 16, 4), new THREE.MeshStandardMaterial({ color: '#1e3a5f', roughness: 0.6 }));
       pitchRoof.rotation.y = Math.PI / 4;
       pitchRoof.scale.set(1.4, 1, 0.72);
-      pitchRoof.position.y = 40;
-      hsGym.add(gymWall, pitchRoof);
+      pitchRoof.position.y = 41;
+      for (let gx = -42; gx <= 42; gx += 21) {
+        const gWin = new THREE.Mesh(new THREE.BoxGeometry(10, 12, 0.6), glassMat);
+        gWin.position.set(gx, 18, 27.3);
+        hsGym.add(gWin);
+      }
+      hsGym.add(gymWall, trimBand, pitchRoof);
       grp.add(hsGym);
       grp.add(buildNaturalPineOrOakGrove([[-250, -295], [-185, -365], [-95, -405], [220, -355], [280, -280]], trunkMat, leafMat, false));
     } else if (id === 'hs-oakridge') {
-      // Oak Ridge Prep: Dense Surrounding Heritage Oak Forest Behind Grassy Hillside Berm!
       grp.add(buildNaturalPineOrOakGrove([[-265, -280], [-210, -365], [-135, -405], [-55, -420], [45, -420], [135, -405], [215, -365], [270, -280], [-305, -210], [305, -210]], trunkMat, leafMat, false));
     } else if (id === 'hs-coastal') {
-      // Coastal Pines Complex: Sparkling Ocean Bay + White Lighthouse + Palms!
       const oceanBay = new THREE.Mesh(
-        new THREE.PlaneGeometry(780, 420),
+        new THREE.PlaneGeometry(1180, 560),
         new THREE.MeshPhysicalMaterial({ color: '#0284c7', roughness: 0.16, metalness: 0.25, clearcoat: 0.78 })
       );
       oceanBay.rotation.x = -Math.PI / 2;
-      oceanBay.position.set(0, 0.22, -(cfDist + 230));
+      oceanBay.position.set(0, 0.22, -(cfDist + 295));
       grp.add(oceanBay);
       const lighthouse = new THREE.Group();
       lighthouse.position.set(165, 0, -(cfDist + 115));
@@ -3983,20 +4117,23 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         grp.add(p);
       });
     } else if (id === 'hs-valley') {
-      // Valley View HS Diamond: High-Desert Exposed Terrain + Layered Desert Mesas!
       const desertRidge = buildSanGabrielMountainRidge();
       desertRidge.position.z = 85;
       grp.add(desertRidge);
     } else {
-      // hs-metro: Urban Brick School Lofts + Steel Rooftop Water Tower + Elevated Viaduct!
       [[-185, -(cfDist + 55)], [-65, -(cfDist + 75)], [95, -(cfDist + 72)], [205, -(cfDist + 52)]].forEach(([bx, bz], i) => {
         const loft = new THREE.Group();
         loft.position.set(bx, 0, bz);
         const w = 68 + (i % 2) * 16;
         const h = 44 + (i % 3) * 18;
-        const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, 42), exteriorMat);
-        b.position.y = h * 0.5;
-        loft.add(b);
+        const b = new THREE.Mesh(
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(w, h, 2.0), { depth: 42, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.6, bevelSegments: 2 }),
+          exteriorMat
+        );
+        b.position.set(0, h * 0.5, -21);
+        const cap = new THREE.Mesh(new THREE.BoxGeometry(w + 4, 2.8, 45), concreteMat);
+        cap.position.y = h + 1;
+        loft.add(b, cap);
         if (i === 2) {
           const wtTank = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 14, 14), new THREE.MeshStandardMaterial({ color: '#78350f', roughness: 0.7 }));
           wtTank.position.set(0, h + 13, 0);
@@ -4008,7 +4145,6 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       });
     }
 
-    // Centerfield Wind Pennant Flag Mast on Stadium Rim
     const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.48, 24, 10), steelMat);
     flagPole.position.set(48, 34, -(cfDist + 42));
     const flagPivot = new THREE.Group();
@@ -4066,7 +4202,8 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
 
   let curStadiumId = '';
   let curBatId = '';
-  let curCameraMode = 'pov'; // 'pov' | 'broadcast' | 'track' | 'side'
+  let curCameraMode = 'strike-zone'; // 'strike-zone' | 'fish-eye' | 'show-15' | 'broadcast' | 'swing-lab'
+  let curFollowBall = true; // true = Track Ball mid-air; false = Let It Fly from plate
   let curBatterHand = 'R'; // 'R' | 'L'
   let curPitcherHand = 'R'; // 'R' | 'L'
   let curDeliveryMode = 'pitcher'; // 'pitcher' | 'machine'
@@ -4169,9 +4306,21 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   }
 
   function setCameraMode(mode) {
-    if (mode === 'pov' || mode === 'broadcast' || mode === 'track' || mode === 'side') {
-      curCameraMode = mode;
-    }
+    const aliases = {
+      pov: 'strike-zone',
+      track: 'broadcast',
+      side: 'swing-lab',
+      'strike-zone': 'strike-zone',
+      'fish-eye': 'fish-eye',
+      'show-15': 'show-15',
+      broadcast: 'broadcast',
+      'swing-lab': 'swing-lab'
+    };
+    if (aliases[mode]) curCameraMode = aliases[mode];
+  }
+
+  function setFollowBall(enabled) {
+    curFollowBall = Boolean(enabled);
   }
 
   applyBatterHandLayout();
@@ -4267,12 +4416,13 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     }
 
     const swingRaw = clamp((simState.swingAngle + 0.42) / 1.37, 0, 1);
-    const hideClosePlateCrew = curCameraMode === 'pov' && simState.camT > 0.74;
-    batPivot.visible = !hideClosePlateCrew;
-    batter.root.visible = !hideClosePlateCrew;
-    plateCrew.grp.visible = !hideClosePlateCrew;
-    // Never render a Home Plate Umpire inside the indoor batting cage!
-    plateCrew.ump.visible = !hideClosePlateCrew && curStadiumId !== 'cage';
+    // Keep batter & barrel ALWAYS visible during swings & flights! Keep umpire clear of tight catcher cameras (Strike Zone / Show 15 / Fish Eye).
+    const hideCloseBackCrew = curCameraMode === 'strike-zone' && curStadiumId !== 'cage';
+    const hideCloseUmpire = (curCameraMode === 'strike-zone' || curCameraMode === 'show-15' || curCameraMode === 'fish-eye') && curStadiumId !== 'cage';
+    batPivot.visible = true;
+    batter.root.visible = true;
+    plateCrew.grp.visible = !hideCloseBackCrew;
+    plateCrew.ump.visible = !hideCloseUmpire && curStadiumId !== 'cage';
 
     // Umpire Articulated Strike/Ball Call Animations
     if (plateCrew.ump.visible) {
@@ -4462,7 +4612,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       updateTrailRibbon(simState.flightPoints, simState.flightMaxIdx, simState.flightColor);
 
       if (fl && fl.apexPos && fl.playTime >= (fl.apexTime || 99)) {
-        apexMarker.visible = true;
+        apexMarker.visible = curFollowBall;
         apexMarker.position.set(fl.apexPos.x, fl.apexPos.z, -fl.apexPos.y);
         apexMarker.rotation.y += dt * 2.5;
       } else {
@@ -4474,14 +4624,13 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         trackMarkX = lastPt.x;
         trackMarkY = Math.max(0.22, lastPt.z);
         trackMarkZ = -lastPt.y;
-        const showRingEarly = curCameraMode === 'track';
-        if (showRingEarly || fl.playTime >= fl.totalTime * 0.85) {
+        if (curFollowBall || fl.playTime >= fl.totalTime * 0.85) {
           landingRing.visible = true;
           landingRing.position.set(trackMarkX, trackMarkY, trackMarkZ);
           const col = fl.color || '#38bdf8';
           landingOuterRing.material.color.set(col);
           landingBeacon.material.color.set(col);
-          landingBeacon.visible = showRingEarly;
+          landingBeacon.visible = curFollowBall;
         } else {
           landingRing.visible = false;
         }
@@ -4489,9 +4638,9 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         landingRing.visible = false;
       }
 
-      followX = bx * 0.72;
+      followX = bx * 0.78;
       followY = Math.max(12, by * 0.85);
-      followZ = bz * 0.86;
+      followZ = bz * 0.88;
     } else {
       ballMesh.visible = false;
       ballShadow.visible = false;
@@ -4500,61 +4649,71 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       trailGeom.setDrawRange(0, 0);
     }
 
-    if (curCameraMode === 'track' && simState.phase === 'flight' && simState.flightCur) {
+    // Helper: Base MLB The Show Hitting Camera Pose at Home Plate
+    const setPlatePose = () => {
+      if (curCameraMode === 'fish-eye') {
+        _camTargetPos.set(0.28 * hSign, 5.4, 17.8);
+        _camTargetLook.set(0, 3.3, -58);
+      } else if (curCameraMode === 'show-15') {
+        _camTargetPos.set(-2.45 * hSign, 5.15, 14.2);
+        _camTargetLook.set(0.35 * hSign, 3.15, -55);
+      } else if (curCameraMode === 'broadcast') {
+        _camTargetPos.set(3.8, 15.6, 32.0);
+        _camTargetLook.set(0, 4.2, -95);
+      } else if (curCameraMode === 'swing-lab') {
+        _camTargetPos.set(15.5 * hSign, 4.35, -3.0);
+        _camTargetLook.set(-1.4 * hSign, 3.0, 0.2);
+      } else {
+        // 'strike-zone' (MLB The Show default tight view right above plate edge)
+        _camTargetPos.set(0.18 * hSign, 3.85, 3.9);
+        _camTargetLook.set(0, 2.95, -56);
+      }
+    };
+
+    if (simState.phase === 'flight' && simState.flightCur && curFollowBall) {
+      // TRACK BALL MODE: Dynamic chase camera following ball arc + landing marker
       const cur = simState.flightCur;
       const bx = cur.x;
       const by = Math.max(1.2, cur.z);
       const bz = -cur.y;
-      const horiz = Math.max(8, Math.hypot(trackMarkX, trackMarkZ));
-      const dirX = trackMarkX / horiz;
-      const dirZ = trackMarkZ / horiz;
-      const sideSign = bx >= 0 ? -1 : 1;
-      const trailBack = 26;
-      const sideOff = 14 * sideSign;
-      _camTargetPos.set(
-        bx - dirX * trailBack - dirZ * sideOff,
-        Math.max(12, by + 11.5),
-        Math.min(18, bz - dirZ * trailBack + dirX * sideOff)
-      );
-      const prog = simState.flight ? clamp(simState.flight.playTime / Math.max(0.6, simState.flight.totalTime), 0, 1) : 0.4;
-      const lookMarkWeight = 0.28 + prog * 0.28;
-      _camTargetLook.set(
-        bx + (trackMarkX - bx) * lookMarkWeight,
-        Math.max(1.5, by + (trackMarkY - by) * lookMarkWeight),
-        bz + (trackMarkZ - bz) * lookMarkWeight
-      );
-    } else if (curCameraMode === 'track') {
-      _camTargetPos.set(-6.5 * hSign, 7.8, 17.5);
-      _camTargetLook.set(0, 3.2, -38);
-    } else if (simState.phase === 'flight' && simState.flightCur && simState.flightFair && curCameraMode !== 'side') {
-      const cur = simState.flightCur;
       const distOut = Math.hypot(cur.x, cur.y);
-      const chaseFactor = clamp(distOut / 220, 0, 1);
       if (curCameraMode === 'broadcast') {
-        _camTargetPos.set(cur.x * 0.18 + 3.5, 22 + cur.z * 0.35 + chaseFactor * 14, 24 - distOut * 0.1);
-      } else {
-        _camTargetPos.set(cur.x * 0.22, 15 + cur.z * 0.45 + chaseFactor * 16, 19 - distOut * 0.14);
-      }
-      _camTargetLook.set(followX, Math.max(8, followY * 0.82), Math.min(-35, followZ));
-    } else if (curCameraMode === 'broadcast') {
-      _camTargetPos.set(3.2, 14.5, 29.5);
-      _camTargetLook.set(0, 4.2, -95);
-    } else if (curCameraMode === 'side') {
-      const sideCamX = hSign > 0 ? 15.2 : -15.2;
-      if (simState.phase === 'flight' && simState.flightCur) {
-        const cur = simState.flightCur;
-        _camTargetPos.set(hSign > 0 ? 17.5 : -17.5, 6.2 + cur.z * 0.22, -2.5);
+        const horiz = Math.max(8, Math.hypot(trackMarkX, trackMarkZ));
+        const dirX = trackMarkX / horiz;
+        const dirZ = trackMarkZ / horiz;
+        const sideSign = bx >= 0 ? -1 : 1;
+        _camTargetPos.set(
+          bx - dirX * 26 - dirZ * (14 * sideSign),
+          Math.max(12, by + 11.5),
+          Math.min(18, bz - dirZ * 26 + dirX * (14 * sideSign))
+        );
+        const prog = simState.flight ? clamp(simState.flight.playTime / Math.max(0.6, simState.flight.totalTime), 0, 1) : 0.4;
+        const w = 0.25 + prog * 0.28;
+        _camTargetLook.set(bx + (trackMarkX - bx) * w, Math.max(1.5, by + (trackMarkY - by) * w), bz + (trackMarkZ - bz) * w);
+      } else if (curCameraMode === 'swing-lab') {
+        _camTargetPos.set(17.5 * hSign, 6.2 + cur.z * 0.22, -2.5);
         _camTargetLook.set(cur.x * 0.55, Math.max(3, cur.z * 0.65), -Math.max(12, cur.y * 0.75));
       } else {
-        _camTargetPos.set(sideCamX, 4.3, -3.2);
-        _camTargetLook.set(-1.6 * hSign, 3.0, 0.2);
+        const chaseFactor = clamp(distOut / 220, 0, 1);
+        _camTargetPos.set(cur.x * 0.22, 14 + cur.z * 0.44 + chaseFactor * 16, 18 - distOut * 0.14);
+        _camTargetLook.set(followX, Math.max(8, followY * 0.82), Math.min(-35, followZ));
+      }
+    } else if (simState.phase === 'flight' && simState.flightCur && !curFollowBall) {
+      // LET IT FLY MODE: Hold the hitting camera steadily anchored at home plate & pan smoothly to watch the ball soar out!
+      setPlatePose();
+      if (curCameraMode !== 'swing-lab') {
+        const cur = simState.flightCur;
+        _camTargetLook.set(
+          cur.x * 0.65,
+          Math.max(2.6, Math.min(48, cur.z * 0.55 + 2.4)),
+          Math.min(-42, -cur.y * 0.72)
+        );
       }
     } else {
-      _camTargetPos.set(0.22, 4.9, 14.5);
-      _camTargetLook.set(0, 3.1, -55);
+      setPlatePose();
     }
 
-    const dampK = simState.phase === 'flight' ? (curCameraMode === 'track' ? 6.2 : 4.8) : 6.0;
+    const dampK = simState.phase === 'flight' ? (curFollowBall ? 5.6 : 4.2) : 6.5;
     camera.position.x = THREE.MathUtils.damp(camera.position.x, _camTargetPos.x, dampK, dt);
     camera.position.y = THREE.MathUtils.damp(camera.position.y, _camTargetPos.y, dampK, dt);
     camera.position.z = THREE.MathUtils.damp(camera.position.z, _camTargetPos.z, dampK, dt);
@@ -4575,6 +4734,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     setPitcherHand,
     setDeliveryMode,
     setCameraMode,
+    setFollowBall,
     resize,
     projectWorldToNorm,
     updateAndRender

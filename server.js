@@ -4,13 +4,13 @@
 
 const path = require('path');
 const express = require('express');
-const { GoogleGenAI, Type, ThinkingLevel } = require('@google/genai');
+const { GoogleGenAI, Type } = require('@google/genai');
 const { store } = require('./db');
 const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
 
 const app = express();
 app.set('trust proxy', 1);
-const PORT = Number(process.env.PORT) || 5000;
+const PORT = Number(process.env.PORT) || 3000;
 const COOKIE_NAME = 'diamondiq_sid';
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -596,13 +596,12 @@ Rules:
   let timeoutHandle;
   try {
     const aiPromise = ai.models.generateContent({
-      model: 'gemini-4-hydrogen',
+      model: 'gemini-3.1-flash-lite',
       contents: promptText,
       config: {
         systemInstruction:
           'You are Coach Jax at DiamondIQ, an encouraging, ultra-clear MLB hitting and fielding biomechanics coach and sabermetrics educator.',
         responseMimeType: 'application/json',
-        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -837,13 +836,12 @@ Instructions:
   let timeoutHandle;
   try {
     const aiPromise = ai.models.generateContent({
-      model: 'gemini-4-hydrogen',
+      model: 'gemini-3.1-flash-lite',
       contents: promptText,
       config: {
         systemInstruction:
           'You are Coach Jax, an expert baseball hitting, fielding, pitching, bat-fitting, and baseball rules AI coach at DiamondIQ. Never fabricate fake URLs; choose clinicIds and scenarioIds strictly from the allowed enums and put YouTube drill search queries in youtubeTopics.',
         responseMimeType: 'application/json',
-        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
