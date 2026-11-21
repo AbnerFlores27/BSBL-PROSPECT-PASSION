@@ -1122,8 +1122,12 @@
         pitch: null,
         pitchPos: null,
         swingTriggered: false,
+        swingPressT: null,
         swingT: 0,
         swingAngle: -0.42,
+        swingTargetX: 0,
+        swingTargetY: 2.65,
+        followThroughTimer: 0,
         contactResolved: false,
         flashTimer: 0,
         flashColor: '#38bdf8',
@@ -1161,20 +1165,10 @@
       }
 
       let noiseBuffer = null;
-      let impactExciterBuffer = null;
       let masterBus = null;
       let cageEchoBus = null;
       let stadiumEchoBus = null;
-
-      function createSoftClipCurve(amount = 2.6) {
-        const n = 256;
-        const curve = new Float32Array(n);
-        for (let i = 0; i < n; i++) {
-          const x = (i * 2) / n - 1;
-          curve[i] = Math.tanh(x * amount) / Math.tanh(amount);
-        }
-        return curve;
-      }
+      const batSoundCache = {};
 
       function ensureAudioBus() {
         const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -1183,18 +1177,17 @@
         if (audioCtx.state === 'suspended') audioCtx.resume();
         if (!masterBus) {
           const comp = audioCtx.createDynamicsCompressor();
-          comp.threshold.value = -10;
-          comp.knee.value = 12;
-          comp.ratio.value = 6;
-          comp.attack.value = 0.0008;
-          comp.release.value = 0.12;
+          comp.threshold.value = -6;
+          comp.knee.value = 10;
+          comp.ratio.value = 4;
+          comp.attack.value = 0.001;
+          comp.release.value = 0.14;
           const master = audioCtx.createGain();
-          master.gain.value = 0.94;
+          master.gain.value = 0.92;
           comp.connect(master);
           master.connect(audioCtx.destination);
           masterBus = comp;
 
-          // Real DelayNode Acoustic Early Reflections for Cage vs Open Stadium
           const buildReflectionBus = (taps) => {
             const inGain = audioCtx.createGain();
             inGain.gain.value = 1.0;
@@ -1215,45 +1208,142 @@
           };
 
           cageEchoBus = buildReflectionBus([
-            [0.022, 4600, 0.34],
-            [0.047, 3200, 0.24],
-            [0.083, 2100, 0.16],
-            [0.132, 1500, 0.09]
+            [0.024, 3400, 0.22],
+            [0.056, 2200, 0.14],
+            [0.098, 1500, 0.07]
           ]);
           stadiumEchoBus = buildReflectionBus([
-            [0.052, 3400, 0.22],
-            [0.118, 2200, 0.14],
-            [0.195, 1450, 0.08]
+            [0.068, 2800, 0.19],
+            [0.145, 1750, 0.12],
+            [0.245, 1100, 0.06]
           ]);
         }
         if (!noiseBuffer) {
-          const len = Math.floor(audioCtx.sampleRate * 2.2);
+          const len = Math.floor(audioCtx.sampleRate * 1.4);
           noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
           const data = noiseBuffer.getChannelData(0);
           let b0 = 0;
-          let b1 = 0;
           for (let i = 0; i < len; i++) {
             const white = Math.random() * 2 - 1;
-            b0 = 0.96 * b0 + white * 0.18;
-            b1 = 0.72 * b1 + white * 0.35;
-            data[i] = Math.max(-1, Math.min(1, white * 0.55 + b0 * 0.25 + b1 * 0.2));
-          }
-        }
-        if (!impactExciterBuffer) {
-          // 14ms realistic baseball compression transient exciter (sharp microsecond impulse + dense leather snap)
-          const sr = audioCtx.sampleRate;
-          const len = Math.floor(sr * 0.016);
-          impactExciterBuffer = audioCtx.createBuffer(1, len, sr);
-          const ch = impactExciterBuffer.getChannelData(0);
-          for (let i = 0; i < len; i++) {
-            const t = i / sr;
-            const dirac = i < 4 ? (1 - i * 0.2) : 0;
-            const snap = (Math.random() * 2 - 1) * Math.exp(-t * 580);
-            const thump = Math.sin(2 * Math.PI * 340 * t) * Math.exp(-t * 420) * 0.45;
-            ch[i] = Math.max(-1, Math.min(1, dirac * 0.85 + snap * 0.75 + thump));
+            b0 = 0.85 * b0 + white * 0.25;
+            data[i] = Math.max(-1, Math.min(1, b0));
           }
         }
         return audioCtx;
+      }
+
+      // Deterministic smooth PRNG so each synthesized PCM impact transient is crisp and artifact-free
+      function makeSeededRand(seed) {
+        let s = seed | 0;
+        return () => {
+          s = (s * 1664525 + 1013904223) | 0;
+          return ((s >>> 0) / 4294967296) * 2 - 1;
+        };
+      }
+
+      // Physical Sample-Rendered PCM Bat Acoustic Buffer (clean physical transients, zero bandpass honk or clipping)
+      function getBatImpactBuffer(ctx, kind, barrelFactor) {
+        const sweetBucket = barrelFactor < 0.62 ? 'jam' : 'sweet';
+        const key = `${kind}:${sweetBucket}`;
+        if (batSoundCache[key]) return batSoundCache[key];
+
+        const sr = ctx.sampleRate;
+        const durSec =
+          kind === 'combat-rodeo' || kind === 'combat-blue'
+            ? 0.44
+            : kind === 'goods-2022'
+              ? 0.24
+              : kind === 'goods-2026'
+                ? 0.11
+                : 0.085;
+        const len = Math.floor(sr * durSec);
+        const buf = ctx.createBuffer(1, len, sr);
+        const ch = buf.getChannelData(0);
+        const rnd = makeSeededRand(kind.length * 9137 + (sweetBucket === 'sweet' ? 42 : 99));
+
+        const isOffCenter = barrelFactor < 0.62;
+        const fScale = isOffCenter ? 0.85 : 1.0;
+
+        let n1 = 0;
+        let n2 = 0;
+        let nPrev = 0;
+
+        for (let i = 0; i < len; i++) {
+          const t = i / sr;
+          // Sub-1.2ms Hertzian leather-on-barrel compression shockwave
+          const hertz = t < 0.0012 ? Math.sin((Math.PI * t) / 0.0012) : 0;
+          // Crisp high-passed broadband air-crack impulse (no low muddy static)
+          const rawN = rnd();
+          n1 = n1 * 0.42 + rawN * 0.58;
+          n2 = n2 * 0.72 + n1 * 0.28;
+          const hpNoise = n1 - nPrev * 0.68;
+          nPrev = n1;
+
+          let sample = 0;
+          if (kind === 'baum-gold' || kind === 'wood') {
+            // 1. Baum Bat Gold (-3) PermaWood Composite:
+            // Pure, dry, explosive MLB pro maple shotgun CRACK! Ultra-tight 18ms wood impulse, ZERO pitched sine "tok".
+            const attack = 1 - Math.exp(-t * 5200);
+            const crackEnv = Math.exp(-t * 255);
+            const bodyEnv = Math.exp(-t * 145);
+            const dropFreq = 92 + 88 * Math.exp(-t * 220);
+            const maplePunch = Math.sin(2 * Math.PI * dropFreq * t) * Math.exp(-t * 115) * 0.52;
+            const fiberCrack = hpNoise * crackEnv * 1.45 + (n1 - n2) * bodyEnv * 0.62;
+            const woodMode1 = Math.sin(2 * Math.PI * (645 * fScale) * t) * Math.exp(-t * 185) * 0.22;
+            const woodMode2 = Math.sin(2 * Math.PI * (1410 * fScale) * t) * Math.exp(-t * 235) * 0.18;
+            sample = (hertz * 0.98 + fiberCrack + maplePunch + woodMode1 + woodMode2) * attack;
+          } else if (kind === 'goods-2026') {
+            // 2. 2026 DeMarini The Goods (-3) — X14 Alloy Barrel + 1375 Composite Handle:
+            // Heavy, punchy 2-piece shotgun THWACK + crisp tightly damped alloy barrel "klack" (zero hollow 495Hz bucket honk!).
+            const attack = 1 - Math.exp(-t * 4600);
+            const leatherSnap = hpNoise * Math.exp(-t * 215) * 1.15 + n2 * Math.exp(-t * 135) * 0.38;
+            const chestFreq = 76 + 68 * Math.exp(-t * 175);
+            const heavyThump = Math.sin(2 * Math.PI * chestFreq * t) * Math.exp(-t * 88) * 0.64;
+            const x14Shell1 = Math.sin(2 * Math.PI * (1385 * fScale) * t) * Math.exp(-t * 54) * 0.26;
+            const x14Shell2 = Math.sin(2 * Math.PI * (1985 * fScale) * t) * Math.exp(-t * 64) * 0.22;
+            const x14Edge = Math.sin(2 * Math.PI * (2690 * fScale) * t) * Math.exp(-t * 78) * 0.14;
+            sample = (hertz * 0.92 + leatherSnap + heavyThump + x14Shell1 + x14Shell2 + x14Edge) * attack;
+          } else if (kind === 'goods-2022' || kind === 'hybrid') {
+            // 3. 2022 DeMarini The Goods (-3): Brushed chrome X14 alloy punch + crisp ~190ms ring
+            const attack = 1 - Math.exp(-t * 4200);
+            const snap = hpNoise * Math.exp(-t * 190) * 0.95 + n2 * Math.exp(-t * 110) * 0.25;
+            const thudFreq = 84 + 78 * Math.exp(-t * 180);
+            const thud = Math.sin(2 * Math.PI * thudFreq * t) * Math.exp(-t * 72) * 0.44;
+            const ring1 = Math.sin(2 * Math.PI * (1260 * fScale) * t) * Math.exp(-t * 20) * 0.25;
+            const ring2 = Math.sin(2 * Math.PI * (1920 * fScale) * t) * Math.exp(-t * 14.5) * 0.34;
+            const ring3 = Math.sin(2 * Math.PI * (2640 * fScale) * t) * Math.exp(-t * 22) * 0.17;
+            sample = (hertz * 0.85 + snap + thud + ring1 + ring2 + ring3) * attack;
+          } else {
+            // 4 & 5. Combat Spec-A1 Rodeo & Members Club Blue: Thin-wall 1-piece SFX alloy "KRRACK-PINGGG!"
+            const base = kind === 'combat-blue' ? 1.055 : 1.0;
+            const attack = 1 - Math.exp(-t * 4500);
+            const snap = hpNoise * Math.exp(-t * 185) * 1.02 + n2 * Math.exp(-t * 115) * 0.28;
+            const thudFreq = 88 + 80 * Math.exp(-t * 185);
+            const thud = Math.sin(2 * Math.PI * thudFreq * t) * Math.exp(-t * 70) * 0.38;
+            const r1 = Math.sin(2 * Math.PI * (1415 * base * fScale) * t) * Math.exp(-t * 14) * 0.24;
+            const r2a = Math.sin(2 * Math.PI * (2135 * base * fScale) * t) * Math.exp(-t * 7.8) * 0.42;
+            const r2b = Math.sin(2 * Math.PI * (2142 * base * fScale) * t) * Math.exp(-t * 8.2) * 0.28;
+            const r3 = Math.sin(2 * Math.PI * (2890 * base * fScale) * t) * Math.exp(-t * 11) * 0.22;
+            sample = (hertz * 0.88 + snap + thud + r1 + r2a + r2b + r3) * attack;
+          }
+
+          if (isOffCenter) {
+            sample += Math.sin(2 * Math.PI * 195 * t) * Math.exp(-t * 32) * 0.18;
+          }
+          ch[i] = sample;
+        }
+
+        // Normalize cleanly to 0.86 peak amplitude — zero hard clipping!
+        let peak = 0;
+        for (let i = 0; i < len; i++) {
+          const a = Math.abs(ch[i]);
+          if (a > peak) peak = a;
+        }
+        const norm = peak > 0 ? 0.86 / peak : 1;
+        for (let i = 0; i < len; i++) ch[i] *= norm;
+
+        batSoundCache[key] = buf;
+        return buf;
       }
 
       function spawnNoiseBurst(ctx, dest, startTime, dur, filterType, freqStart, freqEnd, q, gainPeak) {
@@ -1269,7 +1359,7 @@
         }
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, startTime);
-        g.gain.linearRampToValueAtTime(gainPeak, startTime + Math.min(0.002, dur * 0.12));
+        g.gain.linearRampToValueAtTime(gainPeak, startTime + Math.min(0.002, dur * 0.15));
         g.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
         src.connect(filt);
         filt.connect(g);
@@ -1287,7 +1377,7 @@
         }
         const g = ctx.createGain();
         g.gain.setValueAtTime(0.0001, startTime);
-        g.gain.linearRampToValueAtTime(gainPeak, startTime + 0.0012);
+        g.gain.linearRampToValueAtTime(gainPeak, startTime + 0.0015);
         g.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
         osc.connect(g);
         g.connect(dest);
@@ -1295,158 +1385,61 @@
         osc.stop(startTime + dur + 0.02);
       }
 
-      // Excite real locked cylindrical shell / maple body formants with our physical impact impulse
-      function spawnModalResonator(ctx, dest, startTime, freqHz, q, gainVal, ringDur) {
-        const exc = ctx.createBufferSource();
-        exc.buffer = impactExciterBuffer;
-        const bp = ctx.createBiquadFilter();
-        bp.type = 'bandpass';
-        bp.frequency.setValueAtTime(freqHz, startTime);
-        bp.Q.setValueAtTime(q, startTime);
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(gainVal, startTime);
-        g.gain.exponentialRampToValueAtTime(0.0001, startTime + ringDur);
-        exc.connect(bp);
-        bp.connect(g);
-        g.connect(dest);
-        exc.start(startTime);
-        exc.stop(startTime + ringDur + 0.03);
-      }
-
-      const clipCurve = createSoftClipCurve(2.8);
-
       function playBatAudio(kind, barrelFactor = 0.85, isHr = false, stadiumId = activeStadiumId, forcePlay = false) {
         if (!soundOn && !forcePlay) return;
         try {
           const ctx = ensureAudioBus();
           if (!ctx || !masterBus) return;
           const now = ctx.currentTime;
-          const power = Math.max(0.45, Math.min(1.22, 0.56 + barrelFactor * 0.6));
-          const ringScale = barrelFactor < 0.65 ? Math.max(0.28, barrelFactor / 0.65) : 1;
-          const offCenterSting = barrelFactor < 0.65 ? (0.65 - barrelFactor) / 0.65 : 0;
-          const pitchJitter = 0.988 + Math.random() * 0.024; // Organic hit-to-hit spot shift
+          const power = Math.max(0.55, Math.min(1.08, 0.62 + barrelFactor * 0.44));
 
           if (kind === 'whiff') {
-            spawnNoiseBurst(ctx, masterBus, now, 0.12, 'bandpass', 340, 780, 2.2, 0.25);
-            spawnNoiseBurst(ctx, masterBus, now + 0.086, 0.038, 'bandpass', 1080, 480, 1.4, 0.36);
-            spawnModalTone(ctx, masterBus, now + 0.086, 0.052, 'triangle', 140, 60, 0.32);
+            spawnNoiseBurst(ctx, masterBus, now, 0.11, 'bandpass', 360, 720, 1.8, 0.22);
+            spawnNoiseBurst(ctx, masterBus, now + 0.084, 0.036, 'bandpass', 980, 420, 1.2, 0.34);
+            spawnModalTone(ctx, masterBus, now + 0.084, 0.05, 'triangle', 135, 58, 0.3);
             return;
           }
 
           if (kind === 'mitt') {
-            spawnNoiseBurst(ctx, masterBus, now, 0.035, 'bandpass', 1120, 450, 1.35, 0.44);
-            spawnModalTone(ctx, masterBus, now, 0.055, 'triangle', 148, 56, 0.38);
+            spawnNoiseBurst(ctx, masterBus, now, 0.032, 'bandpass', 1020, 410, 1.2, 0.42);
+            spawnModalTone(ctx, masterBus, now, 0.052, 'triangle', 142, 54, 0.36);
             return;
           }
 
           if (kind === 'wall') {
-            spawnNoiseBurst(ctx, masterBus, now, 0.052, 'bandpass', 480, 160, 1.1, 0.65);
-            spawnModalTone(ctx, masterBus, now, 0.085, 'triangle', 130, 48, 0.55);
+            spawnNoiseBurst(ctx, masterBus, now, 0.05, 'bandpass', 460, 150, 1.0, 0.58);
+            spawnModalTone(ctx, masterBus, now, 0.08, 'triangle', 125, 48, 0.48);
             return;
           }
 
-          // Dedicated per-hit acoustic bus routed to both direct dry output & realistic cage/stadium reflections
-          const batBus = ctx.createGain();
-          batBus.gain.value = 1.0;
-          const shaper = ctx.createWaveShaper();
-          shaper.curve = clipCurve;
-          shaper.oversample = '2x';
-          batBus.connect(shaper);
-          shaper.connect(masterBus);
+          const buf = getBatImpactBuffer(ctx, kind, barrelFactor);
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          src.playbackRate.value = 0.985 + Math.random() * 0.03;
+
+          const hitGain = ctx.createGain();
+          hitGain.gain.value = power;
+          src.connect(hitGain);
+          hitGain.connect(masterBus);
+
           const echoTarget = stadiumId === 'cage' ? cageEchoBus : stadiumEchoBus;
-          if (echoTarget) shaper.connect(echoTarget);
+          if (echoTarget) hitGain.connect(echoTarget);
+          src.start(now);
 
-          // Universal sub-millisecond leather-on-barrel physical impulse transient
-          const rawImp = ctx.createBufferSource();
-          rawImp.buffer = impactExciterBuffer;
-          const impHp = ctx.createBiquadFilter();
-          impHp.type = 'highpass';
-          impHp.frequency.value = kind === 'baum-gold' ? 920 : kind === 'goods-2026' ? 760 : 1280;
-          const impGain = ctx.createGain();
-          impGain.gain.value = (kind === 'goods-2026' ? 0.92 : 1.08) * power;
-          rawImp.connect(impHp);
-          impHp.connect(impGain);
-          impGain.connect(batBus);
-          rawImp.start(now);
-
-          if (kind === 'baum-gold' || kind === 'wood') {
-            // 1. Baum Bat Gold (PermaWood Maple Composite): Explosive, loud, punchy dry shotgun maple CRACK (~52ms dense wood transient, zero metal ping)
-            const deadened = barrelFactor < 0.65 ? 0.72 : 1.0;
-            spawnModalResonator(ctx, batBus, now, 345 * pitchJitter * deadened, 6.2, 1.85 * power, 0.062);
-            spawnModalResonator(ctx, batBus, now, 810 * pitchJitter * deadened, 8.8, 2.25 * power, 0.052);
-            spawnModalResonator(ctx, batBus, now, 1490 * pitchJitter * deadened, 10.5, 2.15 * power, 0.042);
-            spawnModalResonator(ctx, batBus, now, 2480 * pitchJitter * deadened, 9.5, 1.65 * power, 0.032);
-            spawnModalResonator(ctx, batBus, now, 3650 * pitchJitter * deadened, 7.8, 1.15 * power, 0.022);
-            // Blistering crisp air-crack & solid maple core punch
-            spawnNoiseBurst(ctx, batBus, now, 0.024, 'bandpass', 2350 * deadened, 1080, 1.05, 1.18 * power);
-            spawnNoiseBurst(ctx, batBus, now + 0.002, 0.018, 'lowpass', 720, 260, 0.85, 0.78 * power);
-            spawnModalTone(ctx, batBus, now, 0.048, 'triangle', 250, 68, 0.96 * power);
-          } else if (kind === 'goods-2026') {
-            // 2. 2026 DeMarini The Goods: Heavy end-loaded X14 barrel + 1375 composite handle -> deep booming ~75ms THUD/THWACK
-            spawnModalResonator(ctx, batBus, now, 520 * pitchJitter, 14, 1.55 * power, 0.072);
-            spawnModalResonator(ctx, batBus, now, 960 * pitchJitter, 28, 1.85 * power, 0.082);
-            spawnModalResonator(ctx, batBus, now, 1435 * pitchJitter, 55, 1.45 * power * ringScale, 0.105);
-            spawnModalResonator(ctx, batBus, now, 1980 * pitchJitter, 58, 0.65 * power * ringScale, 0.075);
-            spawnNoiseBurst(ctx, batBus, now, 0.022, 'lowpass', 640, 220, 0.9, 0.8 * power);
-            spawnModalTone(ctx, batBus, now, 0.064, 'triangle', 132, 54, 0.94 * power);
-          } else if (kind === 'goods-2022' || kind === 'hybrid') {
-            // 3. 2022 DeMarini The Goods: Brushed chrome X14 alloy + Paraflex Half+Half -> punchy ~200ms aluminum PING + crack
-            spawnModalResonator(ctx, batBus, now, 1215 * pitchJitter, 110, 1.65 * power * ringScale, 0.19);
-            spawnModalResonator(ctx, batBus, now, 1875 * pitchJitter, 175, 2.75 * power * ringScale, 0.25);
-            spawnModalResonator(ctx, batBus, now, 2580 * pitchJitter, 190, 1.85 * power * ringScale, 0.19);
-            spawnModalResonator(ctx, batBus, now, 3310 * pitchJitter, 160, 1.05 * power * ringScale, 0.14);
-            spawnModalTone(ctx, batBus, now + 0.0005, 0.2, 'sine', 1875 * pitchJitter, 1875 * pitchJitter, 0.15 * power * ringScale);
-            spawnModalTone(ctx, batBus, now + 0.0005, 0.14, 'sine', 2580 * pitchJitter, 2580 * pitchJitter, 0.09 * power * ringScale);
-            spawnModalTone(ctx, batBus, now, 0.048, 'triangle', 152, 68, 0.65 * power);
-          } else if (kind === 'combat-rodeo' || kind === 'combat') {
-            // 4. Combat MFG Spec-A1 Rodeo: Iconic ultra-loud 1-pc thin-wall SFX alloy cannon "KRRACK-PINGG" (~410ms natural shell decay + cage slap)
-            const f1 = 1410 * pitchJitter;
-            const f2 = 2135 * pitchJitter;
-            const f3 = 2895 * pitchJitter;
-            const f4 = 3720 * pitchJitter;
-            spawnModalResonator(ctx, batBus, now, f1, 180, 2.15 * power * ringScale, 0.28);
-            spawnModalResonator(ctx, batBus, now, f2, 360, 3.85 * power * ringScale, 0.45);
-            spawnModalResonator(ctx, batBus, now, f2 + 7.2, 340, 3.25 * power * ringScale, 0.43);
-            spawnModalResonator(ctx, batBus, now, f3, 310, 2.45 * power * ringScale, 0.34);
-            spawnModalResonator(ctx, batBus, now, f4, 240, 1.45 * power * ringScale, 0.22);
-            // Fixed-pitch axisymmetric hoop shimmer (zero pitch-glide!)
-            spawnModalTone(ctx, batBus, now + 0.0004, 0.40, 'sine', f2, f2, 0.18 * power * ringScale);
-            spawnModalTone(ctx, batBus, now + 0.0004, 0.40, 'sine', f2 + 7.2, f2 + 7.2, 0.15 * power * ringScale);
-            spawnModalTone(ctx, batBus, now + 0.0006, 0.26, 'sine', f3, f3, 0.10 * power * ringScale);
-            spawnNoiseBurst(ctx, batBus, now, 0.02, 'bandpass', 2450, 1450, 1.25, 0.88 * power);
-            spawnModalTone(ctx, batBus, now, 0.044, 'triangle', 154, 66, 0.74 * power);
-          } else if (kind === 'combat-blue') {
-            // 5. Combat Spec-A1 Members Club Blue: Crisp, loud 1-pc thin-wall SFX cannon tuned slightly higher & brighter (~420ms ring)
-            const f1 = 1485 * pitchJitter;
-            const f2 = 2255 * pitchJitter;
-            const f3 = 3045 * pitchJitter;
-            const f4 = 3890 * pitchJitter;
-            spawnModalResonator(ctx, batBus, now, f1, 185, 2.1 * power * ringScale, 0.28);
-            spawnModalResonator(ctx, batBus, now, f2, 375, 3.95 * power * ringScale, 0.46);
-            spawnModalResonator(ctx, batBus, now, f2 + 7.8, 355, 3.3 * power * ringScale, 0.44);
-            spawnModalResonator(ctx, batBus, now, f3, 320, 2.55 * power * ringScale, 0.35);
-            spawnModalResonator(ctx, batBus, now, f4, 250, 1.52 * power * ringScale, 0.23);
-            spawnModalTone(ctx, batBus, now + 0.0004, 0.41, 'sine', f2, f2, 0.18 * power * ringScale);
-            spawnModalTone(ctx, batBus, now + 0.0004, 0.41, 'sine', f2 + 7.8, f2 + 7.8, 0.15 * power * ringScale);
-            spawnModalTone(ctx, batBus, now + 0.0006, 0.27, 'sine', f3, f3, 0.10 * power * ringScale);
-            spawnNoiseBurst(ctx, batBus, now, 0.019, 'bandpass', 2650, 1550, 1.3, 0.86 * power);
-            spawnModalTone(ctx, batBus, now, 0.042, 'triangle', 158, 70, 0.7 * power);
-          }
-
-          // Off-center / jammed mishit handle-sting vibration
-          if (offCenterSting > 0.05) {
-            spawnModalTone(ctx, batBus, now + 0.002, 0.095, 'sawtooth', 192, 120, 0.22 * offCenterSting * power);
-          }
-
-          // Empty D1 Stadium Acoustic Concrete Slapback Echo (Zero crowd roar — empty park practice!)
+          // Empty D1 Stadium Concrete Slapback Echo (attenuated bat transient reflection, zero hissy white noise)
           if (stadiumId !== 'cage') {
-            spawnNoiseBurst(ctx, masterBus, now + 0.28, 0.09, 'bandpass', 1100, 480, 0.9, 0.14 * power);
-            spawnNoiseBurst(ctx, masterBus, now + 0.56, 0.12, 'lowpass', 620, 240, 0.8, 0.07 * power);
-            if (isHr) {
-              // Subtle empty-ballpark scoreboard bell chime on cleared bombs
-              spawnModalTone(ctx, masterBus, now + 0.62, 0.42, 'sine', 660, 660, 0.075);
-              spawnModalTone(ctx, masterBus, now + 0.62, 0.32, 'sine', 990, 990, 0.04);
-            }
+            const echoSrc = ctx.createBufferSource();
+            echoSrc.buffer = buf;
+            echoSrc.playbackRate.value = 0.99;
+            const echoFilter = ctx.createBiquadFilter();
+            echoFilter.type = 'lowpass';
+            echoFilter.frequency.value = 1850;
+            const echoGain = ctx.createGain();
+            echoGain.gain.value = 0.16 * power;
+            echoSrc.connect(echoFilter);
+            echoFilter.connect(echoGain);
+            echoGain.connect(masterBus);
+            echoSrc.start(now + 0.26);
           }
         } catch {
           /* ignore */
@@ -2126,8 +2119,11 @@
         sim.t = 0;
         sim.camT = 0;
         sim.swingTriggered = false;
+        sim.swingPressT = null;
         sim.swingT = 0;
         sim.swingAngle = -0.42;
+        sim.swingTargetX = traj.targetX;
+        sim.swingTargetY = traj.targetY;
         sim.contactResolved = false;
         sim.demoAutoSwing = isDemoHr;
         sim.pitchPos = null;
@@ -2155,12 +2151,19 @@
         if (pitchNote) pitchNote.textContent = `${sim.pitch.name} (${pitchRpm} rpm · ${spec.spinAxisClock}) · Watch the shrinking ring!`;
       }
 
+      function triggerSwingPress() {
+        if (sim.phase !== 'pitch' || sim.swingTriggered || sim.contactResolved || !sim.pitch) return;
+        sim.swingTriggered = true;
+        sim.swingPressT = sim.t;
+        sim.swingT = 0;
+      }
+
       function resolveSwing() {
         if (sim.phase !== 'pitch' || sim.contactResolved || !sim.pitch) return;
         sim.contactResolved = true;
         const bat = BATS[activeBatId] || BATS['goods-2026'];
 
-        const timingErr = sim.t - 0.94;
+        const timingErr = (sim.swingPressT != null ? sim.swingPressT : sim.t) - 0.94;
         const absTime = Math.abs(timingErr);
 
         let curPciX = pci.x;
@@ -2180,6 +2183,7 @@
         const maxReach = 0.95 * bat.sweetSpot;
         if (absTime > 0.23 || distFromSweet > maxReach) {
           playBatAudio('whiff');
+          sim.followThroughTimer = 0.3;
           session.strikes++;
           let call = 'Swinging Strike';
           if (session.strikes >= 3) {
@@ -2372,44 +2376,53 @@
             pci.targetY = sim.pitch.endY + (sim.demoAutoSwing ? 0.28 : 0.22);
           }
 
-          if (sim.demoAutoSwing && !sim.swingTriggered && sim.t >= 0.92) {
-            sim.swingTriggered = true;
-            resolveSwing();
+          if (sim.demoAutoSwing && !sim.swingTriggered && sim.t >= 0.87) {
+            triggerSwingPress();
           }
 
+          // Smooth bat whip synchronization: bat physically sweeps to home plate to collide directly with the baseball!
           if (sim.swingTriggered && sim.phase === 'pitch') {
-            sim.swingT += dt * 7.5;
-            sim.swingAngle = -0.45 + sim.swingT * 1.45;
+            sim.swingT += dt * 13.5;
+            sim.swingAngle = Math.min(0.44, -0.42 + Math.min(1, sim.swingT) * 0.86);
+            if (!sim.contactResolved && ((sim.swingT >= 0.92 && sim.t >= 0.90) || (sim.swingT >= 0.96 && sim.swingPressT >= 0.88) || (sim.t >= 1.05 && sim.swingT >= 0.85))) {
+              sim.swingAngle = 0.36; // Exact barrel-at-plate contact frame!
+              resolveSwing();
+            }
           }
 
           if (sim.t >= 1.06 && sim.phase === 'pitch') {
-            if (!sim.contactResolved) {
-              playBatAudio('mitt');
-              const isStrike = Math.abs(sim.pitch.endX) <= 1.05 && Math.abs(sim.pitch.endY) <= 1.05;
-              let call = isStrike ? 'Called Strike' : 'Ball';
-              if (isStrike) {
-                session.strikes++;
-                if (session.strikes >= 3) {
-                  call = 'Called Strikeout!';
-                  session.balls = 0;
-                  session.strikes = 0;
-                  session.outs = (session.outs + 1) % 3;
+            if (sim.swingTriggered && !sim.contactResolved) {
+              // Hold plate-crossing briefly so late swing finishes whipping to the ball instead of calling a strike!
+              sim.t = 1.06;
+            } else {
+              if (!sim.contactResolved) {
+                playBatAudio('mitt');
+                const isStrike = Math.abs(sim.pitch.endX) <= 1.05 && Math.abs(sim.pitch.endY) <= 1.05;
+                let call = isStrike ? 'Called Strike' : 'Ball';
+                if (isStrike) {
+                  session.strikes++;
+                  if (session.strikes >= 3) {
+                    call = 'Called Strikeout!';
+                    session.balls = 0;
+                    session.strikes = 0;
+                    session.outs = (session.outs + 1) % 3;
+                  }
+                } else {
+                  session.balls++;
+                  if (session.balls >= 4) {
+                    call = 'Base on Balls!';
+                    session.balls = 0;
+                    session.strikes = 0;
+                  }
                 }
-              } else {
-                session.balls++;
-                if (session.balls >= 4) {
-                  call = 'Base on Balls!';
-                  session.balls = 0;
-                  session.strikes = 0;
-                }
+                sim.calloutText = call.toUpperCase();
+                sim.calloutSub = sim.pitch.name;
+                sim.calloutTimer = 1.25;
+                updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, hangTime: null, backspinRpm: null, outcome: call, color: isStrike ? '#f87171' : '#38bdf8' });
+                if (swingBtn) swingBtn.textContent = 'Throw Pitch';
               }
-              sim.calloutText = call.toUpperCase();
-              sim.calloutSub = sim.pitch.name;
-              sim.calloutTimer = 1.25;
-              updateSessionDom({ exitVelo: null, launchAngle: null, dist: null, apex: null, hangTime: null, backspinRpm: null, outcome: call, color: isStrike ? '#f87171' : '#38bdf8' });
-              if (swingBtn) swingBtn.textContent = 'Throw Pitch';
+              sim.phase = 'idle';
             }
-            sim.phase = 'idle';
           }
         } else if (sim.phase === 'flight' && sim.flight) {
           const fl = sim.flight;
@@ -2430,8 +2443,11 @@
             sim.phase = 'idle';
             sim.swingAngle = -0.42;
           }
+        } else if (sim.followThroughTimer > 0) {
+          sim.followThroughTimer = Math.max(0, sim.followThroughTimer - dt);
+          sim.swingAngle = Math.min(0.95, sim.swingAngle + dt * 5.2);
         } else {
-          sim.swingAngle = -0.42 + Math.sin(ts * 0.0022) * 0.028;
+          sim.swingAngle += ((-0.42 + Math.sin(ts * 0.0022) * 0.028) - sim.swingAngle) * Math.min(1, dt * 8);
         }
 
         // Render True 3D Three.js Ballpark on #cage-canvas
@@ -2599,8 +2615,7 @@
         cageEngaged = true;
         if (!autoPciMode) movePciFromEvent(e.clientX, e.clientY);
         if (sim.phase === 'pitch') {
-          sim.swingTriggered = true;
-          resolveSwing();
+          triggerSwingPress();
         }
       });
 
@@ -2614,8 +2629,7 @@
         }
         if (e.key === ' ') {
           if (sim.phase === 'pitch') {
-            sim.swingTriggered = true;
-            resolveSwing();
+            triggerSwingPress();
           } else if (sim.phase === 'idle') {
             launchPitch(false);
           }
@@ -2684,8 +2698,7 @@
         swingBtn.onclick = () => {
           cageEngaged = true;
           if (sim.phase === 'pitch') {
-            sim.swingTriggered = true;
-            resolveSwing();
+            triggerSwingPress();
           } else {
             launchPitch(false);
           }
@@ -3722,28 +3735,28 @@
       'hitting-power': {
         clinic: 'rolling-over',
         bat: 'goods-2026',
-        title: 'Launch Angle & Palm-Up Extension',
+        title: 'On-Plane Extension & Elevated Backspin',
         tips: [
-          'Keep your top hand palm-down and bottom hand palm-up 8 inches past contact to stop pulling weak grounders.',
-          'Aim your mini PCI 0.25" below pitch center in Rapsodo Lab to drive 26°–30° elevated backspin bombs.'
+          'Coil into your back hip, match the downward pitch plane (+6° to +13° attack angle), and hold top/rear hand palm-up and bottom/lead hand palm-down 8+ inches past home plate.',
+          'Resist rolling your top wrist early — extend cleanly through the inner seam so line drives carry 26°–30° into the gap.'
         ]
       },
       'hitting-timing': {
         clinic: 'bat-drag',
         bat: 'baum-gold',
-        title: 'Stay Connected & Time Fastballs',
+        title: 'Lower-Half Lead & Tight Inside Path',
         tips: [
-          'Coil weight inside your back foot and fire hips first while keeping hands tucked beside your rear shoulder.',
-          'Test the Towel Under Back Armpit drill in slow-mo, then swing Baum Bat Gold (-3) against Fastball/Slider mix.'
+          'Fire your belt buckle toward the pitcher FIRST while keeping your rear elbow slotted cleanly beside your ribcage — never let your elbow pass your hands.',
+          'Drive the bat knob inside the baseball with stacked hands, then test tight sweet-spot feedback with Baum Bat Gold (-3).'
         ]
       },
       'fielding-hands': {
         clinic: 'glove-stab',
         bat: 'goods-2022',
-        title: 'Soft Out-Front Triangle & Footwork',
+        title: 'Out-Front Glove Triangle & Rhythm Footwork',
         tips: [
-          'Present your open glove triangle out in front of your eyes and funnel grounders softly to your belt.',
-          'Time your infield creep step with "Right—Left—Catch—Right—Throw" to stay off your heels.'
+          'Sink your hips low, present an open glove triangle out in front of your eyes, and softly funnel grounders into your midsection.',
+          'Approach every ball with "Right—Left—Catch—Right—Throw" cadence so momentum flows cleanly toward 1st base.'
         ]
       },
       'fielding-routes': {
@@ -3751,8 +3764,8 @@
         bat: 'combat-blue',
         title: '45° Drop-Step & Low Linear Crow Hop',
         tips: [
-          'Open hips 45° immediately on deep flies and pump both arms with your glove tucked until the final three steps.',
-          'Skim low across the grass on your crow hop rather than jumping straight up so relay throws carry flat.'
+          'Whip your back hip 45° immediately on deep flies and pump both arms with your glove tucked until the final three steps.',
+          'Skim low across the grass with a level head on your crow hop rather than jumping high vertically so relay throws bite flat.'
         ]
       }
     };

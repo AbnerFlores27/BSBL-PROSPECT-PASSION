@@ -90,14 +90,14 @@
       domainLabel: 'Hitting · Extension',
       title: 'Fix Rolling Over Grounders',
       flawName: 'Rolling Over (Early Top-Hand Wrist Snap)',
-      fixCue: 'Stay Palm-Up (bottom hand) / Palm-Down (top hand) all the way past contact.',
+      fixCue: 'Enter the pitch plane early (+6° to +13° attack angle) and hold Palm-Up / Palm-Down 8+ inches past contact.',
       summary: 'Snapping the top wrist over before or right at contact slams the barrel downward, turning hard pitches into weak pull-side grounders.',
       stages: ['1. Balanced Load', '2. On-Plane Entry', '3. Palm-Up Contact', '4. Full Zone Extension'],
       stageCues: [
-        'Load weight evenly on the inside edge of your back foot with relaxed wrists.',
-        'Enter the pitch plane early behind the ball so the barrel matches the downward angle of the pitch.',
-        'Hold top hand Palm-Down and bottom hand Palm-Up through the hitting zone — resist rolling the wrist over.',
-        'Finish extension 8+ inches through the front of home plate to send high backspin liners into the gap.'
+        'Coil gently into the inside of your back thigh with relaxed forearms and stacked knuckles.',
+        'Drop the barrel behind your shoulder into the pitch plane (+6° to +13° slight upward path) instead of chopping steep.',
+        'Meet the ball deep with your top/rear palm facing up and bottom/lead palm facing down — resist rolling your top wrist over.',
+        'Drive your barrel 8+ inches out toward the center-left gap before finishing above your front shoulder.'
       ],
       howToSteps: [
         'Freeze Stage 3 (Palm-Up Contact) and look at the batted ball flight line: Pro lifts at 26° while Flaw chops down.',
@@ -112,7 +112,7 @@
           name: 'Palm-Up / Palm-Down Freeze Drill',
           setup: 'Hit off a waist-high tee and stop the bat 8 inches past the tee stem.',
           reps: '4 sets × 8 swings',
-          cue: 'Freeze and check your hands: top palm faces the ground, bottom palm faces the sky—no wrist roll!'
+          cue: 'Freeze and check your hands: top/rear palm faces the sky, bottom/lead palm faces home plate—no early wrist roll!'
         },
         {
           name: 'Bottom-Hand Isolation Tee',
@@ -386,7 +386,7 @@
       prompt: 'Look at your top hand and bottom hand 6 inches AFTER contact with the ball:',
       options: [
         { key: 'a', text: 'My top-hand wrist already rolled completely over facing the pitcher', weights: { 'rolling-over': 4 } },
-        { key: 'b', text: 'Top palm stays facing down / bottom palm faces up extending through', weights: { healthyHit: 3 } },
+        { key: 'b', text: 'Top/rear palm faces up and bottom/lead palm faces down extending through', weights: { healthyHit: 3 } },
         { key: 'c', text: 'My bat barrel drops flat behind my shoulder late with low exit speed', weights: { 'bat-drag': 3 } },
         { key: 'd', text: 'My weight is falling toward the opposite batter’s box off balance', weights: { lunging: 3 } }
       ]
@@ -672,6 +672,66 @@
       }
     }
 
+    function drawAthleticTorso2D(hipX, hipY, shX, shY, jerseyColor, trimColor) {
+      const dx = shX - hipX;
+      const dy = shY - hipY;
+      const len = Math.max(1, Math.hypot(dx, dy));
+      const nx = -dy / len;
+      const ny = dx / len;
+      const waistX = hipX + dx * 0.34;
+      const waistY = hipY + dy * 0.34;
+      const chestX = hipX + dx * 0.72;
+      const chestY = hipY + dy * 0.72;
+
+      ctx.save();
+      ctx.fillStyle = jerseyColor;
+      ctx.beginPath();
+      ctx.moveTo(hipX - nx * 8.2, hipY - ny * 8.2);
+      ctx.quadraticCurveTo(waistX - nx * 6.8, waistY - ny * 6.8, shX - nx * 11.4, shY - ny * 11.4);
+      ctx.quadraticCurveTo(shX, shY - 3, shX + nx * 11.4, shY + ny * 11.4);
+      ctx.quadraticCurveTo(waistX + nx * 6.8, waistY + ny * 6.8, hipX + nx * 8.2, hipY + ny * 8.2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Subtle chest seam + collar V-trim
+      ctx.strokeStyle = trimColor;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(shX - nx * 4, shY - ny * 4);
+      ctx.lineTo(chestX, chestY);
+      ctx.lineTo(shX + nx * 4, shY + ny * 4);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawFielderGlove2D(gx, gy, accent) {
+      ctx.save();
+      ctx.translate(gx, gy);
+      // Cupped leather glove shell + thumb stall + laced web
+      ctx.fillStyle = '#854d0e';
+      ctx.beginPath();
+      ctx.moveTo(-6, 5);
+      ctx.quadraticCurveTo(-9, -4, -3, -9);
+      ctx.quadraticCurveTo(3, -11, 8, -5);
+      ctx.quadraticCurveTo(10, 3, 4, 8);
+      ctx.quadraticCurveTo(-2, 9, -6, 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Webbing pocket cross-laces
+      ctx.strokeStyle = '#fde68a';
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(-2, -6);
+      ctx.lineTo(4, -2);
+      ctx.moveTo(3, -7);
+      ctx.lineTo(-2, -1);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     function drawArrow(x1, y1, x2, y2, color, dashed = false) {
       ctx.save();
       ctx.strokeStyle = color;
@@ -841,53 +901,68 @@
       const accent = isFlaw ? c.flaw : c.pro;
       const jersey = isFlaw ? c.jerseyFlaw : c.jerseyPro;
 
-      // Smooth biomechanical phase easing curves
-      const load = smoothStep(Math.min(1, p / 0.30));
-      const stride = smoothStep(p < 0.25 ? 0 : Math.min(1, (p - 0.25) / 0.22));
-      const swing = smoothStep(p < 0.45 ? 0 : Math.min(1, (p - 0.45) / 0.26));
-      const finish = smoothStep(p < 0.71 ? 0 : Math.min(1, (p - 0.71) / 0.29));
+      // Smooth biomechanical phase easing curves (contact at p = 0.60)
+      const load = smoothStep(Math.min(1, p / 0.28));
+      const stride = smoothStep(p < 0.24 ? 0 : Math.min(1, (p - 0.24) / 0.20));
+      const swing = smoothStep(p < 0.44 ? 0 : Math.min(1, (p - 0.44) / 0.16)); // 1.0 right at contact p = 0.60!
+      const finish = smoothStep(p < 0.60 ? 0 : Math.min(1, (p - 0.60) / 0.40));
 
       // Compute biomechanics offsets by clinic + flaw vs pro
-      let hipShiftX = -load * 6 + stride * 12;
+      let hipShiftX = -load * 6 + stride * 11;
       let headDrop = 0;
       let frontKneeBend = 10;
       let rearElbowLead = 0;
       let handCastX = 0;
       let wristRoll = 0;
-      let barrelLagDeg = -1.95; // ready behind shoulder
+      let batAngle = -1.95;
+
+      // Exact bat-to-ball contact alignment math:
+      // At p=0.60 (swing=1.0, finish=0), handsX ≈ cx + 2, handsY ≈ groundY - 62, ballContact = (cx + 46, groundY - 58)
+      // Bat sweet spot is at r = 44.5px along batAngle: (+44.5 * cos(0.09), +44.5 * sin(0.09)) = (+44.3, +4.0) -> EXACT HIT!
+      const slotCurve = Math.sin(swing * Math.PI);
+      const baseSwingAngle =
+        swing < 0.001
+          ? -1.95
+          : finish > 0
+            ? 0.09 - finish * 1.15
+            : -1.95 - slotCurve * 0.45 + swing * 2.04;
 
       if (clinicId === 'lunging') {
         if (isFlaw) {
           hipShiftX += stride * 34 + swing * 12;
           headDrop = stride * 18;
           frontKneeBend = 2; // locked front leg!
+          batAngle = baseSwingAngle + 0.16 * swing;
         } else {
           hipShiftX = -load * 7 + stride * 11;
-          frontKneeBend = 8 - swing * 6; // blocks cleanly
+          frontKneeBend = 8 - swing * 6;
+          batAngle = baseSwingAngle;
         }
       } else if (clinicId === 'bat-drag') {
         if (isFlaw) {
           rearElbowLead = swing * 28; // elbow shoots way ahead!
-          barrelLagDeg = -1.95 + swing * 1.15; // barrel lags behind
+          batAngle = swing < 0.001 ? -1.95 : finish > 0 ? -0.45 - finish * 0.65 : -1.95 - slotCurve * 0.55 + swing * 1.5; // barrel drags behind!
         } else {
-          rearElbowLead = swing * 6;
-          barrelLagDeg = -1.95 + swing * 2.15; // tight snap through zone
+          rearElbowLead = swing * 5;
+          batAngle = baseSwingAngle;
         }
       } else if (clinicId === 'casting') {
         if (isFlaw) {
-          handCastX = swing * 32; // pushes hands way out toward pitcher!
-          barrelLagDeg = -1.85 + swing * 2.05;
+          handCastX = swing * 28; // hands sweep wide!
+          batAngle = baseSwingAngle + swing * 0.24;
         } else {
-          handCastX = swing * 6;
-          barrelLagDeg = -1.95 + swing * 2.22;
+          handCastX = swing * 4;
+          batAngle = baseSwingAngle;
         }
       } else if (clinicId === 'rolling-over') {
         if (isFlaw) {
-          wristRoll = swing * 1.45; // top wrist turns over steeply downward!
-          barrelLagDeg = -1.9 + swing * 2.4 + finish * 0.4;
+          wristRoll = swing * 1.15 + finish * 0.55; // top wrist turns over steeply downward!
+          batAngle = baseSwingAngle + swing * 0.48 + finish * 0.95;
         } else {
-          barrelLagDeg = -1.9 + swing * 2.05 + finish * 0.15;
+          batAngle = baseSwingAngle;
         }
+      } else {
+        batAngle = baseSwingAngle;
       }
 
       // Feet & Legs
@@ -906,32 +981,41 @@
       ctx.ellipse((backFootX + frontFootX) * 0.5, groundY - 1, 34, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      drawTaperedLimb(hipX - 5.5, hipY, backKneeX, backKneeY, 6.2, 4.8, c.body);
-      drawTaperedLimb(backKneeX, backKneeY, backFootX, groundY - 4, 4.6, 3.2, c.body);
-      drawTaperedLimb(hipX + 5.5, hipY, frontKneeX, frontKneeY, 6.2, 4.8, c.body);
-      drawTaperedLimb(frontKneeX, frontKneeY, frontFootX, groundY - 4, 4.6, 3.2, c.body);
+      drawTaperedLimb(hipX - 5.5, hipY, backKneeX, backKneeY, 6.4, 4.9, c.body);
+      drawTaperedLimb(backKneeX, backKneeY, backFootX, groundY - 4, 4.7, 3.2, c.body);
+      drawTaperedLimb(hipX + 5.5, hipY, frontKneeX, frontKneeY, 6.4, 4.9, c.body);
+      drawTaperedLimb(frontKneeX, frontKneeY, frontFootX, groundY - 4, 4.7, 3.2, c.body);
 
       // Stirrup stripe & cleats
       drawTaperedLimb(backFootX - 1, groundY - 3.5, backFootX + 9, groundY - 3, 3.0, 2.4, '#0f172a', null);
       drawTaperedLimb(frontFootX - 1, groundY - 3.5, frontFootX + 10, groundY - 3, 3.0, 2.4, '#0f172a', null);
 
-      // Athletic tapered torso + belt
-      const shX = hipX - 4 + (clinicId === 'lunging' && isFlaw ? stride * 18 : -swing * 5);
+      // Curved Athletic Jersey Torso + Belt
+      const shX = hipX - 4 + (clinicId === 'lunging' && isFlaw ? stride * 18 : -swing * 4);
       const shY = hipY - 46 + headDrop * 0.45;
-      drawTaperedLimb(hipX, hipY, shX, shY, 7.6, 9.8, jersey);
-      drawSegment(hipX - 6, hipY + 1, hipX + 6, hipY + 1, 4.2, '#0f172a');
+      drawAthleticTorso2D(hipX, hipY, shX, shY, jersey, 'rgba(255,255,255,0.45)');
+      drawSegment(hipX - 7, hipY + 1, hipX + 7, hipY + 1, 4.2, '#0f172a');
 
-      // Head, Contoured Batting Helmet, Bill & C-Flap Jaw Guard
+      // Head, Contoured Batting Helmet, Curved Visor & C-Flap Jaw Guard
       const headX = shX + 3 + (clinicId === 'lunging' && isFlaw ? stride * 8 : 0);
       const headY = shY - 17;
       drawJoint(headX, headY, 9.5, '#e8be96', null);
       ctx.beginPath();
-      ctx.arc(headX - 1, headY - 2, 11.2, Math.PI * 0.85, Math.PI * 2.08);
+      ctx.arc(headX - 1, headY - 2, 11.4, Math.PI * 0.85, Math.PI * 2.08);
       ctx.fillStyle = jersey;
       ctx.fill();
-      ctx.fillRect(headX + 4, headY - 4, 12, 3.2);
+      // Curved visor bill & C-flap
+      ctx.strokeStyle = jersey;
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(headX + 5, headY - 3);
+      ctx.quadraticCurveTo(headX + 12, headY - 3.5, headX + 16, headY - 1);
+      ctx.stroke();
       ctx.fillStyle = '#0f172a';
-      ctx.fillRect(headX + 2, headY + 1, 6, 4.5);
+      ctx.beginPath();
+      ctx.roundRect(headX + 1, headY + 0.5, 6.5, 4.5, 2);
+      ctx.fill();
 
       // Fence visual for Casting Wall Drill!
       if (clinicId === 'casting') {
@@ -945,19 +1029,21 @@
         ctx.setLineDash([]);
       }
 
-      // Arms, Rear Elbow & Hands
+      // Arms, Rear Elbow & Hands — drop cleanly into the slot so bat sweet spot meets ballContactX/Y at p=0.60!
       const backShoulderX = shX - 6;
       const backShoulderY = shY + 5;
       const frontShoulderX = shX + 7;
       const frontShoulderY = shY + 5;
 
-      const handsX = shX + 12 + handCastX + swing * 22 - load * 8;
-      const handsY = shY + 11 + swing * 12 + wristRoll * 8;
+      const baseHandsX = shX - 5 + swing * 12 - load * 6 + finish * 6;
+      const baseHandsY = shY + 12 + swing * 34 - finish * 18;
+      const handsX = baseHandsX + handCastX - (clinicId === 'bat-drag' && isFlaw ? swing * 12 : 0);
+      const handsY = baseHandsY + wristRoll * 5;
 
-      const rearElbowX = backShoulderX - 4 + rearElbowLead + swing * 12;
-      const rearElbowY = backShoulderY + 18 + (clinicId === 'bat-drag' && !isFlaw ? 6 : 0);
+      const rearElbowX = backShoulderX - 4 + rearElbowLead + swing * 9;
+      const rearElbowY = backShoulderY + 18 + swing * 14 + (clinicId === 'bat-drag' && !isFlaw ? 5 : 0);
 
-      drawTaperedLimb(backShoulderX, backShoulderY, rearElbowX, rearElbowY, 4.0, 3.3, jersey);
+      drawTaperedLimb(backShoulderX, backShoulderY, rearElbowX, rearElbowY, 4.1, 3.3, jersey);
       drawTaperedLimb(rearElbowX, rearElbowY, handsX, handsY, 3.2, 2.7, '#fed7aa', null);
       drawTaperedLimb(frontShoulderX, frontShoulderY, (frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, 3.8, 3.1, jersey);
       drawTaperedLimb((frontShoulderX + handsX) * 0.5, (frontShoulderY + handsY) * 0.5 + 3, handsX, handsY, 3.0, 2.5, '#fed7aa', null);
@@ -972,14 +1058,13 @@
       }
 
       // Translucent Bat Swing Arc Ribbon Trail
-      const batAngle = barrelLagDeg + finish * 0.65 + (clinicId === 'rolling-over' && isFlaw ? wristRoll * 0.5 : 0);
-      if (swing > 0.08) {
+      if (swing > 0.08 && finish < 0.85) {
         ctx.save();
         ctx.strokeStyle = isFlaw ? 'rgba(248, 113, 113, 0.34)' : 'rgba(56, 189, 248, 0.42)';
         ctx.lineWidth = 7;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(handsX, handsY, 48, Math.max(-2.1, batAngle - 1.15 * swing), batAngle);
+        ctx.arc(handsX, handsY, 46, Math.max(-2.35, batAngle - 1.15 * swing), batAngle);
         ctx.stroke();
         ctx.restore();
       }
@@ -987,10 +1072,10 @@
       // 3D-Styled Actual Theme Bat (Baum Bat Gold / 2026 Goods / 2022 Goods / Combat Rodeo / Combat Blue)
       drawThemedBat2D(handsX, handsY, batAngle, c.activeBatId || 'goods-2026');
 
-      // Incoming & Batted Ball Trajectory
+      // Incoming & Batted Ball Trajectory (Exact Bat-Ball Collision at contactP = 0.60!)
       const contactP = 0.60;
-      const ballContactX = cx + 44;
-      const ballContactY = groundY - 56;
+      const ballContactX = cx + 46;
+      const ballContactY = groundY - 58;
       if (p <= contactP) {
         const t = p / contactP;
         const bx = x + w - 24 + (ballContactX - (x + w - 24)) * t;
@@ -998,6 +1083,17 @@
         drawBaseball(bx, by, 6);
       } else {
         const t = (p - contactP) / (1 - contactP);
+        // Contact impact flash ring right when barrel strikes the ball!
+        if (t < 0.22) {
+          ctx.save();
+          ctx.strokeStyle = isFlaw ? c.flaw : '#fde047';
+          ctx.globalAlpha = 1 - t / 0.22;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(ballContactX, ballContactY, 7 + t * 85, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
         // Pro swings send crisp elevated backspin line drive; Flaw swings send weak grounders or pop-ups!
         const endBx = x + w - 18;
         let endBy = ballContactY - 78;
@@ -1007,7 +1103,6 @@
         const bx = ballContactX + (endBx - ballContactX) * t;
         const by = ballContactY + (endBy - ballContactY) * t - (isFlaw && clinicId === 'casting' ? Math.sin(t * Math.PI) * 35 : 0);
 
-        // Flight path preview trace
         ctx.strokeStyle = accent;
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
@@ -1169,29 +1264,35 @@
         }
       }
 
-      // Draw Smooth Anatomical Fielder Body + Legs + Glove
+      // Draw Smooth Anatomical Fielder Body + Curved Jersey + Sculpted Glove
       const hipY = groundY - 56 + crouch * 0.65 - hopY;
       const shY = hipY - 40 + crouch * 0.3;
       const shX = fx + crouch * 0.25;
-      drawTaperedLimb(fx, hipY, fx - 6, groundY - 28 - hopY, 5.6, 4.4, c.body);
-      drawTaperedLimb(fx - 6, groundY - 28 - hopY, fx - 16, groundY - 4 - hopY, 4.2, 2.9, c.body);
-      drawTaperedLimb(fx, hipY, fx + 10, groundY - 28 - hopY, 5.6, 4.4, c.body);
-      drawTaperedLimb(fx + 10, groundY - 28 - hopY, fx + 14, groundY - 4 - hopY, 4.2, 2.9, c.body);
-      drawTaperedLimb(fx, hipY, shX, shY, 7.2, 9.0, jersey);
+      drawTaperedLimb(fx, hipY, fx - 6, groundY - 28 - hopY, 5.8, 4.5, c.body);
+      drawTaperedLimb(fx - 6, groundY - 28 - hopY, fx - 16, groundY - 4 - hopY, 4.3, 3.0, c.body);
+      drawTaperedLimb(fx, hipY, fx + 10, groundY - 28 - hopY, 5.8, 4.5, c.body);
+      drawTaperedLimb(fx + 10, groundY - 28 - hopY, fx + 14, groundY - 4 - hopY, 4.3, 3.0, c.body);
+      drawAthleticTorso2D(fx, hipY, shX, shY, jersey, 'rgba(255,255,255,0.42)');
 
-      // Head + Cap
+      // Head + Contoured Cap + Curved Bill
       drawJoint(shX + 3, shY - 16, 9.5, '#fed7aa', null);
       ctx.beginPath();
-      ctx.arc(shX + 2, shY - 18, 10.5, Math.PI * 0.9, Math.PI * 2.05);
+      ctx.arc(shX + 2, shY - 18, 10.6, Math.PI * 0.9, Math.PI * 2.05);
       ctx.fillStyle = jersey;
       ctx.fill();
-      ctx.fillRect(shX + 6, shY - 20, 10, 3);
+      ctx.strokeStyle = jersey;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(shX + 6, shY - 19);
+      ctx.quadraticCurveTo(shX + 13, shY - 19.5, shX + 17, shY - 17);
+      ctx.stroke();
 
       // Glove & Throwing Arm
       const gx = shX + gloveOut;
       const gy = clinicId === 'crow-hop' ? shY + 6 : groundY - 16 - (clinicId === 'glove-stab' && !isFlaw ? 2 : 0) - hopY;
       drawTaperedLimb(shX + 4, shY + 5, gx, gy, 3.6, 2.8, jersey);
-      drawJoint(gx, gy, 7.5, '#92400e', accent);
+      drawFielderGlove2D(gx, gy, accent);
       if (clinicId === 'crow-hop') {
         const tx = shX - 6 + Math.cos(armAngle) * 26;
         const ty = shY + 4 + Math.sin(armAngle) * 26;

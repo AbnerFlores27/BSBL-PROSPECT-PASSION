@@ -292,7 +292,7 @@ function buildDeterministicCoachProfile({
   // Match hitting clinic
   let hitClinicId = 'rolling-over';
   let chosenBatId = 'goods-2026';
-  let swingDiagnosis = 'Your swing foundation is solid; keeping your top hand palm-up/palm-down 8 inches past contact will unlock higher backspin carry and eliminate rolled-over pull grounders.';
+  let swingDiagnosis = 'Your swing foundation is solid; keeping your top/rear palm facing up and bottom/lead palm facing down for 8+ inches past contact unlocks higher backspin carry and eliminates rolled-over pull grounders.';
   let batReason = '2026 DeMarini The Goods (-3) rewards clean lower-half turn and held barrel extension with towering 26°–30° carries.';
 
   if (hitLow.includes('bat drag') || hitLow.includes('late on fastballs') || noteLow.includes('jam')) {
@@ -370,8 +370,8 @@ function buildDeterministicCoachProfile({
     fieldingDiagnosis,
     iqBreakdown,
     actionableTips: [
-      `Watch "${VALID_CLINICS[hitClinicId].title}" in 0.45x Slow-Mo Split View and pause at Stage 3 (Contact) to match your hand & elbow slot.`,
-      `Run 3 sets × 10 focused tee swings focusing solely on "${VALID_CLINICS[hitClinicId].title}" before full BP.`,
+      `Watch "${VALID_CLINICS[hitClinicId].title}" in 0.45x Slow-Mo Split View and pause at Stage 2 & Stage 3 to match back-hip coil, rear-elbow slot, and barrel contact.`,
+      `Match the downward pitch plane (+6° to +13° attack angle) during 3 sets × 10 focused tee swings on "${VALID_CLINICS[hitClinicId].title}" before full BP.`,
       `Warm up defense with "${VALID_CLINICS[fieldClinicId].title}" slow-mo footwork reps so transfers stay fluid.`,
       `Step into Charles Schwab Field Omaha (3D Studio) with ${VALID_BATS[chosenBatId].split(' (')[0]} and aim for 1.32+ Smash Factor & 20°–30° launch angles.`
     ],

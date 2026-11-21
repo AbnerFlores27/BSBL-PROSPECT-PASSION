@@ -1154,6 +1154,142 @@ function buildCaliforniaPalmTree(height, curveOffsetX, curveOffsetZ) {
   return grp;
 }
 
+function makeCurvedCapVisorGeom(width = 0.68, depth = 0.48, arch = 0.09) {
+  // Authentic curved baseball cap bill: curved crescent shape + slight vertical bill camber
+  const s = new THREE.Shape();
+  const hw = width * 0.5;
+  s.moveTo(-hw, 0);
+  s.quadraticCurveTo(0, depth * 0.24, hw, 0);
+  s.quadraticCurveTo(hw * 0.92, depth * 0.78, 0, depth);
+  s.quadraticCurveTo(-hw * 0.92, depth * 0.78, -hw, 0);
+  const g = new THREE.ExtrudeGeometry(s, {
+    depth: 0.036,
+    bevelEnabled: true,
+    bevelThickness: 0.01,
+    bevelSize: 0.012,
+    bevelSegments: 2,
+    curveSegments: 14
+  });
+  const pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const nx = x / hw;
+    const ny = Math.max(0, y / depth);
+    // Natural pro bill arch across width + subtle downward lip droop
+    pos.setZ(i, pos.getZ(i) - nx * nx * arch * ny);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+function makeSculptedGloveMesh(leatherMat, laceMat, scale = 1.0, isCatcherMitt = false) {
+  const grp = new THREE.Group();
+  // Cupped leather palm bowl via partial LatheGeometry (concave pocket facing -Z/+Z)
+  const pocketPts = isCatcherMitt
+    ? [
+        new THREE.Vector2(0.0, 0.04),
+        new THREE.Vector2(0.18 * scale, 0.02),
+        new THREE.Vector2(0.36 * scale, 0.09 * scale),
+        new THREE.Vector2(0.42 * scale, 0.2 * scale),
+        new THREE.Vector2(0.34 * scale, 0.26 * scale)
+      ]
+    : [
+        new THREE.Vector2(0.0, 0.03),
+        new THREE.Vector2(0.15 * scale, 0.02),
+        new THREE.Vector2(0.28 * scale, 0.08 * scale),
+        new THREE.Vector2(0.33 * scale, 0.18 * scale),
+        new THREE.Vector2(0.26 * scale, 0.24 * scale)
+      ];
+  const shellGeom = new THREE.LatheGeometry(pocketPts, 20);
+  shellGeom.rotateX(Math.PI / 2);
+  const shell = new THREE.Mesh(shellGeom, leatherMat);
+  shell.scale.set(isCatcherMitt ? 1.08 : 0.94, isCatcherMitt ? 1.14 : 1.18, 0.95);
+  grp.add(shell);
+
+  // Sculpted thumb stall + pocket web
+  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(0.085 * scale, 0.22 * scale, 6, 10), leatherMat);
+  thumb.position.set(-0.24 * scale, 0.04 * scale, 0.08 * scale);
+  thumb.rotation.z = 0.45;
+  thumb.rotation.x = 0.35;
+  grp.add(thumb);
+
+  const webLoop = new THREE.Mesh(new THREE.TorusGeometry(0.11 * scale, 0.032 * scale, 8, 16), laceMat);
+  webLoop.position.set(-0.12 * scale, 0.14 * scale, 0.12 * scale);
+  webLoop.rotation.y = 0.25;
+  grp.add(webLoop);
+
+  if (!isCatcherMitt) {
+    for (let f = 0; f < 3; f++) {
+      const finger = new THREE.Mesh(new THREE.CapsuleGeometry(0.056 * scale, 0.18 * scale, 5, 8), leatherMat);
+      finger.position.set((0.02 + f * 0.095) * scale, 0.24 * scale, 0.05 * scale);
+      finger.rotation.x = 0.36;
+      finger.rotation.z = -0.1 * (f - 1);
+      grp.add(finger);
+    }
+  } else {
+    const padRim = new THREE.Mesh(new THREE.TorusGeometry(0.35 * scale, 0.065 * scale, 8, 22), laceMat);
+    padRim.scale.set(1.04, 1.1, 0.72);
+    padRim.position.set(0, 0, 0.16 * scale);
+    grp.add(padRim);
+  }
+  return grp;
+}
+
+function buildNaturalPineOrOakGrove(positions, trunkMat, leafMat, isPine = true) {
+  const grp = new THREE.Group();
+  const count = positions.length;
+  const trunkGeom = new THREE.CylinderGeometry(0.75, 1.35, 18, 10);
+  trunkGeom.translate(0, 9, 0);
+  const trunks = new THREE.InstancedMesh(trunkGeom, trunkMat, count);
+
+  // Organic displaced multi-lobe canopy (never cone pyramids)
+  const crownGeom = new THREE.IcosahedronGeometry(isPine ? 8.2 : 10.5, 2);
+  const cPos = crownGeom.attributes.position;
+  for (let i = 0; i < cPos.count; i++) {
+    const vx = cPos.getX(i);
+    const vy = cPos.getY(i);
+    const vz = cPos.getZ(i);
+    const bump = 1 + 0.18 * Math.sin(vx * 0.9 + vy * 0.7) * Math.cos(vz * 0.8);
+    const taper = isPine ? clamp(1.18 - (vy / 10) * 0.42, 0.48, 1.25) : 1.0;
+    cPos.setXYZ(i, vx * bump * taper, vy * (isPine ? 1.45 : 0.92) * bump, vz * bump * taper);
+  }
+  crownGeom.computeVertexNormals();
+  const crowns = new THREE.InstancedMesh(crownGeom, leafMat, count * 2);
+
+  const dummy = new THREE.Object3D();
+  const tint = new THREE.Color();
+  positions.forEach((p, idx) => {
+    const s = 0.85 + ((idx * 37) % 30) / 100;
+    dummy.position.set(p[0], 0, p[1]);
+    dummy.rotation.set(0, idx * 1.1, 0);
+    dummy.scale.set(s, s, s);
+    dummy.updateMatrix();
+    trunks.setMatrixAt(idx, dummy.matrix);
+
+    dummy.position.set(p[0], 17 * s, p[1]);
+    dummy.scale.set(s, s, s);
+    dummy.updateMatrix();
+    crowns.setMatrixAt(idx * 2, dummy.matrix);
+
+    dummy.position.set(p[0] + Math.sin(idx) * 2.2, 23 * s, p[1] + Math.cos(idx) * 2.2);
+    dummy.scale.set(s * 0.78, s * 0.76, s * 0.78);
+    dummy.updateMatrix();
+    crowns.setMatrixAt(idx * 2 + 1, dummy.matrix);
+
+    tint.setHSL(0.36 + ((idx % 5) - 2) * 0.012, 0.48, 0.24 + (idx % 4) * 0.03);
+    crowns.setColorAt(idx * 2, tint);
+    crowns.setColorAt(idx * 2 + 1, tint);
+  });
+  trunks.instanceMatrix.needsUpdate = true;
+  crowns.instanceMatrix.needsUpdate = true;
+  if (crowns.instanceColor) crowns.instanceColor.needsUpdate = true;
+  trunks.computeBoundingSphere();
+  crowns.computeBoundingSphere();
+  grp.add(trunks, crowns);
+  return grp;
+}
+
 function makeRoundedRectShape(w, h, r) {
   const s = new THREE.Shape();
   const hw = w * 0.5;
@@ -1365,25 +1501,18 @@ function buildCompositePitcher(maxAniso, ballTex) {
   neck.position.set(0, 1.98, 0);
   torsoPivot.add(collar, neck);
 
-  // Sculpted Head + Fitted Curved Baseball Cap
+  // Sculpted Head + Fitted Curved Baseball Cap with Cambered Crescent Bill
   const headGroup = new THREE.Group();
   headGroup.position.set(0, 2.28, 0);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.39, 18, 14), skinMat);
   head.scale.set(0.9, 1.06, 0.96);
-  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.42, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.56), navyMat);
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.425, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.56), navyMat);
   cap.position.y = 0.07;
   const capBtn = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), stirrupMat);
-  capBtn.position.set(0, 0.49, 0);
-  const visorCurve = new THREE.ExtrudeGeometry(makeRoundedRectShape(0.68, 0.46, 0.22), {
-    depth: 0.045,
-    bevelEnabled: true,
-    bevelThickness: 0.015,
-    bevelSize: 0.02,
-    bevelSegments: 2
-  });
-  const visor = new THREE.Mesh(visorCurve, navyMat);
-  visor.rotation.x = Math.PI / 2 - 0.14;
-  visor.position.set(0, 0.14, 0.34);
+  capBtn.position.set(0, 0.495, 0);
+  const visor = new THREE.Mesh(makeCurvedCapVisorGeom(0.68, 0.48, 0.1), navyMat);
+  visor.rotation.x = Math.PI / 2 - 0.12;
+  visor.position.set(0, 0.13, 0.34);
   headGroup.add(head, cap, capBtn, visor);
   torsoPivot.add(headGroup);
 
@@ -1423,12 +1552,10 @@ function buildCompositePitcher(maxAniso, ballTex) {
   gloveElbowPivot.position.set(0, -0.88, 0);
   gloveElbowPivot.add(new THREE.Mesh(new THREE.SphereGeometry(0.125, 10, 8), undershirtMat));
   gloveElbowPivot.add(new THREE.Mesh(foreArmGeom, undershirtMat));
-  const gloveShell = new THREE.Mesh(new THREE.SphereGeometry(0.29, 14, 12), gloveMat);
-  gloveShell.scale.set(0.76, 1.18, 1.06);
-  gloveShell.position.set(0, -1.04, 0.1);
-  const gloveWeb = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.045, 8, 14), new THREE.MeshStandardMaterial({ color: '#451a03', roughness: 0.7 }));
-  gloveWeb.position.set(-0.08, -1.06, 0.19);
-  gloveElbowPivot.add(gloveShell, gloveWeb);
+  const gloveShell = makeSculptedGloveMesh(gloveMat, new THREE.MeshStandardMaterial({ color: '#451a03', roughness: 0.65 }), 0.92, false);
+  gloveShell.position.set(0, -1.04, 0.12);
+  gloveShell.rotation.x = -Math.PI * 0.28;
+  gloveElbowPivot.add(gloveShell);
   gloveArmPivot.add(gloveElbowPivot);
   torsoPivot.add(gloveArmPivot);
 
@@ -1471,7 +1598,7 @@ function buildCompositePitcher(maxAniso, ballTex) {
    ========================================================= */
 function buildCompositeBatter(maxAniso) {
   const root = new THREE.Group();
-  root.position.set(-2.55, 0.05, 0.25);
+  root.position.set(-2.95, 0.05, 0.25);
   root.add(makePlayerShadowDisc(1.2));
 
   const pantsMat = new THREE.MeshStandardMaterial({ color: '#f1f5f9', roughness: 0.72 });
@@ -1536,24 +1663,22 @@ function buildCompositeBatter(maxAniso) {
   neck.position.set(0.06, 2.02, 0);
   torsoPivot.add(shoulderL, shoulderR, neck);
 
-  // Smooth Contoured C-Flap Batting Helmet
+  // Smooth Contoured C-Flap Batting Helmet + Curved Crescent Visor
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.39, 18, 14), skinMat);
   head.position.set(0.1, 2.34, 0);
   head.scale.set(0.95, 1.05, 0.92);
-  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.44, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), helmetMat);
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.445, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), helmetMat);
   helmet.position.set(0.1, 2.4, 0);
 
-  const flapShape = makeRoundedRectShape(0.32, 0.34, 0.1);
-  const earFlap = new THREE.Mesh(new THREE.ExtrudeGeometry(flapShape, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 }), helmetMat);
-  earFlap.position.set(0.12, 2.26, -0.44);
-  const cFlapShape = makeRoundedRectShape(0.26, 0.19, 0.07);
-  const cFlap = new THREE.Mesh(new THREE.ExtrudeGeometry(cFlapShape, { depth: 0.07, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 }), helmetMat);
-  cFlap.position.set(0.34, 2.18, -0.37);
-  cFlap.rotation.y = -0.38;
+  const earFlap = new THREE.Mesh(new THREE.SphereGeometry(0.23, 12, 10, 0, Math.PI, 0, Math.PI * 0.7), helmetMat);
+  earFlap.scale.set(1.0, 1.15, 0.45);
+  earFlap.position.set(0.12, 2.24, -0.4);
+  const cFlap = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.055, 8, 14, Math.PI * 0.68), helmetMat);
+  cFlap.position.set(0.27, 2.18, -0.34);
+  cFlap.rotation.set(0.18, -0.38, -0.3);
 
-  const visorShape = makeRoundedRectShape(0.66, 0.4, 0.18);
-  const visor = new THREE.Mesh(new THREE.ExtrudeGeometry(visorShape, { depth: 0.04, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.015, bevelSegments: 2 }), helmetMat);
-  visor.rotation.x = Math.PI / 2 - 0.12;
+  const visor = new THREE.Mesh(makeCurvedCapVisorGeom(0.66, 0.44, 0.08), helmetMat);
+  visor.rotation.x = Math.PI / 2 - 0.1;
   visor.rotation.z = -Math.PI * 0.5 + 0.4;
   visor.position.set(0.32, 2.44, -0.18);
   torsoPivot.add(head, helmet, earFlap, cFlap, visor);
@@ -1656,9 +1781,8 @@ function buildCatcherAndUmpire() {
     catcher.add(thighC, shin, kneeCap);
   });
 
-  const mitt = new THREE.Mesh(new THREE.SphereGeometry(0.43, 16, 14), mittMat);
-  mitt.scale.set(1.06, 1.16, 0.52);
-  mitt.position.set(0, 2.45, -1.15);
+  const mitt = makeSculptedGloveMesh(mittMat, new THREE.MeshStandardMaterial({ color: '#451a03', roughness: 0.65 }), 1.12, true);
+  mitt.position.set(0, 2.45, -1.18);
   catcher.add(mitt);
   grp.add(catcher);
 
@@ -1813,11 +1937,31 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   innerGrass.receiveShadow = true;
   fieldGroup.add(innerGrass);
 
+  // Authentic College Dirt Sliding-Pit Cutouts around 1B, 2B, 3B + Dirt Baselines
+  [
+    [63.64, -63.64, 12],
+    [0, -127.28, 13],
+    [-63.64, -63.64, 12]
+  ].forEach(([bx, bz, rad]) => {
+    const pit = new THREE.Mesh(new THREE.CircleGeometry(rad, 24), dirtMat);
+    pit.rotation.x = -Math.PI / 2;
+    pit.position.set(bx, 0.042, bz);
+    pit.receiveShadow = true;
+    fieldGroup.add(pit);
+  });
+
   const homeDirt = new THREE.Mesh(new THREE.CircleGeometry(15, 28), dirtMat);
   homeDirt.rotation.x = -Math.PI / 2;
   homeDirt.position.set(0, 0.04, 0);
   homeDirt.receiveShadow = true;
   fieldGroup.add(homeDirt);
+
+  // Home-to-Mound Dirt Keyhole Runner Strip
+  const keyhole = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 58), dirtMat);
+  keyhole.rotation.x = -Math.PI / 2;
+  keyhole.position.set(0, 0.041, -30);
+  keyhole.receiveShadow = true;
+  fieldGroup.add(keyhole);
 
   // Contoured Bell-Curve Pitcher's Mound (LatheGeometry — zero sharp cylinder frustum)
   const moundPts = [
@@ -1960,7 +2104,8 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   scene.add(plateCrew.grp);
 
   const batPivot = new THREE.Group();
-  batPivot.position.set(-2.05, 2.85, 0.25);
+  batPivot.position.set(-2.32, 3.85, 0.58);
+  batPivot.scale.setScalar(0.9);
   scene.add(batPivot);
 
   const batGroups = {};
@@ -2226,60 +2371,92 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       grp.add(pole, screen);
     });
 
-    // 4. Completely EMPTY Realistic College Grandstand Bowls (Zero Crowd Blobs!)
+    // 4. Completely EMPTY 3D Stepped Concrete College Grandstands + Handrails (Zero flat sheets or crowd!)
     const seatsTex =
       stSpec.id === 'omaha' ? omahaSeatsTex : stSpec.id === 'lsu' ? lsuSeatsTex : missStSeatsTex;
     const seatsMat = new THREE.MeshStandardMaterial({ map: seatsTex, roughness: 0.78, side: THREE.DoubleSide });
+    const railMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', metalness: 0.68, roughness: 0.28 });
 
     const tierConfigs =
       stSpec.id === 'omaha'
         ? [
-            // Charles Schwab Field Omaha: Continuous 360-wrap lower college bowl + upper CWS club deck
-            { startPhi: -0.82, endPhi: 0.82, dOff: 12, dSpan: 48, y0: 9, y1: 31 },
-            { startPhi: -0.88, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54 },
-            { startPhi: 0.22, endPhi: 0.88, dOff: 66, dSpan: 36, y0: 37, y1: 54 }
+            { startPhi: -0.82, endPhi: 0.82, dOff: 12, dSpan: 48, y0: 9, y1: 31, steps: 8 },
+            { startPhi: -0.88, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 },
+            { startPhi: 0.22, endPhi: 0.88, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 }
           ]
         : stSpec.id === 'lsu'
           ? [
-              // Alex Box Stadium: Continuous Purple/Gold Outfield Berm & Bleacher Tiers + Twin Grandstand Decks
-              { startPhi: -0.82, endPhi: 0.82, dOff: 10, dSpan: 50, y0: 10, y1: 34 },
-              { startPhi: -0.88, endPhi: 0.88, dOff: 66, dSpan: 38, y0: 39, y1: 57 }
+              { startPhi: -0.82, endPhi: 0.82, dOff: 10, dSpan: 50, y0: 10, y1: 34, steps: 8 },
+              { startPhi: -0.88, endPhi: 0.88, dOff: 66, dSpan: 38, y0: 39, y1: 57, steps: 6 }
             ]
           : [
-              // Dude Noble Field (Miss. State): Lower Empty Outfield Lounge Terraces + Upper College Bowl
-              { startPhi: -0.82, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, isLounge: true },
-              { startPhi: 0.18, endPhi: 0.82, dOff: 10, dSpan: 46, y0: 10, y1: 32 },
-              { startPhi: -0.9, endPhi: 0.9, dOff: 62, dSpan: 40, y0: 38, y1: 58 }
+              { startPhi: -0.82, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, steps: 6, isLounge: true },
+              { startPhi: 0.18, endPhi: 0.82, dOff: 10, dSpan: 46, y0: 10, y1: 32, steps: 7 },
+              { startPhi: -0.9, endPhi: 0.9, dOff: 62, dSpan: 40, y0: 38, y1: 58, steps: 6 }
             ];
 
     for (const tc of tierConfigs) {
-      const bowlGeom = createSweptStripGeometry(
-        (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + tc.dOff,
-        (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + tc.dOff + tc.dSpan,
-        () => tc.y0,
-        () => tc.y1,
-        tc.startPhi,
-        tc.endPhi,
-        64
-      );
-      const bowlMesh = new THREE.Mesh(bowlGeom, seatsMat);
-      bowlMesh.receiveShadow = true;
-      grp.add(bowlMesh);
+      const steps = tc.steps || 6;
+      const stepD = tc.dSpan / steps;
+      const stepH = (tc.y1 - tc.y0) / steps;
+      for (let s = 0; s < steps; s++) {
+        const dIn = tc.dOff + s * stepD;
+        const dOut = dIn + stepD;
+        const yStep = tc.y0 + s * stepH;
+        const tread = createSweptStripGeometry(
+          (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + dIn,
+          (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + dOut,
+          () => yStep,
+          () => yStep + 0.35,
+          tc.startPhi,
+          tc.endPhi,
+          48
+        );
+        const treadMesh = new THREE.Mesh(tread, seatsMat);
+        treadMesh.receiveShadow = true;
+        grp.add(treadMesh);
 
+        if (s > 0) {
+          const riserGeom = createSweptWallGeometry(
+            (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + dIn,
+            () => stepH + 0.35,
+            tc.startPhi,
+            tc.endPhi,
+            40,
+            0.8
+          );
+          const riserMesh = new THREE.Mesh(riserGeom, concreteMat);
+          riserMesh.position.y = yStep - stepH;
+          grp.add(riserMesh);
+        }
+      }
+
+      // Front Fascia Wall + Top Anodized Aluminum Safety Rail
       const fasciaGeom = createSweptWallGeometry(
         (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + tc.dOff,
-        () => tc.y0,
+        () => tc.y0 + 1.2,
         tc.startPhi,
         tc.endPhi,
         48,
         2.0
       );
       grp.add(new THREE.Mesh(fasciaGeom, concreteMat));
+      grp.add(
+        buildTopCopingTube(
+          (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + tc.dOff,
+          () => tc.y0 + 2.4,
+          tc.startPhi,
+          tc.endPhi,
+          40,
+          0.32,
+          railMat
+        )
+      );
 
       if (tc.isLounge) {
         const glassRailGeom = createSweptWallGeometry(
           (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + tc.dOff - 1.5,
-          () => tc.y0 + 3.5,
+          () => tc.y0 + 3.8,
           tc.startPhi,
           tc.endPhi,
           40,
@@ -2289,7 +2466,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       }
     }
 
-    // 5. Continuous Side Baseline Extension Empty Bowls down 1B & 3B Lines
+    // 5. Continuous Side Baseline Extension Empty Bowls down 1B & 3B Lines + Foul Bullpen Mounds
     [-1, 1].forEach((side) => {
       const startP = side < 0 ? -1.48 : 0.785;
       const endP = side < 0 ? -0.785 : 1.48;
@@ -2304,12 +2481,21 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         24
       );
       grp.add(new THREE.Mesh(wingBowl, seatsMat));
+
+      // Foul Territory Warmup Bullpen Mound & Rubber
+      const bpMound = new THREE.Mesh(new THREE.LatheGeometry(moundPts, 20), dirtMat);
+      bpMound.scale.set(0.65, 0.72, 0.65);
+      bpMound.position.set(side * 124, 0, -108);
+      const bpPlate = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.45), baseMat);
+      bpPlate.rotation.x = -Math.PI / 2;
+      bpPlate.position.set(side * 124, 0.62, -108);
+      grp.add(bpMound, bpPlate);
     });
 
     // 6. Sculpted D1 LED Stadium Light Towers
     grp.add(buildStadiumLightTowers(stSpec, [-0.64, -0.35, -0.1, 0.1, 0.35, 0.64], concreteMat, steelMat));
 
-    // 7. Sculpted College Videoboard + Park Architectural Landmarks (Zero Crude Boxes!)
+    // 7. Sculpted College Videoboard + Park Architectural Landmarks + Natural Groves
     const boardTex =
       stSpec.id === 'omaha' ? omahaBoardTex : stSpec.id === 'lsu' ? lsuBoardTex : missStBoardTex;
     const frameColor =
@@ -2329,8 +2515,11 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     sbGrp.add(sbFrame, sbFace, sbPylonL, sbPylonR);
     grp.add(sbGrp);
 
+    const trunkMat = new THREE.MeshStandardMaterial({ color: '#4b3626', roughness: 0.92 });
+    const leafMat = new THREE.MeshStandardMaterial({ roughness: 0.8 });
+
     if (stSpec.id === 'missst') {
-      // Sculpted Multi-Tier Left Field Lounge Terraced Steel Rig Decks
+      // Sculpted Multi-Tier Left Field Lounge Terraced Steel Rig Decks + Starkville Pine Grove
       const deckMat = new THREE.MeshStandardMaterial({ color: '#475569', roughness: 0.6, metalness: 0.35 });
       const canopyMat = new THREE.MeshStandardMaterial({ color: '#5d1725', roughness: 0.55 });
       for (let tier = 0; tier < 2; tier++) {
@@ -2361,8 +2550,16 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         );
         grp.add(deck, canopy);
       }
+      grp.add(
+        buildNaturalPineOrOakGrove(
+          [[-320, -340], [-255, -420], [-165, -468], [165, -468], [260, -415], [328, -330], [-360, -260], [360, -260]],
+          trunkMat,
+          leafMat,
+          true
+        )
+      );
     } else if (stSpec.id === 'omaha') {
-      // Smooth Continuous Curved CWS Architectural Canopy Fascia Ring around Concourse
+      // Curved CWS Architectural Canopy Fascia + Distant Downtown Omaha Skyline Towers
       const cwsCanopy = new THREE.Mesh(
         createSweptStripGeometry(
           (phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + 56,
@@ -2376,14 +2573,38 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.42, side: THREE.DoubleSide })
       );
       grp.add(cwsCanopy);
+
+      const towerMat = new THREE.MeshPhysicalMaterial({ color: '#1e293b', roughness: 0.25, metalness: 0.6, clearcoat: 0.5 });
+      [
+        [-240, -560, 44, 140],
+        [-145, -595, 52, 185],
+        [150, -585, 48, 165],
+        [245, -550, 40, 128]
+      ].forEach(([tx, tz, tw, th]) => {
+        const bldg = new THREE.Mesh(
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(tw, tw * 0.75, 4), { depth: th, bevelEnabled: true, bevelThickness: 1.5, bevelSize: 1.5, bevelSegments: 2 }),
+          towerMat
+        );
+        bldg.rotation.x = -Math.PI / 2;
+        bldg.position.set(tx, 0, tz);
+        grp.add(bldg);
+      });
     } else if (stSpec.id === 'lsu') {
-      // LSU Intimidator Gold Championship Ribbon Deck + Surrounding Louisiana Pines
+      // LSU Intimidator Gold Championship Ribbon Deck + Surrounding Louisiana Live Oaks
       const ribbon = new THREE.Mesh(
         createSweptWallGeometry((phi) => stSpec.wallDist(clamp(phi, -0.785, 0.785)) + 64, () => 4.2, -0.82, 0.82, 56, 1.5),
         new THREE.MeshStandardMaterial({ color: '#fdd023', roughness: 0.4, metalness: 0.2 })
       );
       ribbon.position.y = 35;
       grp.add(ribbon);
+      grp.add(
+        buildNaturalPineOrOakGrove(
+          [[-310, -350], [-235, -430], [-145, -475], [145, -475], [240, -425], [315, -340], [-355, -245], [355, -245]],
+          trunkMat,
+          leafMat,
+          false
+        )
+      );
     }
 
     // Centerfield Wind Pennant Flag Mast on Stadium Rim
@@ -2417,6 +2638,18 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   const _camTargetLook = new THREE.Vector3();
   const _camCurLook = new THREE.Vector3(0, 3.1, -55);
   const _projVec = new THREE.Vector3();
+  const _batUp = new THREE.Vector3(0, 1, 0);
+  const _batKnob = new THREE.Vector3();
+  const _batDir = new THREE.Vector3();
+  const _batHandsLocal = new THREE.Vector3();
+  const _batStanceK = new THREE.Vector3(-2.46, 4.18, 0.62);
+  const _batStanceD = new THREE.Vector3(-0.18, 0.94, 0.29).normalize();
+  const _batSlotK = new THREE.Vector3(-2.55, 3.24, 0.72);
+  const _batSlotD = new THREE.Vector3(-0.34, 0.36, 0.87).normalize();
+  const _batFollowK = new THREE.Vector3(-2.36, 4.12, -0.68);
+  const _batFollowD = new THREE.Vector3(-0.56, 0.56, -0.61).normalize();
+  const _batContactK = new THREE.Vector3();
+  const _batContactD = new THREE.Vector3();
 
   let curStadiumId = '';
   let curBatId = '';
@@ -2519,23 +2752,55 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     }
 
     const swingRaw = clamp((simState.swingAngle + 0.42) / 1.37, 0, 1);
-    const swingVal = smoothStep(0, 1, swingRaw);
     const hideClosePlateCrew = curCameraMode === 'pov' && simState.camT > 0.74;
     batPivot.visible = !hideClosePlateCrew;
     batter.root.visible = !hideClosePlateCrew;
     plateCrew.grp.visible = !hideClosePlateCrew;
 
     const pitchLoad = simState.phase === 'windup' ? smoothStep(0, 1, simState.t) * 0.28 : 0;
-    batter.torsoPivot.rotation.y = THREE.MathUtils.damp(batter.torsoPivot.rotation.y, -0.2 - pitchLoad + swingVal * 1.54, 18, dt);
-    batter.strideLegPivot.rotation.x = THREE.MathUtils.damp(batter.strideLegPivot.rotation.x, pitchLoad * 0.56 - swingVal * 0.24, 16, dt);
+    batter.torsoPivot.rotation.y = THREE.MathUtils.damp(batter.torsoPivot.rotation.y, -0.2 - pitchLoad + swingRaw * 1.54, 18, dt);
+    batter.strideLegPivot.rotation.x = THREE.MathUtils.damp(batter.strideLegPivot.rotation.x, pitchLoad * 0.56 - swingRaw * 0.24, 16, dt);
     batter.strideKneePivot.rotation.x = THREE.MathUtils.damp(batter.strideKneePivot.rotation.x, pitchLoad * 0.42 + 0.1, 16, dt);
-    batter.backKneePivot.rotation.x = THREE.MathUtils.damp(batter.backKneePivot.rotation.x, 0.16 + swingVal * 0.22, 16, dt);
-    batter.handsGroup.position.x = THREE.MathUtils.damp(batter.handsGroup.position.x, 0.62 + swingVal * 0.26, 18, dt);
+    batter.backKneePivot.rotation.x = THREE.MathUtils.damp(batter.backKneePivot.rotation.x, 0.16 + swingRaw * 0.22, 16, dt);
 
-    batPivot.rotation.order = 'YXZ';
-    batPivot.rotation.z = 0.54 - swingVal * 2.12;
-    batPivot.rotation.y = -0.66 + swingVal * 2.18;
-    batPivot.rotation.x = 0.24 - swingVal * 0.34;
+    // Exact Vector Bat-to-Ball Contact Kinematics:
+    // Bat sweet spot (2.35 world units from knob along +Y) physically collides with (swingTargetX, swingTargetY, 0) at swingRaw = 0.569!
+    const sweetLen = 2.35;
+    const tx = clamp(simState.swingTargetX != null ? simState.swingTargetX : 0, -0.95, 0.95);
+    const ty = clamp(simState.swingTargetY != null ? simState.swingTargetY : 2.65, 1.55, 3.75);
+    const kxC = clamp(tx - 2.26, -2.62, -1.45);
+    const kyC = clamp(ty - 0.25, 1.45, 3.5);
+    const dxC = tx - kxC;
+    const dyC = ty - kyC;
+    const remSq = Math.max(0.02, sweetLen * sweetLen - dxC * dxC - dyC * dyC);
+    const kzC = Math.sqrt(remSq);
+    _batContactK.set(kxC, kyC, kzC);
+    _batContactD.set(dxC, dyC, -kzC).normalize();
+
+    const sContact = 0.569343; // exact match for resolveSwing() sim.swingAngle = 0.36
+    const sSlot = 0.26;
+    if (swingRaw <= sSlot) {
+      const u = smoothStep(0, sSlot, swingRaw);
+      _batKnob.lerpVectors(_batStanceK, _batSlotK, u);
+      _batDir.lerpVectors(_batStanceD, _batSlotD, u).normalize();
+    } else if (swingRaw <= sContact) {
+      const u = smoothStep(sSlot, sContact, swingRaw);
+      _batKnob.lerpVectors(_batSlotK, _batContactK, u);
+      _batDir.lerpVectors(_batSlotD, _batContactD, u).normalize();
+    } else {
+      const u = smoothStep(sContact, 1.0, swingRaw);
+      _batKnob.lerpVectors(_batContactK, _batFollowK, u);
+      _batDir.lerpVectors(_batContactD, _batFollowD, u).normalize();
+    }
+
+    batPivot.position.copy(_batKnob);
+    batPivot.quaternion.setFromUnitVectors(_batUp, _batDir);
+
+    // Glue batter's hands directly to the bat grip in torso local coordinates
+    batter.torsoPivot.updateMatrixWorld(true);
+    _batHandsLocal.copy(_batKnob).addScaledVector(_batDir, 0.34);
+    batter.torsoPivot.worldToLocal(_batHandsLocal);
+    batter.handsGroup.position.copy(_batHandsLocal);
 
     if (simState.phase === 'pitch' && simState.pitchPos) {
       plateCrew.mitt.position.x = THREE.MathUtils.damp(plateCrew.mitt.position.x, clamp(simState.pitchPos.x, -1.2, 1.2), 14, dt);
