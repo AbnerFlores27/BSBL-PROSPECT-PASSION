@@ -1797,7 +1797,11 @@
     function updateProgressUi() {
       const count = Object.keys(answers).length;
       const pct = Math.round((count / QUIZ_QUESTIONS.length) * 100);
-      if (quizProgressText) quizProgressText.textContent = `${count} / ${QUIZ_QUESTIONS.length} answered (${pct}%)`;
+      const hitDone = QUIZ_QUESTIONS.filter((q) => q.part === 'hitting' && answers[q.id]).length;
+      const fieldDone = QUIZ_QUESTIONS.filter((q) => q.part === 'fielding' && answers[q.id]).length;
+      if (quizProgressText) {
+        quizProgressText.textContent = `${count} / ${QUIZ_QUESTIONS.length} answered (${pct}%) · Hitting ${hitDone}/10 · Fielding ${fieldDone}/10`;
+      }
       if (quizProgressBar) quizProgressBar.style.width = `${pct}%`;
     }
 
@@ -1936,7 +1940,8 @@
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:0.55rem;">
             <button type="button" id="save-report-playbook-btn" class="btn btn-primary btn-sm">Save Plan to My Playbook</button>
-            <a class="btn btn-secondary btn-sm" href="index.html#gameday-studio">Test Bat in 3D Cage</a>
+            <a class="btn btn-secondary btn-sm" href="index.html?bat=${encodeURIComponent(report.recBatId)}#gameday-studio">Test ${report.recBat.name.split(' ')[0]} in 3D Cage</a>
+            <a class="btn btn-ghost btn-sm" href="scenarios.html">Scenario Quizzes</a>
           </div>
         </div>
 
@@ -1991,7 +1996,8 @@
           <div class="card-subtle">
             <div class="meta-line">Recommended Cage Bat</div>
             <h4 style="margin-bottom:0.35rem;">${report.recBat.name}</h4>
-            <p style="margin-bottom:0;color:var(--text-secondary);font-size:0.92rem;">${report.recBat.reason}</p>
+            <p style="margin-bottom:0.65rem;color:var(--text-secondary);font-size:0.92rem;">${report.recBat.reason}</p>
+            <a class="btn btn-secondary btn-sm" href="index.html?bat=${encodeURIComponent(report.recBatId)}#gameday-studio">Swing in RHB / LHB Cage</a>
           </div>
           <div class="card-subtle">
             <div class="meta-line">2-Week Practice Schedule</div>
@@ -2003,7 +2009,7 @@
           <div class="card-subtle">
             <div class="meta-line">Recommended Play Lesson</div>
             <h4 style="margin-bottom:0.35rem;">Film &amp; Rule Study</h4>
-            <p style="margin-bottom:0.65rem;color:var(--text-secondary);font-size:0.92rem;">Connect these drills to live diamond situations.</p>
+            <p style="margin-bottom:0.65rem;color:var(--text-secondary);font-size:0.92rem;">Connect these drills to live diamond situations &amp; rule trivia.</p>
             <a class="btn btn-secondary btn-sm" href="detail.html?id=${encodeURIComponent(hitClinic.scenarioId)}">Open Linked Scenario</a>
           </div>
         </div>

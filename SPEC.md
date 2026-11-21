@@ -133,4 +133,19 @@ When `process.env.DATABASE_URL` is set (Replit PostgreSQL), `db.js` initializes 
 9. **Fan-specific interactive features:** 5-Expert Analyzer with SVG Diamond Diagrams, Trivia Quiz with server scoring, Side-by-Side Comparison Tool, and 5-Star Ratings.
 10. **Responsive design:** Verified across desktop (`>=1024px`), tablet (`768–1023px`), and mobile (`<768px`).
 11. **Validation & feedback:** Client + server validation (`400`/`401`/`403`/`409`), toast notifications, inline error/success banners, and empty states.
-12. **Deployment:** Ready for Replit Deployments (`npm install && npm start` on `0.0.0.0:${PORT || 5000}` with Replit PostgreSQL).
+12. **Deployment:** Ready for hosted deployment (`npm install && npm start` on `0.0.0.0:${PORT || 5000}` with PostgreSQL).
+
+---
+
+## 9. v9.0 Additions & Next Roadmap
+
+### Added Beyond Original v8.0 MVP
+- **3D Stadium & Cage Simulator (`stadium3d.js` + `index.html` + `ui.js`):** Interactive Three.js ballpark simulator across 3 college/practice venues (`LSU Alex Box`, `Vandy Hawkins`, `Pro D1 Cage`), 5 physics-calibrated BBCOR/wood bats (`cor`, `moi`, `taperSharpness`, `launchLift`), lefty/righty (`RHB`/`LHB` & `RHP`/`LHP`) batter and pitcher mirroring, and a dynamic `Ball Track` chase camera framing both the mid-air baseball and landing target beacon.
+- **Animated Rapsodo Telemetry (`ui.js`):** Animated 2D Side-Arc trajectory comet + apex marker, Strike-Zone Pitch Break & sweeping Spin Axis Clock dial, Field Spray laser tracer + impact ripple, and live numeric stat rollups.
+- **Training Lab, Quizzes & Onboarding (`training.html`, `drills-quiz.js`, `onboarding.html`, `onboarding.js`, `login.html`, `register.html`):** Interactive animated mechanics clinics, 20-question Hitting/Fielding Diagnostic Quiz, and a 3-question scored Baseball Login/Sign-Up Quiz with instant coaching feedback.
+
+### What's Next on the Requirements
+1. **Production PostgreSQL Attachment:** Provision and bind `process.env.DATABASE_URL` in the target deployment environment (currently falls back seamlessly to local persistence when `DATABASE_URL` is unset).
+2. **Production Deployment Check:** Run final deployment (`npm start` on port `5000`) and verify public URL health check (`/api/health` reporting `postgres` active).
+3. **Optional Post-MVP Data Persistence:** Persist 3D Cage / Rapsodo hitting session splits (`RHB/LHB` vs `RHP/LHP`) and diagnostic quiz scores to PostgreSQL so players retain full cage history across devices.
+

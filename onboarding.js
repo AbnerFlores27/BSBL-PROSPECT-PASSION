@@ -23,25 +23,40 @@
 
     const expEl = document.getElementById('ob-exp');
     const posEl = document.getElementById('ob-pos');
+    const batsEl = document.getElementById('ob-bats');
+    const throwsEl = document.getElementById('ob-throws');
+    const goalEl = document.getElementById('ob-goal');
     const hitEl = document.getElementById('ob-hit');
     const fieldEl = document.getElementById('ob-field');
     const notesEl = document.getElementById('ob-notes');
     const sampleBtn = document.getElementById('onboarding-sample-btn');
+    const skipBtn = document.getElementById('onboarding-skip-btn');
     const submitBtn = document.getElementById('onboarding-submit-btn');
     const statusText = document.getElementById('onboarding-status-text');
     const errEl = document.getElementById('onboarding-error');
     const reportEl = document.getElementById('onboarding-report');
 
     let savedAuthFocus = null;
+    let savedLocalPrefs = null;
     try {
       const rawFocus = localStorage.getItem('diamondiq_auth_focus');
       if (rawFocus) savedAuthFocus = JSON.parse(rawFocus);
+      const rawPrefs = localStorage.getItem('diamondiq_saved_prefs');
+      if (rawPrefs) savedLocalPrefs = JSON.parse(rawPrefs);
     } catch {
       savedAuthFocus = null;
+      savedLocalPrefs = null;
+    }
+
+    if (batsEl && savedLocalPrefs && (savedLocalPrefs.battingHand === 'L' || savedLocalPrefs.battingHand === 'R')) {
+      batsEl.value = savedLocalPrefs.battingHand;
+    }
+    if (throwsEl && savedLocalPrefs && (savedLocalPrefs.throwingHand === 'L' || savedLocalPrefs.throwingHand === 'R')) {
+      throwsEl.value = savedLocalPrefs.throwingHand;
     }
 
     const preFocus = params.get('focus') || (savedAuthFocus && savedAuthFocus.focus) || '';
-    const preLevel = params.get('level') || (savedAuthFocus && savedAuthFocus.level) || '';
+    const preLevel = params.get('level') || (savedAuthFocus && savedAuthFocus.level) || (savedLocalPrefs && savedLocalPrefs.skillLevel) || '';
 
     if (preLevel && expEl) {
       const matchOpt = Array.from(expEl.options).find(
@@ -78,7 +93,7 @@
       if (hitEl && preset.hit) hitEl.value = preset.hit;
       if (fieldEl && preset.field) fieldEl.value = preset.field;
       if (welcomeBanner && params.get('welcome') === '1') {
-        welcomeBanner.textContent = `Welcome! We pre-loaded your "${preset.label}" focus — pick your position, answer the 3 quick Baseball IQ questions below, and get your custom plan + slow-mo tutorial links.`;
+        welcomeBanner.textContent = `Welcome! We pre-loaded your "${preset.label}" focus — pick your position, answer the 4 quick Baseball IQ questions below, or skip anytime to explore.`;
       }
       if (statusText) {
         statusText.textContent = `Pre-loaded "${preset.label}" focus. Answer Step 3 and tap Analyze My Game!`;
@@ -143,6 +158,7 @@
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:0.55rem;align-items:center;">
             <button type="button" id="ob-save-playbook-btn" class="btn btn-primary btn-sm">Save Tips to My Playbook</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-open-jax data-jax-prompt="Based on my ${esc(profile.skillTier)} scouting plan (${esc(profile.headline)}), what specific cage drills should I start with first?">Ask Coach Jax About My Plan</button>
             <a class="btn btn-secondary btn-sm" href="index.html?bat=${encodeURIComponent(profile.recommendedBatId)}#gameday-studio">Test ${esc(profile.recommendedBatName.split(' (')[0])} in 3D Cage</a>
           </div>
         </div>
@@ -232,7 +248,7 @@
           saveBtn.textContent = 'Saving to Playbook...';
           const title = `AI Coach Plan (${profile.skillTier}): ${profile.headline}`;
           const body = [
-            `SKILL TIER: ${profile.skillTier} (Readiness ${profile.readinessScore}/100 · IQ ${profile.iqCorrectCount}/3)`,
+            `SKILL TIER: ${profile.skillTier} (Readiness ${profile.readinessScore}/100 · IQ ${profile.iqCorrectCount}/${profile.iqTotal || 4})`,
             '',
             `HITTING FOCUS: ${profile.swingDiagnosis}`,
             '',
@@ -275,19 +291,41 @@
       sampleBtn.addEventListener('click', () => {
         if (expEl) expEl.value = 'Rec / Little League (Learning core skills)';
         if (posEl) posEl.value = 'Middle Infield (SS / 2B)';
+        if (batsEl) batsEl.value = 'R';
+        if (throwsEl) throwsEl.value = 'R';
+        if (goalEl) goalEl.value = 'More consistent barrels & exit velocity';
         if (hitEl) hitEl.value = 'I feel late on fastballs and jam pitches off my hands (possible Bat Drag)';
         if (fieldEl) fieldEl.value = 'Ground balls bounce off my palm or I stab downward at hops (Glove Stabbing)';
         if (notesEl) {
           notesEl.value = 'When pitchers throw faster inside fastballs I get jammed and ground out weakly to 3rd base, and on hard grounders the ball kicks off the heel of my glove.';
         }
         const f1 = form.querySelector('input[name="iqForceAnswer"][value="step-2b"]');
-        const f2 = form.querySelector('input[name="iqInfieldFlyAnswer"][value="automatic-double-play"]');
+        const f2 = form.querySelector('input[name="iqInfieldFlyAnswer"][value="batter-out-runners-advance-at-risk"]');
         const f3 = form.querySelector('input[name="iqLaunchAngleAnswer"][value="26-30-deg-98-mph"]');
+        const f4 = form.querySelector('input[name="iqCutoffAnswer"][value="cutoff-lines-up-relay"]');
         if (f1) f1.checked = true;
         if (f2) f2.checked = true;
         if (f3) f3.checked = true;
+        if (f4) f4.checked = true;
         setErr('');
         if (statusText) statusText.textContent = 'Sample player filled — tap Analyze My Game!';
+      });
+    }
+
+    if (skipBtn) {
+      skipBtn.addEventListener('click', async () => {
+        skipBtn.disabled = true;
+        skipBtn.textContent = 'Skipping...';
+        try {
+          await fetch('/api/onboarding/skip', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: authHeaders({ 'Content-Type': 'application/json' })
+          });
+        } catch {
+          /* unauthenticated or offline skip still navigates cleanly */
+        }
+        window.location.href = 'index.html';
       });
     }
 
@@ -298,19 +336,23 @@
       setErr('');
       const experienceLevel = expEl ? expEl.value : '';
       const primaryPosition = posEl ? posEl.value : '';
+      const battingHand = batsEl && batsEl.value === 'L' ? 'L' : 'R';
+      const throwingHand = throwsEl && throwsEl.value === 'L' ? 'L' : 'R';
+      const primaryGoal = goalEl ? goalEl.value : 'More consistent barrels & exit velocity';
       const hittingSymptom = hitEl ? hitEl.value : '';
       const fieldingSymptom = fieldEl ? fieldEl.value : '';
       const iqForceAnswer = form.querySelector('input[name="iqForceAnswer"]:checked')?.value || '';
       const iqInfieldFlyAnswer = form.querySelector('input[name="iqInfieldFlyAnswer"]:checked')?.value || '';
       const iqLaunchAngleAnswer = form.querySelector('input[name="iqLaunchAngleAnswer"]:checked')?.value || '';
+      const iqCutoffAnswer = form.querySelector('input[name="iqCutoffAnswer"]:checked')?.value || '';
       const playerNotes = notesEl ? notesEl.value.trim() : '';
 
       if (!experienceLevel || !primaryPosition || !hittingSymptom || !fieldingSymptom) {
         setErr('Please fill out Steps 1 and 2 (level, position, swing feel, and glove feel) first.');
         return;
       }
-      if (!iqForceAnswer || !iqInfieldFlyAnswer || !iqLaunchAngleAnswer) {
-        setErr('Please answer all 3 quick Baseball IQ questions in Step 3.');
+      if (!iqForceAnswer || !iqInfieldFlyAnswer || !iqLaunchAngleAnswer || !iqCutoffAnswer) {
+        setErr('Please answer all 4 quick Baseball & Defense IQ questions in Step 3 (or click Skip Quiz & Explore).');
         return;
       }
 
@@ -318,7 +360,7 @@
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.classList.add('is-loading');
-        submitBtn.textContent = 'Coach AI is analyzing...';
+        submitBtn.textContent = 'Coach Jax is analyzing...';
       }
       if (statusText) statusText.textContent = 'Building your custom video & drill roadmap...';
 
@@ -334,11 +376,15 @@
           body: JSON.stringify({
             experienceLevel,
             primaryPosition,
+            battingHand,
+            throwingHand,
+            primaryGoal,
             hittingSymptom,
             fieldingSymptom,
             iqForceAnswer,
             iqInfieldFlyAnswer,
             iqLaunchAngleAnswer,
+            iqCutoffAnswer,
             playerNotes
           })
         });

@@ -53,10 +53,11 @@
 <main id="register" class="container">
   <div class="auth-split">
     <div class="auth-showcase">
-      <img src="/src/assets/images/baseball_night_batter_swing_1794856804641.jpg" alt="Baseball batter swinging under bright stadium floodlights" referrerpolicy="no-referrer">
+      <img src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg" alt="Twilight baseball diamond stadium lights glowing over fresh infield dirt and green turf" referrerpolicy="no-referrer">
       <div class="editorial-banner-scrim">
+        <div class="kicker-line" style="color:#93c5fd;margin-bottom:0.3rem;">Free Player Account · Personalized 3D Cage &amp; Coach Jax</div>
         <h2>Build your baseball IQ</h2>
-        <p style="margin-bottom:0;">Create a free account to unlock your personal playbook, favorites, and trivia mastery.</p>
+        <p style="margin-bottom:0;">Lock in your handedness, favorite BBCOR/Wood bat, 15+ stadiums, slow-mo video clinics, and direct access to Coach Jax.</p>
       </div>
     </div>
 
@@ -90,16 +91,36 @@
           </div>
         </div>
 
+        <div class="auth-hand-grid">
+          <div class="field">
+            <label for="reg-bats">Bats</label>
+            <select id="reg-bats" name="battingHand">
+              <option value="R" selected>Right (RHH)</option>
+              <option value="L">Left (LHH)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reg-throws">Throws</label>
+            <select id="reg-throws" name="throwingHand">
+              <option value="R" selected>Right (RHP/R)</option>
+              <option value="L">Left (LHP/L)</option>
+            </select>
+          </div>
+        </div>
+
         <div id="auth-focus-quiz" class="auth-quiz-box">
-          <div class="kicker-line" style="margin-bottom:0.2rem;">Step 1 Quiz · Pick What You Want to Fix</div>
-          <p class="auth-quiz-sub">Get immediate tips &amp; pre-load your custom scouting checkup after sign up:</p>
+          <div class="auth-quiz-head">
+            <div class="kicker-line" style="margin-bottom:0;">Sign-Up Checkup Quiz · Pick &amp; Score</div>
+            <span id="auth-quiz-score" class="tabular-nums auth-quiz-score">0 / 3 Scored</span>
+          </div>
+          <p class="auth-quiz-sub">Pick your training goal &amp; answer 3 quick game-IQ calls for immediate tips and drills:</p>
           <div class="auth-focus-grid" id="auth-focus-options" role="group" aria-label="Select your main training focus">
             <button type="button" class="auth-focus-btn" data-focus="hitting-power" aria-pressed="true">Drive Bombs &amp; Lift</button>
             <button type="button" class="auth-focus-btn" data-focus="hitting-timing" aria-pressed="false">Catch Heat &amp; Off-Speed</button>
             <button type="button" class="auth-focus-btn" data-focus="fielding-hands" aria-pressed="false">Infield Hands &amp; Feet</button>
             <button type="button" class="auth-focus-btn" data-focus="fielding-routes" aria-pressed="false">Outfield Routes &amp; Throws</button>
           </div>
-          <div class="field" style="margin-top:0.55rem;">
+          <div class="field" style="margin-top:0.45rem;">
             <label for="auth-skill-level" style="font-size:0.8rem;">Playing Level</label>
             <select id="auth-skill-level" style="width:100%;min-height:36px;font-size:0.86rem;">
               <option value="Beginner (New to baseball / 1st season)">Beginner / 1st Season</option>
@@ -108,10 +129,22 @@
               <option value="Varsity / College Prep (Polishing high-level mechanics)">Varsity / College Prep</option>
             </select>
           </div>
+          <div id="auth-mini-quiz" class="auth-mini-quiz" aria-live="polite"></div>
           <div id="auth-instant-tips" class="auth-tips-preview" aria-live="polite"></div>
+          <label class="auth-check-row">
+            <input type="checkbox" id="reg-remember" checked>
+            <span>Remember my username &amp; preferences on this device</span>
+          </label>
+          <label class="auth-check-row">
+            <input type="checkbox" id="reg-skip-quiz">
+            <span>Skip full checkup quiz for now — take me straight to 3D Cage &amp; Coach Jax</span>
+          </label>
         </div>
 
-        <button type="submit" id="reg-submit-btn" class="btn btn-primary">Create Account &amp; Start Quiz</button>
+        <div class="auth-submit-stack">
+          <button type="submit" id="reg-submit-btn" class="btn btn-primary">Create Account &amp; Start Quiz</button>
+          <a href="index.html" class="btn btn-ghost btn-sm" style="text-align:center;">Explore Without Saving</a>
+        </div>
         <p id="register-error" class="feedback-banner" role="alert"></p>
       </form>
       <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">

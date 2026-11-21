@@ -108,6 +108,7 @@ function setSessionCookie(req, res, token) {
     httpOnly: true,
     sameSite: secure ? 'none' : 'lax',
     secure,
+    partitioned: secure,
     path: '/',
     maxAge: COOKIE_MAX_AGE_MS
   });
@@ -119,6 +120,7 @@ function clearSessionCookie(req, res) {
     httpOnly: true,
     sameSite: secure ? 'none' : 'lax',
     secure,
+    partitioned: secure,
     path: '/'
   });
 }
@@ -179,7 +181,7 @@ app.get('/api/auth/me', (req, res) => {
 
 app.post('/api/auth/register', async (req, res, next) => {
   try {
-    const { username, email, password } = req.body || {};
+    const { username, email, password, preferences } = req.body || {};
     const cleanUser = typeof username === 'string' ? username.trim() : '';
     const cleanEmail = typeof email === 'string' ? email.trim() : '';
     const cleanPass = typeof password === 'string' ? password : '';
@@ -199,7 +201,8 @@ app.post('/api/auth/register', async (req, res, next) => {
     const user = await store.createUser({
       username: cleanUser,
       email: cleanEmail,
-      password: cleanPass
+      password: cleanPass,
+      preferences
     });
     const token = await store.createSession(user.id);
     setSessionCookie(req, res, token);
@@ -232,8 +235,42 @@ app.post('/api/auth/login', async (req, res, next) => {
 
     const token = await store.createSession(user.id);
     setSessionCookie(req, res, token);
-    return res.json({ user, sessionToken: token, needsOnboarding: !user.hasOnboarding });
+    return res.json({
+      user,
+      sessionToken: token,
+      needsOnboarding: !user.hasOnboarding && !user.onboardingSkipped
+    });
   } catch (err) {
+    return next(err);
+  }
+});
+
+app.put('/api/auth/profile', requireAuth, async (req, res, next) => {
+  try {
+    const body = req.body || {};
+    const cleanUser = typeof body.username === 'string' ? body.username.trim() : undefined;
+    const cleanEmail = typeof body.email === 'string' ? body.email.trim() : undefined;
+    if (cleanUser !== undefined && !/^[a-zA-Z0-9_-]{3,30}$/.test(cleanUser)) {
+      return res.status(400).json({
+        error: 'Username must be 3–30 characters (letters, numbers, _ or -).'
+      });
+    }
+    if (cleanEmail !== undefined && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 120)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+    const updated = await store.updateUserProfile(req.user.id, {
+      username: cleanUser,
+      email: cleanEmail,
+      preferences: body.preferences
+    });
+    if (!updated) {
+      return res.status(404).json({ error: 'User account not found.' });
+    }
+    return res.json({ user: updated });
+  } catch (err) {
+    if (err.code === 'CONFLICT' || err.code === '23505') {
+      return res.status(409).json({ error: err.message || 'That username or email is already taken.' });
+    }
     return next(err);
   }
 });
@@ -256,10 +293,24 @@ app.post('/api/auth/logout', async (req, res, next) => {
 app.get('/api/onboarding/me', async (req, res, next) => {
   try {
     if (!req.user) {
-      return res.json({ profile: null });
+      return res.json({ profile: null, onboardingSkipped: false, preferences: null });
     }
     const record = await store.getOnboardingProfile(req.user.id);
-    return res.json({ profile: record ? record.profile : null, updatedAt: record ? record.updatedAt : null });
+    return res.json({
+      profile: record ? record.profile : null,
+      updatedAt: record ? record.updatedAt : null,
+      onboardingSkipped: Boolean(req.user.onboardingSkipped),
+      preferences: req.user.preferences || null
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.post('/api/onboarding/skip', requireAuth, async (req, res, next) => {
+  try {
+    const user = await store.setOnboardingSkipped(req.user.id, true);
+    return res.json({ ok: true, user });
   } catch (err) {
     return next(err);
   }
@@ -268,6 +319,9 @@ app.get('/api/onboarding/me', async (req, res, next) => {
 function buildDeterministicCoachProfile({
   experienceLevel,
   primaryPosition,
+  battingHand,
+  throwingHand,
+  primaryGoal,
   hittingSymptom,
   fieldingSymptom,
   iqChecks,
@@ -282,9 +336,9 @@ function buildDeterministicCoachProfile({
 
   let skillTier = 'Developing';
   if (expLow.includes('varsity') || expLow.includes('college')) {
-    skillTier = iqCorrectCount >= 2 ? 'Varsity / Advanced' : 'Intermediate';
+    skillTier = iqCorrectCount >= 3 ? 'Varsity / Advanced' : 'Intermediate';
   } else if (expLow.includes('travel') || expLow.includes('high school')) {
-    skillTier = iqCorrectCount === 3 ? 'Intermediate' : 'Developing';
+    skillTier = iqCorrectCount >= 3 ? 'Intermediate' : 'Developing';
   } else if (expLow.includes('beginner')) {
     skillTier = 'Beginner';
   }
@@ -312,7 +366,7 @@ function buildDeterministicCoachProfile({
     batReason = 'Combat Spec-A1 Rodeo (-3) offers responsive 1-piece barrel feedback while building front-side block timing against Mix pitches.';
   } else if (hitLow.includes('square the ball up')) {
     hitClinicId = 'rolling-over';
-    chosenBatId = expLow.includes('varsity') ? 'baum-gold' : 'goods-2026';
+    chosenBatId = expLow.includes('varsity') || expLow.includes('college') ? 'baum-gold' : 'goods-2026';
     swingDiagnosis = 'Strong barrel feel — focusing on slight upward attack (+8° to +13°) and holding top-hand posture past contact turns hard liners into deep home runs.';
   }
 
@@ -335,14 +389,16 @@ function buildDeterministicCoachProfile({
   }
 
   const missedIq = iqChecks.filter((c) => !c.correct).map((c) => c.label);
+  const iqTotal = iqChecks.length;
   const iqBreakdown = missedIq.length === 0
-    ? 'Perfect 3/3 on rules & Statcast barrels! Keep pairing situational anticipation with pre-pitch awareness before every ball put in play.'
-    : `You scored ${iqCorrectCount}/3 on situational IQ. Review ${missedIq.join(' & ')} inside our 5-Expert Lessons so pre-pitch reads become automatic.`;
+    ? `Perfect ${iqTotal}/${iqTotal} on rules, cutoff reads & Statcast barrels! Pair that game awareness with daily cage reps.`
+    : `You scored ${iqCorrectCount}/${iqTotal} on situational IQ. Review ${missedIq.join(', ')} inside our 5-Expert Lessons so pre-pitch reads become automatic.`;
 
   const baseScenarios = [];
-  if (!iqChecks[0].correct) baseScenarios.push({ scenarioId: 'force-vs-tag', reason: 'Lock down exactly when to touch the bag vs. tag the runner on infield grounders.' });
-  if (!iqChecks[1].correct) baseScenarios.push({ scenarioId: 'infield-fly', reason: 'Clarify automatic outs and base-running traps with runners on 1st & 2nd.' });
-  if (!iqChecks[2].correct) baseScenarios.push({ scenarioId: 'launch-angle-exit-velo', reason: 'See how 26°–30° launch angles and 98+ mph exit velo create true Statcast barrels.' });
+  if (iqChecks[0] && !iqChecks[0].correct) baseScenarios.push({ scenarioId: 'force-vs-tag', reason: 'Lock down exactly when to touch the bag vs. tag the runner on infield grounders.' });
+  if (iqChecks[1] && !iqChecks[1].correct) baseScenarios.push({ scenarioId: 'infield-fly', reason: 'Clarify automatic outs and base-running traps with runners on 1st & 2nd.' });
+  if (iqChecks[2] && !iqChecks[2].correct) baseScenarios.push({ scenarioId: 'launch-angle-exit-velo', reason: 'See how 26°–30° launch angles and 98+ mph exit velo create true Statcast barrels.' });
+  if (iqChecks[3] && !iqChecks[3].correct) baseScenarios.push({ scenarioId: 'relay-throw', reason: 'Master cutoff positioning and hitting the chest on gap doubles.' });
   const posScenario = posLow.includes('outfield')
     ? { scenarioId: 'relay-throw', reason: 'Align relay targets and hit the cutoff chest smoothly on extra-base hits.' }
     : posLow.includes('catcher')
@@ -351,29 +407,39 @@ function buildDeterministicCoachProfile({
   if (baseScenarios.length < 2) baseScenarios.push(posScenario);
   if (baseScenarios.length < 2) baseScenarios.push({ scenarioId: 'stealing-second', reason: 'Read pitcher pickoff timing, jump speed, and infield coverage.' });
 
-  const readinessScore = Math.min(96, Math.max(52, 58 + iqCorrectCount * 8 + (expLow.includes('varsity') ? 14 : expLow.includes('travel') ? 8 : 2)));
+  const readinessScore = Math.min(97, Math.max(52, 54 + iqCorrectCount * 7 + (expLow.includes('varsity') || expLow.includes('college') ? 14 : expLow.includes('travel') ? 8 : 2)));
 
   const videoIds = [hitClinicId, fieldClinicId];
   if (hitClinicId !== 'rolling-over' && videoIds.length < 3) videoIds.push('rolling-over');
   else if (fieldClinicId !== 'footwork-cadence' && videoIds.length < 3) videoIds.push('footwork-cadence');
 
+  const handTag = battingHand === 'L' ? 'Lefty' : 'Righty';
   return {
     createdAt: new Date().toISOString(),
-    inputs: { experienceLevel, primaryPosition, hittingSymptom, fieldingSymptom, playerNotes },
+    inputs: {
+      experienceLevel,
+      primaryPosition,
+      battingHand,
+      throwingHand,
+      primaryGoal,
+      hittingSymptom,
+      fieldingSymptom,
+      playerNotes
+    },
     iqCorrectCount,
-    iqTotal: 3,
+    iqTotal,
     skillTier,
     readinessScore,
-    headline: `${primaryPosition.split(' (')[0]} Plan: Fix ${VALID_CLINICS[hitClinicId].title.split(' (')[0]}`,
-    summary: `Tailored for ${experienceLevel.split(' (')[0]} level: tighten ${VALID_CLINICS[hitClinicId].domain.toLowerCase()} first, sharpen ${VALID_CLINICS[fieldClinicId].title.split(' (')[0].toLowerCase()}, and track every cut in the D1 Rapsodo Lab.`,
+    headline: `${handTag} ${primaryPosition.split(' (')[0]} Plan: Fix ${VALID_CLINICS[hitClinicId].title.split(' (')[0]}`,
+    summary: `Tailored for ${experienceLevel.split(' (')[0]} (${handTag} Bats / ${throwingHand === 'L' ? 'LHP/L' : 'RHP/R'} Throws): focus on ${primaryGoal || 'barrel consistency'}, clean up ${VALID_CLINICS[hitClinicId].domain.toLowerCase()}, and sharpen ${VALID_CLINICS[fieldClinicId].title.split(' (')[0].toLowerCase()}.`,
     swingDiagnosis,
     fieldingDiagnosis,
     iqBreakdown,
     actionableTips: [
-      `Watch "${VALID_CLINICS[hitClinicId].title}" in 0.45x Slow-Mo Split View and pause at Stage 2 & Stage 3 to match back-hip coil, rear-elbow slot, and barrel contact.`,
-      `Match the downward pitch plane (+6° to +13° attack angle) during 3 sets × 10 focused tee swings on "${VALID_CLINICS[hitClinicId].title}" before full BP.`,
-      `Warm up defense with "${VALID_CLINICS[fieldClinicId].title}" slow-mo footwork reps so transfers stay fluid.`,
-      `Step into Charles Schwab Field Omaha (3D Studio) with ${VALID_BATS[chosenBatId].split(' (')[0]} and aim for 1.32+ Smash Factor & 20°–30° launch angles.`
+      `Hitting Cue — Watch "${VALID_CLINICS[hitClinicId].title}" in 0.45x Slow-Mo Split View and pause at Stage 2 & Stage 3 to match back-hip coil, rear-elbow slot, and barrel path.`,
+      `Cage Drill — Match the pitch plane (+6° to +13° attack angle) during 3×10 tee reps before facing live arms or the pitching machine.`,
+      `Fielding Cue — Train "${VALID_CLINICS[fieldClinicId].title}" slow-mo footwork and soft two-hand funnels (right-left-catch-throw) before practice.`,
+      `Game IQ & Bat — Test ${VALID_BATS[chosenBatId].split(' (')[0]} in the 3D Stadium (${handTag} box) targeting 1.32+ Smash Factor and 24°–31° carries.`
     ],
     videoLinks: videoIds.filter((cid) => VALID_CLINICS[cid]).map((cid) => ({
       clinicId: cid,
@@ -404,11 +470,15 @@ app.post('/api/ai/onboarding-quiz', async (req, res) => {
   const body = req.body || {};
   const experienceLevel = String(body.experienceLevel || '').trim();
   const primaryPosition = String(body.primaryPosition || '').trim();
+  const battingHand = body.battingHand === 'L' ? 'L' : 'R';
+  const throwingHand = body.throwingHand === 'L' ? 'L' : 'R';
+  const primaryGoal = String(body.primaryGoal || 'More consistent barrels & defense').trim().slice(0, 120);
   const hittingSymptom = String(body.hittingSymptom || '').trim();
   const fieldingSymptom = String(body.fieldingSymptom || '').trim();
   const iqForceAnswer = String(body.iqForceAnswer || '').trim();
   const iqInfieldFlyAnswer = String(body.iqInfieldFlyAnswer || '').trim();
   const iqLaunchAngleAnswer = String(body.iqLaunchAngleAnswer || '').trim();
+  const iqCutoffAnswer = String(body.iqCutoffAnswer || '').trim();
   const playerNotes = String(body.playerNotes || '').trim().slice(0, 800);
 
   if (!experienceLevel || !primaryPosition || !hittingSymptom || !fieldingSymptom) {
@@ -417,7 +487,7 @@ app.post('/api/ai/onboarding-quiz', async (req, res) => {
     });
   }
 
-  // Deterministic Baseball IQ scoring on the 3 rule/stat questions
+  // Deterministic Baseball IQ scoring across 4 rule/fielding/Statcast questions
   const iqChecks = [
     {
       label: 'Force Out vs. Tag Out',
@@ -433,13 +503,22 @@ app.post('/api/ai/onboarding-quiz', async (req, res) => {
       label: 'Barrel Launch Angle & Exit Velo',
       correct: iqLaunchAngleAnswer === '26-30-deg-98-mph',
       answer: iqLaunchAngleAnswer
+    },
+    {
+      label: 'Cutoff & Relay Alignment',
+      correct: iqCutoffAnswer === 'cutoff-lines-up-relay',
+      answer: iqCutoffAnswer
     }
   ];
   const iqCorrectCount = iqChecks.filter((c) => c.correct).length;
+  const iqTotal = iqChecks.length;
 
   const fallbackParams = {
     experienceLevel,
     primaryPosition,
+    battingHand,
+    throwingHand,
+    primaryGoal,
     hittingSymptom,
     fieldingSymptom,
     iqChecks,
@@ -447,10 +526,22 @@ app.post('/api/ai/onboarding-quiz', async (req, res) => {
     playerNotes
   };
 
+  const syncUserPrefs = async (chosenBatId) => {
+    if (!req.user) return;
+    await store.updateUserProfile(req.user.id, {
+      preferences: {
+        battingHand,
+        throwingHand,
+        defaultBat: chosenBatId
+      }
+    });
+  };
+
   if (!apiKey) {
     const profile = buildDeterministicCoachProfile(fallbackParams);
     if (req.user) {
       await store.saveOnboardingProfile(req.user.id, profile);
+      await syncUserPrefs(profile.recommendedBatId);
     }
     return res.json({ profile, saved: Boolean(req.user), source: 'coach-rules' });
   }
@@ -470,19 +561,21 @@ app.post('/api/ai/onboarding-quiz', async (req, res) => {
     .map(([id, label]) => `- "${id}": ${label}`)
     .join('\n');
 
-  const promptText = `Analyze this baseball player's intake checkup and build a personalized, plain-English scouting report with recommended slow-mo video clinics and cage equipment.
+  const promptText = `Analyze this baseball player's 5-step intake checkup and build a personalized, concise scouting report with hitting AND fielding tips, slow-mo video clinic links, and cage equipment.
 
 Player Profile:
 - Username: ${req.user ? req.user.username : 'Guest Player'}
 - Experience Level: ${experienceLevel}
-- Primary Position: ${primaryPosition}
+- Primary Position: ${primaryPosition} (Bats: ${battingHand}, Throws: ${throwingHand})
+- Season Focus Goal: ${primaryGoal}
 - Swing Symptom Reported: ${hittingSymptom}
 - Fielding Symptom Reported: ${fieldingSymptom}
-- Baseball IQ Check Score: ${iqCorrectCount}/3
+- Baseball & Defense IQ Score: ${iqCorrectCount}/${iqTotal}
   * Q1 (Force Out on runner on 1B, ball hit to SS): ${iqForceAnswer || 'skipped'} (correct: step-2b)
   * Q2 (Infield Fly Rule pop-up with 1B & 2B occupied, <2 outs): ${iqInfieldFlyAnswer || 'skipped'} (correct: batter-out-runners-advance-at-risk)
   * Q3 (Statcast Barrel zone for elevated HRs): ${iqLaunchAngleAnswer || 'skipped'} (correct: 26-30-deg-98-mph)
-- Player's Own Words About Swing / Fielding Flaws & Goals: ${playerNotes || '(None typed)'}
+  * Q4 (Double into LCF gap relay responsibility): ${iqCutoffAnswer || 'skipped'} (correct: cutoff-lines-up-relay)
+- Player's Own Notes: ${playerNotes || '(None typed)'}
 
 Available Playable Training Video Clinics (ONLY pick clinicId from this exact list):
 ${clinicCatalogText}
@@ -494,7 +587,8 @@ Available 3D Batting Cage Bats (ONLY pick recommendedBatId from this exact list)
 ${batCatalogText}
 
 Rules:
-- Keep language encouraging, crystal clear for a 9th-grade to varsity player, concrete, and accurate to real baseball mechanics & MLB/Statcast rules.
+- Keep language encouraging, crystal clear, concrete, and accurate to real baseball mechanics & MLB/Statcast rules.
+- Include at least 1 hitting cue, 1 fielding cue, and 1 cage drill inside actionableTips.
 - Pick 2 or 3 most relevant videoLinks matching their swing & fielding symptoms and playerNotes.
 - Pick 2 recommendedScenarios matching any IQ gaps or positional focus.
 - Pick the single best recommendedBatId matching their swing profile and experience level.`;
@@ -506,7 +600,7 @@ Rules:
       contents: promptText,
       config: {
         systemInstruction:
-          'You are Head Coach AI at DiamondIQ, an encouraging, ultra-clear MLB hitting and fielding biomechanics coach and sabermetrics educator.',
+          'You are Coach Jax at DiamondIQ, an encouraging, ultra-clear MLB hitting and fielding biomechanics coach and sabermetrics educator.',
         responseMimeType: 'application/json',
         thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
         responseSchema: {
@@ -619,12 +713,15 @@ Rules:
       inputs: {
         experienceLevel,
         primaryPosition,
+        battingHand,
+        throwingHand,
+        primaryGoal,
         hittingSymptom,
         fieldingSymptom,
         playerNotes
       },
       iqCorrectCount,
-      iqTotal: 3,
+      iqTotal,
       skillTier: parsed.skillTier || 'Developing',
       readinessScore: Math.max(25, Math.min(99, Number(parsed.readinessScore) || 68)),
       headline: String(parsed.headline || 'Personalized DiamondIQ Player Plan'),
@@ -642,6 +739,7 @@ Rules:
 
     if (req.user) {
       await store.saveOnboardingProfile(req.user.id, finalProfile);
+      await syncUserPrefs(chosenBatId);
     }
 
     return res.json({ profile: finalProfile, saved: Boolean(req.user), source: 'gemini' });
@@ -651,8 +749,192 @@ Rules:
     const profile = buildDeterministicCoachProfile(fallbackParams);
     if (req.user) {
       await store.saveOnboardingProfile(req.user.id, profile);
+      await syncUserPrefs(profile.recommendedBatId);
     }
     return res.json({ profile, saved: Boolean(req.user), source: 'coach-fallback' });
+  }
+});
+
+/* =========================================================
+   Coach Jax — Conversational Baseball AI Coach (Gemini API)
+   ========================================================= */
+app.post('/api/ai/jax', async (req, res) => {
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  const body = req.body || {};
+  const message = typeof body.message === 'string' ? body.message.trim() : '';
+  if (!message || message.length > 1200) {
+    return res.status(400).json({ error: 'Ask Coach Jax a baseball question (1–1,200 characters).' });
+  }
+
+  if (!apiKey) {
+    return res.status(503).json({
+      error: 'Coach Jax AI requires GEMINI_API_KEY to be configured on the server.'
+    });
+  }
+
+  const rawHistory = Array.isArray(body.history) ? body.history.slice(-10) : [];
+  const cleanHistory = rawHistory
+    .filter((m) => m && (m.role === 'user' || m.role === 'jax') && typeof m.text === 'string' && m.text.trim())
+    .map((m) => ({
+      role: m.role === 'jax' ? 'Coach Jax' : 'Player',
+      text: m.text.trim().slice(0, 600)
+    }));
+
+  let playerContextText = 'Guest player (no saved profile yet).';
+  if (req.user) {
+    const saved = await store.getOnboardingProfile(req.user.id);
+    const prefs = req.user.preferences || {};
+    const p = saved && saved.profile ? saved.profile : null;
+    playerContextText = p
+      ? `Username: ${req.user.username} | Level: ${p.inputs?.experienceLevel || 'N/A'} | Position: ${p.inputs?.primaryPosition || 'N/A'} | Bats/Throws: ${prefs.battingHand || 'R'}/${prefs.throwingHand || 'R'} | Swing Symptom: ${p.inputs?.hittingSymptom || 'N/A'} | Fielding Symptom: ${p.inputs?.fieldingSymptom || 'N/A'} | Saved Bat: ${prefs.defaultBat || p.recommendedBatId || 'goods-2026'}`
+      : `Username: ${req.user.username} | Bats/Throws: ${prefs.battingHand || 'R'}/${prefs.throwingHand || 'R'} | Preferred Bat: ${prefs.defaultBat || 'goods-2026'}`;
+  }
+
+  const clinicCatalogText = Object.entries(VALID_CLINICS)
+    .map(([id, info]) => `- "${id}": ${info.title} (${info.domain})`)
+    .join('\n');
+  const scenarioCatalogText = Object.entries(VALID_SCENARIOS)
+    .map(([id, title]) => `- "${id}": ${title}`)
+    .join('\n');
+  const batCatalogText = Object.entries(VALID_BATS)
+    .map(([id, label]) => `- "${id}": ${label}`)
+    .join('\n');
+
+  const historyBlock = cleanHistory.length
+    ? cleanHistory.map((h) => `${h.role}: ${h.text}`).join('\n')
+    : '(First message in conversation)';
+
+  const promptText = `You are Coach Jax — DiamondIQ's direct, realistic, encouraging MLB-caliber baseball coach. You answer ANY baseball question: swing flaws, bat drag, casting, rolling over, infield footwork, outfield routes, pitcher grips, catcher framing, bat sizing/BBCOR feel, Statcast metrics, rules, or mental approach.
+
+Player Context:
+${playerContextText}
+
+Recent Conversation:
+${historyBlock}
+
+Player's Current Question:
+${message}
+
+Available DiamondIQ Interactive Slow-Mo Video Clinics (pick up to 2 relevant IDs if applicable):
+${clinicCatalogText}
+
+Available 5-Expert Rule & Analytics Lessons (pick up to 2 relevant IDs if applicable):
+${scenarioCatalogText}
+
+Available 3D Cage Bats (pick the best match if bat choice is relevant, else "goods-2026"):
+${batCatalogText}
+
+Instructions:
+- Answer realistically like an experienced college/MLB hitting & fielding coach talking 1-on-1 in the cage. Keep the main reply tight, actionable, and easy to follow (3-5 sentences).
+- Give 2-4 specific drills or mechanical cues in actionableTips.
+- Suggest 1-2 short YouTube drill search queries in youtubeTopics (e.g., "baseball rolling over swing fix drill tee") so the player can open real drill videos immediately.`;
+
+  const ai = new GoogleGenAI({
+    apiKey,
+    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
+  });
+
+  let timeoutHandle;
+  try {
+    const aiPromise = ai.models.generateContent({
+      model: 'gemini-4-hydrogen',
+      contents: promptText,
+      config: {
+        systemInstruction:
+          'You are Coach Jax, an expert baseball hitting, fielding, pitching, bat-fitting, and baseball rules AI coach at DiamondIQ. Never fabricate fake URLs; choose clinicIds and scenarioIds strictly from the allowed enums and put YouTube drill search queries in youtubeTopics.',
+        responseMimeType: 'application/json',
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            reply: { type: Type.STRING },
+            actionableTips: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            recommendedClinicIds: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING, enum: Object.keys(VALID_CLINICS) }
+            },
+            recommendedScenarioIds: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING, enum: Object.keys(VALID_SCENARIOS) }
+            },
+            youtubeTopics: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            recommendedBatId: {
+              type: Type.STRING,
+              enum: Object.keys(VALID_BATS)
+            }
+          },
+          required: ['reply', 'actionableTips', 'recommendedClinicIds', 'recommendedScenarioIds', 'youtubeTopics', 'recommendedBatId']
+        }
+      }
+    });
+
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        reject(new Error('Coach Jax timed out after 25s'));
+      }, 25000);
+    });
+
+    const response = await Promise.race([aiPromise, timeoutPromise]);
+    clearTimeout(timeoutHandle);
+
+    const parsed = JSON.parse(response.text || '{}');
+    const chosenBatId = VALID_BATS[parsed.recommendedBatId] ? parsed.recommendedBatId : 'goods-2026';
+
+    const videoLinks = (Array.isArray(parsed.recommendedClinicIds) ? parsed.recommendedClinicIds : [])
+      .filter((id, idx, arr) => VALID_CLINICS[id] && arr.indexOf(id) === idx)
+      .slice(0, 2)
+      .map((id) => ({
+        clinicId: id,
+        title: VALID_CLINICS[id].title,
+        domain: VALID_CLINICS[id].domain,
+        url: `training.html?clinic=${encodeURIComponent(id)}&slow=1&bat=${encodeURIComponent(chosenBatId)}`
+      }));
+
+    const recommendedScenarios = (Array.isArray(parsed.recommendedScenarioIds) ? parsed.recommendedScenarioIds : [])
+      .filter((id, idx, arr) => VALID_SCENARIOS[id] && arr.indexOf(id) === idx)
+      .slice(0, 2)
+      .map((id) => ({
+        scenarioId: id,
+        title: VALID_SCENARIOS[id],
+        url: `detail.html?id=${encodeURIComponent(id)}`
+      }));
+
+    const youtubeLinks = (Array.isArray(parsed.youtubeTopics) ? parsed.youtubeTopics : [])
+      .filter((t) => typeof t === 'string' && t.trim().length > 2)
+      .slice(0, 2)
+      .map((topic) => {
+        const cleanTopic = topic.trim().slice(0, 80);
+        return {
+          label: cleanTopic,
+          url: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanTopic)}`
+        };
+      });
+
+    return res.json({
+      coach: 'Jax',
+      reply: String(parsed.reply || '').trim(),
+      actionableTips: (Array.isArray(parsed.actionableTips) ? parsed.actionableTips : [])
+        .map((t) => String(t).trim())
+        .filter(Boolean)
+        .slice(0, 4),
+      videoLinks,
+      recommendedScenarios,
+      youtubeLinks,
+      recommendedBatId: chosenBatId,
+      recommendedBatName: VALID_BATS[chosenBatId]
+    });
+  } catch (err) {
+    clearTimeout(timeoutHandle);
+    console.error('Coach Jax Gemini error:', err && err.message ? err.message : err);
+    return res.status(502).json({
+      error: 'Coach Jax could not connect to the AI coaching service right now. Please try again.'
+    });
   }
 });
 

@@ -121,8 +121,8 @@
     <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
     <div class="studio-topbar">
       <div>
-        <h2 id="studio-heading">D1 College Stadium &amp; Rapsodo / HitTrax Studio</h2>
-        <p>Step into empty iconic college ballparks, hear authentic Baum &amp; Spec-A1 acoustics, and track 3D spin axis, smash factor &amp; ball flight.</p>
+        <h2 id="studio-heading">Pro, College &amp; High School 3D Stadiums · Rapsodo Studio</h2>
+        <p>Step into 15 authentic ballparks (5 Pro, 5 College, 5 High School) or D1 Cage, face Pitching Machine or Pitcher, hear outdoor stadium echoes, and track PCI-driven swings &amp; ball flight.</p>
       </div>
       <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
         <button type="button" class="segmented-btn" data-studio="hitlab" aria-pressed="true">Rapsodo / HitTrax</button>
@@ -176,12 +176,31 @@
 
         <div class="studio-venue-bar">
           <div class="venue-group">
-            <span class="venue-label">College Park</span>
-            <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose a college stadium">
-              <button type="button" class="segmented-btn" data-stadium="omaha" aria-pressed="true">Omaha — CWS</button>
-              <button type="button" class="segmented-btn" data-stadium="lsu" aria-pressed="false">Alex Box — LSU</button>
-              <button type="button" class="segmented-btn" data-stadium="missst" aria-pressed="false">Dude Noble — MSU</button>
-              <button type="button" class="segmented-btn" data-stadium="cage" aria-pressed="false">Rapsodo Lab</button>
+            <span class="venue-label">Tier</span>
+            <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
+              <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (5)</button>
+              <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (5)</button>
+              <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (5)</button>
+              <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
+            </div>
+          </div>
+
+          <div class="venue-group">
+            <span class="venue-label">Ballpark</span>
+            <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose stadium or cage">
+              <button type="button" class="segmented-btn" data-stadium="omaha" aria-pressed="true">Omaha CWS</button>
+              <button type="button" class="segmented-btn" data-stadium="lsu" aria-pressed="false">LSU Alex Box</button>
+              <button type="button" class="segmented-btn" data-stadium="missst" aria-pressed="false">Miss St Noble</button>
+              <button type="button" class="segmented-btn" data-stadium="vandy" aria-pressed="false">Vandy Hawkins</button>
+              <button type="button" class="segmented-btn" data-stadium="texas" aria-pressed="false">Texas Disch-Falk</button>
+            </div>
+          </div>
+
+          <div class="venue-group">
+            <span class="venue-label">Delivery</span>
+            <div class="segmented-group" id="delivery-tabs" role="group" aria-label="Choose pitcher or pitching machine">
+              <button type="button" class="segmented-btn" data-delivery="pitcher" aria-pressed="true">Pitcher</button>
+              <button type="button" class="segmented-btn" data-delivery="machine" aria-pressed="false">Machine</button>
             </div>
           </div>
 
@@ -207,10 +226,27 @@
           </div>
 
           <div class="venue-group">
+            <span class="venue-label">Batter</span>
+            <div class="segmented-group" id="batter-hand-tabs" role="group" aria-label="Choose batter handedness">
+              <button type="button" class="segmented-btn" data-bhand="R" aria-pressed="true">RHB</button>
+              <button type="button" class="segmented-btn" data-bhand="L" aria-pressed="false">LHB</button>
+            </div>
+          </div>
+
+          <div class="venue-group">
+            <span class="venue-label">Pitcher</span>
+            <div class="segmented-group" id="pitcher-hand-tabs" role="group" aria-label="Choose pitcher handedness">
+              <button type="button" class="segmented-btn" data-phand="R" aria-pressed="true">RHP</button>
+              <button type="button" class="segmented-btn" data-phand="L" aria-pressed="false">LHP</button>
+            </div>
+          </div>
+
+          <div class="venue-group">
             <span class="venue-label">Camera</span>
             <div class="segmented-group" id="camera-tabs" role="group" aria-label="Choose 3D camera view">
               <button type="button" class="segmented-btn" data-cam="pov" aria-pressed="true">Catcher POV</button>
               <button type="button" class="segmented-btn" data-cam="broadcast" aria-pressed="false">Broadcast</button>
+              <button type="button" class="segmented-btn" data-cam="track" aria-pressed="false">Ball Track</button>
               <button type="button" class="segmented-btn" data-cam="side" aria-pressed="false">Swing Lab</button>
             </div>
           </div>

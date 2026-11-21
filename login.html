@@ -53,10 +53,11 @@
 <main id="login" class="container">
   <div class="auth-split">
     <div class="auth-showcase">
-      <img src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg" alt="Baserunner sliding into second base as the shortstop leaps to fire a relay throw" referrerpolicy="no-referrer">
+      <img src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg" alt="Twilight baseball stadium diamond under bright field lights before first pitch" referrerpolicy="no-referrer">
       <div class="editorial-banner-scrim">
-        <h2>Step back into the dugout</h2>
-        <p style="margin-bottom:0;">Log in to save notes, bookmark favorite plays, and track your trivia score.</p>
+        <div class="kicker-line" style="color:#93c5fd;margin-bottom:0.3rem;">Member Dugout · Sync Preferences &amp; AI Coaching</div>
+        <h2>Step back into the diamond</h2>
+        <p style="margin-bottom:0;">Save your batting stance, preferred stadiums across Pro, College &amp; High School tiers, and custom coaching notes with Coach Jax.</p>
       </div>
     </div>
 
@@ -83,15 +84,18 @@
         </div>
 
         <div id="auth-focus-quiz" class="auth-quiz-box">
-          <div class="kicker-line" style="margin-bottom:0.2rem;">Quick Pre-Session Checkup Quiz</div>
-          <p class="auth-quiz-sub">Pick your current focus to preview custom coaching tips &amp; tutorial videos right now:</p>
+          <div class="auth-quiz-head">
+            <div class="kicker-line" style="margin-bottom:0;">Baseball Login Quiz · Instant Tips</div>
+            <span id="auth-quiz-score" class="tabular-nums auth-quiz-score">0 / 3 Scored</span>
+          </div>
+          <p class="auth-quiz-sub">Pick your focus + test 3 quick pitch &amp; defense calls to unlock tailored drill videos right before signing in:</p>
           <div class="auth-focus-grid" id="auth-focus-options" role="group" aria-label="Select your main training focus">
             <button type="button" class="auth-focus-btn" data-focus="hitting-power" aria-pressed="true">Drive Bombs &amp; Lift</button>
             <button type="button" class="auth-focus-btn" data-focus="hitting-timing" aria-pressed="false">Catch Heat &amp; Off-Speed</button>
             <button type="button" class="auth-focus-btn" data-focus="fielding-hands" aria-pressed="false">Infield Hands &amp; Feet</button>
             <button type="button" class="auth-focus-btn" data-focus="fielding-routes" aria-pressed="false">Outfield Routes &amp; Throws</button>
           </div>
-          <div class="field" style="margin-top:0.55rem;">
+          <div class="field" style="margin-top:0.45rem;">
             <label for="auth-skill-level" style="font-size:0.8rem;">Skill Level</label>
             <select id="auth-skill-level" style="width:100%;min-height:36px;font-size:0.86rem;">
               <option value="Beginner (New to baseball / 1st season)">Beginner / 1st Season</option>
@@ -100,14 +104,22 @@
               <option value="Varsity / College Prep (Polishing high-level mechanics)">Varsity / College Prep</option>
             </select>
           </div>
+          <div id="auth-mini-quiz" class="auth-mini-quiz" aria-live="polite"></div>
           <div id="auth-instant-tips" class="auth-tips-preview" aria-live="polite"></div>
           <label class="auth-check-row">
-            <input type="checkbox" id="login-open-quiz" checked>
-            <span>Open my full AI Checkup Quiz &amp; tailored video plan right after Log In</span>
+            <input type="checkbox" id="login-remember" checked>
+            <span>Remember my username &amp; training setup on this device</span>
+          </label>
+          <label class="auth-check-row">
+            <input type="checkbox" id="login-open-quiz">
+            <span>Open my 5-Step AI Checkup Quiz right after Log In</span>
           </label>
         </div>
 
-        <button type="submit" id="login-submit-btn" class="btn btn-primary">Log In &amp; Open Coaching Plan</button>
+        <div class="auth-submit-stack">
+          <button type="submit" id="login-submit-btn" class="btn btn-primary">Log In &amp; Continue</button>
+          <a href="index.html" class="btn btn-ghost btn-sm" style="text-align:center;">Skip Quiz &amp; Explore App</a>
+        </div>
         <p id="login-error" class="feedback-banner" role="alert"></p>
       </form>
       <p style="margin-top:1.25rem;margin-bottom:0;color:var(--text-secondary);">

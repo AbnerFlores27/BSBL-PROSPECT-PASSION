@@ -28,6 +28,30 @@ function verifyPassword(password, storedHash) {
   return crypto.timingSafeEqual(keyBuf, derivedBuf);
 }
 
+const ALLOWED_BATS = new Set(['baum-gold', 'goods-2026', 'goods-2022', 'combat-rodeo', 'combat-blue']);
+const ALLOWED_TIERS = new Set(['pro', 'college', 'hs', 'cage']);
+
+function sanitizePreferences(raw) {
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const defaultBat = ALLOWED_BATS.has(src.defaultBat) ? src.defaultBat : 'goods-2026';
+  const battingHand = src.battingHand === 'L' ? 'L' : 'R';
+  const throwingHand = src.throwingHand === 'L' ? 'L' : 'R';
+  const preferredTier = ALLOWED_TIERS.has(src.preferredTier) ? src.preferredTier : 'pro';
+  const preferredStadium = typeof src.preferredStadium === 'string'
+    ? src.preferredStadium.replace(/[^a-z0-9-]/gi, '').slice(0, 24)
+    : '';
+  const bioNote = typeof src.bioNote === 'string' ? src.bioNote.trim().slice(0, 300) : '';
+  return {
+    rememberDevice: Boolean(src.rememberDevice),
+    defaultBat,
+    battingHand,
+    throwingHand,
+    preferredTier,
+    preferredStadium,
+    bioNote
+  };
+}
+
 /* =========================================================
    Local Persistent Store (when DATABASE_URL is unset)
    ========================================================= */
@@ -97,6 +121,8 @@ function createLocalStore() {
       email: u.email,
       authProvider: u.authProvider || 'password',
       hasOnboarding,
+      onboardingSkipped: Boolean(u.onboardingSkipped),
+      preferences: sanitizePreferences(u.preferences),
       createdAt: u.createdAt
     };
   }
@@ -121,7 +147,7 @@ function createLocalStore() {
       return;
     },
 
-    async createUser({ username, email, password }) {
+    async createUser({ username, email, password, preferences }) {
       const normUser = username.trim().toLowerCase();
       const normEmail = email.trim().toLowerCase();
       const conflict = users.find(
@@ -140,6 +166,8 @@ function createLocalStore() {
         passwordHash: hashPassword(password),
         authProvider: 'password',
         googleUid: null,
+        onboardingSkipped: false,
+        preferences: sanitizePreferences(preferences),
         createdAt: new Date().toISOString()
       };
       users.push(user);
@@ -171,6 +199,8 @@ function createLocalStore() {
         passwordHash: hashPassword(crypto.randomBytes(24).toString('hex')),
         authProvider: 'google',
         googleUid: uid,
+        onboardingSkipped: false,
+        preferences: sanitizePreferences({}),
         createdAt: new Date().toISOString()
       };
       users.push(user);
@@ -217,12 +247,52 @@ function createLocalStore() {
       }
     },
 
+    async setOnboardingSkipped(userId, skipped) {
+      const user = users.find((u) => u.id === userId);
+      if (!user) return null;
+      user.onboardingSkipped = Boolean(skipped);
+      saveToDisk();
+      return toPublicUser(user);
+    },
+
+    async updateUserProfile(userId, { username, email, preferences }) {
+      const user = users.find((u) => u.id === userId);
+      if (!user) return null;
+      if (typeof username === 'string' && username.trim()) {
+        const cleanU = username.trim();
+        const taken = users.find((u) => u.id !== userId && u.username.toLowerCase() === cleanU.toLowerCase());
+        if (taken) {
+          const err = new Error('That username is already taken.');
+          err.code = 'CONFLICT';
+          throw err;
+        }
+        user.username = cleanU;
+      }
+      if (typeof email === 'string' && email.trim()) {
+        const cleanE = email.trim().toLowerCase();
+        const taken = users.find((u) => u.id !== userId && u.email.toLowerCase() === cleanE);
+        if (taken) {
+          const err = new Error('That email is already taken.');
+          err.code = 'CONFLICT';
+          throw err;
+        }
+        user.email = cleanE;
+      }
+      if (preferences && typeof preferences === 'object') {
+        user.preferences = sanitizePreferences({ ...(user.preferences || {}), ...preferences });
+      }
+      saveToDisk();
+      return toPublicUser(user);
+    },
+
     async saveOnboardingProfile(userId, profile) {
       const now = new Date().toISOString();
       const idx = onboardingProfiles.findIndex((p) => p.userId === userId);
       const record = { userId, profile, updatedAt: now };
       if (idx >= 0) onboardingProfiles[idx] = record;
       else onboardingProfiles.push(record);
+      const user = users.find((u) => u.id === userId);
+      if (user) user.onboardingSkipped = false;
       saveToDisk();
       return record;
     },
@@ -422,10 +492,14 @@ function createPostgresStore(connectionString) {
         password_hash TEXT NOT NULL,
         auth_provider TEXT NOT NULL DEFAULT 'password',
         google_uid TEXT,
+        onboarding_skipped BOOLEAN NOT NULL DEFAULT FALSE,
+        preferences_json JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
       ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT NOT NULL DEFAULT 'password';
       ALTER TABLE users ADD COLUMN IF NOT EXISTS google_uid TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_skipped BOOLEAN NOT NULL DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences_json JSONB NOT NULL DEFAULT '{}'::jsonb;
       CREATE TABLE IF NOT EXISTS sessions (
         token TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -578,10 +652,11 @@ function createPostgresStore(connectionString) {
       return initPromise;
     },
 
-    async createUser({ username, email, password }) {
+    async createUser({ username, email, password, preferences }) {
       await this.ensureReady();
       const normEmail = email.trim().toLowerCase();
       const cleanUser = username.trim();
+      const cleanPrefs = sanitizePreferences(preferences);
       const existing = await pool.query(
         'SELECT username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2)',
         [cleanUser, normEmail]
@@ -593,8 +668,10 @@ function createPostgresStore(connectionString) {
         throw err;
       }
       const res = await pool.query(
-        'INSERT INTO users (username, email, password_hash, auth_provider) VALUES ($1, $2, $3, $4) RETURNING id, username, email, auth_provider, created_at',
-        [cleanUser, normEmail, hashPassword(password), 'password']
+        `INSERT INTO users (username, email, password_hash, auth_provider, onboarding_skipped, preferences_json)
+         VALUES ($1, $2, $3, $4, FALSE, $5)
+         RETURNING id, username, email, auth_provider, onboarding_skipped, preferences_json, created_at`,
+        [cleanUser, normEmail, hashPassword(password), 'password', JSON.stringify(cleanPrefs)]
       );
       const r = res.rows[0];
       return {
@@ -603,6 +680,8 @@ function createPostgresStore(connectionString) {
         email: r.email,
         authProvider: r.auth_provider || 'password',
         hasOnboarding: false,
+        onboardingSkipped: Boolean(r.onboarding_skipped),
+        preferences: sanitizePreferences(r.preferences_json),
         createdAt: r.created_at
       };
     },
@@ -616,7 +695,7 @@ function createPostgresStore(connectionString) {
         throw err;
       }
       const existing = await pool.query(
-        `SELECT u.id, u.username, u.email, u.auth_provider, u.google_uid, u.created_at,
+        `SELECT u.id, u.username, u.email, u.auth_provider, u.google_uid, u.onboarding_skipped, u.preferences_json, u.created_at,
                 (op.user_id IS NOT NULL) AS has_onboarding
          FROM users u
          LEFT JOIN onboarding_profiles op ON op.user_id = u.id
@@ -636,6 +715,8 @@ function createPostgresStore(connectionString) {
             email: r.email,
             authProvider: r.auth_provider || 'google',
             hasOnboarding: Boolean(r.has_onboarding),
+            onboardingSkipped: Boolean(r.onboarding_skipped),
+            preferences: sanitizePreferences(r.preferences_json),
             createdAt: r.created_at
           },
           isNewUser: false
@@ -643,9 +724,9 @@ function createPostgresStore(connectionString) {
       }
       const uniqueUsername = await buildUniquePgUsername(displayName, normEmail);
       const res = await pool.query(
-        `INSERT INTO users (username, email, password_hash, auth_provider, google_uid)
-         VALUES ($1, $2, $3, 'google', $4)
-         RETURNING id, username, email, auth_provider, created_at`,
+        `INSERT INTO users (username, email, password_hash, auth_provider, google_uid, onboarding_skipped, preferences_json)
+         VALUES ($1, $2, $3, 'google', $4, FALSE, '{}'::jsonb)
+         RETURNING id, username, email, auth_provider, onboarding_skipped, preferences_json, created_at`,
         [uniqueUsername, normEmail, hashPassword(crypto.randomBytes(24).toString('hex')), uid]
       );
       const r = res.rows[0];
@@ -656,6 +737,8 @@ function createPostgresStore(connectionString) {
           email: r.email,
           authProvider: r.auth_provider || 'google',
           hasOnboarding: false,
+          onboardingSkipped: Boolean(r.onboarding_skipped),
+          preferences: sanitizePreferences(r.preferences_json),
           createdAt: r.created_at
         },
         isNewUser: true
@@ -666,7 +749,7 @@ function createPostgresStore(connectionString) {
       await this.ensureReady();
       const needle = identifier.trim().toLowerCase();
       const res = await pool.query(
-        `SELECT u.id, u.username, u.email, u.password_hash, u.auth_provider, u.created_at,
+        `SELECT u.id, u.username, u.email, u.password_hash, u.auth_provider, u.onboarding_skipped, u.preferences_json, u.created_at,
                 (op.user_id IS NOT NULL) AS has_onboarding
          FROM users u
          LEFT JOIN onboarding_profiles op ON op.user_id = u.id
@@ -682,6 +765,8 @@ function createPostgresStore(connectionString) {
         email: row.email,
         authProvider: row.auth_provider || 'password',
         hasOnboarding: Boolean(row.has_onboarding),
+        onboardingSkipped: Boolean(row.onboarding_skipped),
+        preferences: sanitizePreferences(row.preferences_json),
         createdAt: row.created_at
       };
     },
@@ -701,7 +786,7 @@ function createPostgresStore(connectionString) {
       if (!token) return null;
       await this.ensureReady();
       const res = await pool.query(
-        `SELECT u.id, u.username, u.email, u.auth_provider, u.created_at, s.expires_at,
+        `SELECT u.id, u.username, u.email, u.auth_provider, u.onboarding_skipped, u.preferences_json, u.created_at, s.expires_at,
                 (op.user_id IS NOT NULL) AS has_onboarding
          FROM sessions s
          JOIN users u ON u.id = s.user_id
@@ -721,6 +806,8 @@ function createPostgresStore(connectionString) {
         email: row.email,
         authProvider: row.auth_provider || 'password',
         hasOnboarding: Boolean(row.has_onboarding),
+        onboardingSkipped: Boolean(row.onboarding_skipped),
+        preferences: sanitizePreferences(row.preferences_json),
         createdAt: row.created_at
       };
     },
@@ -731,8 +818,74 @@ function createPostgresStore(connectionString) {
       await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
     },
 
+    async setOnboardingSkipped(userId, skipped) {
+      await this.ensureReady();
+      const res = await pool.query(
+        `UPDATE users SET onboarding_skipped = $1 WHERE id = $2
+         RETURNING id, username, email, auth_provider, onboarding_skipped, preferences_json, created_at`,
+        [Boolean(skipped), userId]
+      );
+      if (res.rows.length === 0) return null;
+      const r = res.rows[0];
+      const opRes = await pool.query('SELECT 1 FROM onboarding_profiles WHERE user_id = $1', [userId]);
+      return {
+        id: r.id,
+        username: r.username,
+        email: r.email,
+        authProvider: r.auth_provider || 'password',
+        hasOnboarding: opRes.rows.length > 0,
+        onboardingSkipped: Boolean(r.onboarding_skipped),
+        preferences: sanitizePreferences(r.preferences_json),
+        createdAt: r.created_at
+      };
+    },
+
+    async updateUserProfile(userId, { username, email, preferences }) {
+      await this.ensureReady();
+      const curRes = await pool.query(
+        'SELECT id, username, email, preferences_json FROM users WHERE id = $1',
+        [userId]
+      );
+      if (curRes.rows.length === 0) return null;
+      const cur = curRes.rows[0];
+      const nextUsername = typeof username === 'string' && username.trim() ? username.trim() : cur.username;
+      const nextEmail = typeof email === 'string' && email.trim() ? email.trim().toLowerCase() : cur.email;
+      const conflict = await pool.query(
+        'SELECT username, email FROM users WHERE id <> $1 AND (LOWER(username) = LOWER($2) OR LOWER(email) = LOWER($3))',
+        [userId, nextUsername, nextEmail]
+      );
+      if (conflict.rows.length > 0) {
+        const field = conflict.rows[0].email.toLowerCase() === nextEmail ? 'email' : 'username';
+        const err = new Error(`That ${field} is already taken.`);
+        err.code = 'CONFLICT';
+        throw err;
+      }
+      const nextPrefs = preferences && typeof preferences === 'object'
+        ? sanitizePreferences({ ...(cur.preferences_json || {}), ...preferences })
+        : sanitizePreferences(cur.preferences_json);
+      const upd = await pool.query(
+        `UPDATE users SET username = $1, email = $2, preferences_json = $3
+         WHERE id = $4
+         RETURNING id, username, email, auth_provider, onboarding_skipped, preferences_json, created_at`,
+        [nextUsername, nextEmail, JSON.stringify(nextPrefs), userId]
+      );
+      const r = upd.rows[0];
+      const opRes = await pool.query('SELECT 1 FROM onboarding_profiles WHERE user_id = $1', [userId]);
+      return {
+        id: r.id,
+        username: r.username,
+        email: r.email,
+        authProvider: r.auth_provider || 'password',
+        hasOnboarding: opRes.rows.length > 0,
+        onboardingSkipped: Boolean(r.onboarding_skipped),
+        preferences: sanitizePreferences(r.preferences_json),
+        createdAt: r.created_at
+      };
+    },
+
     async saveOnboardingProfile(userId, profile) {
       await this.ensureReady();
+      await pool.query('UPDATE users SET onboarding_skipped = FALSE WHERE id = $1', [userId]);
       const res = await pool.query(
         `INSERT INTO onboarding_profiles (user_id, profile_json, updated_at)
          VALUES ($1, $2, NOW())

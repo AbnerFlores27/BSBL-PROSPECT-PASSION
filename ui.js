@@ -88,6 +88,29 @@
     setToken: setStoredSessionToken
   };
 
+  const SAVED_PREFS_KEY = 'diamondiq_saved_prefs';
+
+  function loadSavedPrefs() {
+    try {
+      const raw = localStorage.getItem(SAVED_PREFS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function savePrefs(patch) {
+    try {
+      const cur = loadSavedPrefs();
+      const next = { ...cur, ...patch };
+      delete next.password;
+      localStorage.setItem(SAVED_PREFS_KEY, JSON.stringify(next));
+      return next;
+    } catch {
+      return {};
+    }
+  }
+
   async function api(url, options = {}) {
     const config = {
       credentials: 'same-origin',
@@ -691,9 +714,13 @@
         meta: 'AAA Pro Maple Gold Edition · Slight End-Load · 2.505" Barrel',
         desc: 'High-gloss jet-black maple-composite finish with metallic gold Baum oval medallion, gold BBCOR .50 stamp, cupped black tip, and solid-wood crack.',
         construction: '1pc-wood',
-        weightMod: 0.985,
-        popMod: 0.975,
-        sweetSpot: 0.86,
+        weightMod: 0.986,
+        popMod: 0.976,
+        cor: 0.456,
+        moi: 1.08,
+        sweetSpot: 0.85,
+        taperSharpness: 1.48,
+        launchLift: 0.0,
         soundType: 'wood',
         barrelColor: '#111318',
         barrelHi: '#343946',
@@ -714,9 +741,13 @@
         construction: '2pc',
         cuffColor: '#181a20',
         cuffTrim: '#334155',
-        weightMod: 0.992,
-        popMod: 1.045,
+        weightMod: 0.990,
+        popMod: 1.048,
+        cor: 0.518,
+        moi: 1.13,
         sweetSpot: 0.96,
+        taperSharpness: 1.12,
+        launchLift: 1.5,
         soundType: 'hybrid',
         barrelColor: '#9beae4',
         barrelHi: '#d8faf7',
@@ -737,9 +768,13 @@
         construction: '2pc',
         cuffColor: '#18191e',
         cuffTrim: '#334155',
-        weightMod: 0.998,
-        popMod: 1.033,
+        weightMod: 0.996,
+        popMod: 1.036,
+        cor: 0.510,
+        moi: 1.09,
         sweetSpot: 0.98,
+        taperSharpness: 1.08,
+        launchLift: 1.2,
         soundType: 'hybrid',
         barrelColor: '#cbd5e1',
         barrelHi: '#f8fafc',
@@ -758,9 +793,13 @@
         meta: '1-Piece SFX Alloy · Balanced Whip · Crimson Grip',
         desc: 'Vintage buttercream barrel & taper, crimson-red perforated grip & flared pommel, western bronco art ("Not My First Rodeo!"), and loud Combat thwack.',
         construction: '1pc',
-        weightMod: 1.024,
-        popMod: 1.02,
-        sweetSpot: 1.06,
+        weightMod: 1.026,
+        popMod: 1.022,
+        cor: 0.506,
+        moi: 0.95,
+        sweetSpot: 1.07,
+        taperSharpness: 0.88,
+        launchLift: 0.8,
         soundType: 'combat',
         barrelColor: '#f2e3be',
         barrelHi: '#fcf6e6',
@@ -781,9 +820,13 @@
         meta: '1-Piece Country Club Alloy · Ultra-Balanced · Widest Sweet Spot',
         desc: 'Powder sky-blue 1-piece SFX barrel & handle with sky-blue grip, royal blue flared knob & end cap, gold pinstripes, and crisp alloy thwack.',
         construction: '1pc',
-        weightMod: 1.028,
-        popMod: 1.016,
-        sweetSpot: 1.1,
+        weightMod: 1.032,
+        popMod: 1.018,
+        cor: 0.503,
+        moi: 0.92,
+        sweetSpot: 1.11,
+        taperSharpness: 0.84,
+        launchLift: 0.6,
         soundType: 'combat',
         barrelColor: '#87defb',
         barrelHi: '#d4f3fe',
@@ -799,9 +842,131 @@
       }
     };
 
+    const STADIUM_TIERS = {
+      pro: ['fenway', 'dodger', 'oracle', 'wrigley', 'yankee'],
+      college: ['omaha', 'lsu', 'missst', 'vandy', 'texas'],
+      hs: ['hs-central', 'hs-oakridge', 'hs-coastal', 'hs-valley', 'hs-metro'],
+      cage: ['cage']
+    };
+
     const STADIUMS = {
+      fenway: {
+        id: 'fenway',
+        tier: 'pro',
+        shortName: 'Fenway Park',
+        name: 'Fenway Park (Boston)',
+        dimsLabel: 'Fenway Park · 310 LF · 390 CF · 302 RF',
+        skyTop: '#071426',
+        skyMid: '#132a4a',
+        skyLow: '#24476e',
+        wallColor: '#2d5a42',
+        wallCap: '#facc15',
+        subBanner: 'GREEN MONSTER · 37 FT',
+        subBanner2: 'PESKY POLE · 302 FT',
+        airDensity: 1.005,
+        wallDist(phi) {
+          return phi < 0
+            ? 390 - Math.pow(Math.abs(phi) / 0.785, 1.35) * 80
+            : 390 - Math.pow(phi / 0.785, 1.25) * 88;
+        },
+        wallHeight(phi) {
+          return phi <= -0.25 ? 37 : phi <= 0.1 ? 17 : 5;
+        }
+      },
+      dodger: {
+        id: 'dodger',
+        tier: 'pro',
+        shortName: 'Dodger Stadium',
+        name: 'Dodger Stadium (LA)',
+        dimsLabel: 'Dodger Stadium · 330 LF · 395 CF · 330 RF',
+        skyTop: '#0b1834',
+        skyMid: '#233b6e',
+        skyLow: '#6e4c6b',
+        wallColor: '#005a9c',
+        wallCap: '#facc15',
+        subBanner: 'CHAVEZ RAVINE',
+        subBanner2: '395 CENTER FIELD',
+        airDensity: 0.985,
+        wallDist(phi) {
+          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      oracle: {
+        id: 'oracle',
+        tier: 'pro',
+        shortName: 'Oracle Park',
+        name: 'Oracle Park (SF)',
+        dimsLabel: 'Oracle Park · 339 LF · 399 CF · 309 RF',
+        skyTop: '#071726',
+        skyMid: '#13324a',
+        skyLow: '#2c5b75',
+        wallColor: '#0f2830',
+        wallCap: '#f97316',
+        subBanner: 'TRIPLES ALLEY · 421',
+        subBanner2: 'MCCOVEY COVE · 24 FT',
+        airDensity: 1.015,
+        wallDist(phi) {
+          if (phi < 0) return 339 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
+          if (phi < 0.36) return 399 + Math.sin((phi / 0.36) * Math.PI) * 18;
+          return 404 - ((phi - 0.36) / 0.425) * 95;
+        },
+        wallHeight(phi) {
+          return phi >= 0.35 ? 24 : 8;
+        }
+      },
+      wrigley: {
+        id: 'wrigley',
+        tier: 'pro',
+        shortName: 'Wrigley Field',
+        name: 'Wrigley Field (Chicago)',
+        dimsLabel: 'Wrigley Field · 355 LF · 400 CF · 353 RF',
+        skyTop: '#081b2c',
+        skyMid: '#153959',
+        skyLow: '#2d5c78',
+        wallColor: '#14532d',
+        wallCap: '#eab308',
+        subBanner: 'FRIENDLY CONFINES',
+        subBanner2: 'IVY BRICK · 11.5 FT',
+        airDensity: 0.99,
+        wallDist(phi) {
+          return phi < 0
+            ? 355 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 45
+            : 353 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 47;
+        },
+        wallHeight() {
+          return 11.5;
+        }
+      },
+      yankee: {
+        id: 'yankee',
+        tier: 'pro',
+        shortName: 'Yankee Stadium',
+        name: 'Yankee Stadium (NY)',
+        dimsLabel: 'Yankee Stadium · 318 LF · 408 CF · 314 RF',
+        skyTop: '#061121',
+        skyMid: '#122645',
+        skyLow: '#21406b',
+        wallColor: '#0d2240',
+        wallCap: '#f8fafc',
+        subBanner: 'BRONX · MONUMENT PARK',
+        subBanner2: 'SHORT PORCH · 314 RF',
+        airDensity: 1.002,
+        wallDist(phi) {
+          return phi < 0
+            ? 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 90
+            : 314 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 94;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
       omaha: {
         id: 'omaha',
+        tier: 'college',
+        shortName: 'Omaha CWS',
         name: 'Charles Schwab Field (Omaha)',
         dimsLabel: 'Omaha CWS · 335 LF · 408 CF · 335 RF',
         skyTop: '#08182e',
@@ -809,9 +974,10 @@
         skyLow: '#2b557c',
         wallColor: '#0f3f2b',
         wallCap: '#fbbf24',
+        subBanner: 'COLLEGE WORLD SERIES',
+        subBanner2: 'OMAHA · NEBRASKA',
         airDensity: 0.965,
         wallDist(phi) {
-          // Charles Schwab Field Omaha: symmetrical 335 corners, 375 power alleys, 408 CF
           return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 73;
         },
         wallHeight() {
@@ -820,6 +986,8 @@
       },
       lsu: {
         id: 'lsu',
+        tier: 'college',
+        shortName: 'LSU Alex Box',
         name: 'Alex Box Stadium (LSU)',
         dimsLabel: 'Alex Box (LSU) · 330 LF · 405 CF · 330 RF',
         skyTop: '#161130',
@@ -827,6 +995,8 @@
         skyLow: '#6e3b5c',
         wallColor: '#1a4a33',
         wallCap: '#facc15',
+        subBanner: 'BATON ROUGE · SEC',
+        subBanner2: 'INTIMIDATOR PILE',
         airDensity: 1.008,
         wallDist(phi) {
           return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
@@ -837,6 +1007,8 @@
       },
       missst: {
         id: 'missst',
+        tier: 'college',
+        shortName: 'Miss St Noble',
         name: 'Dude Noble Field (Miss. State)',
         dimsLabel: 'Dude Noble (MSU) · 330 LF · 390 CF · 330 RF',
         skyTop: '#0b182c',
@@ -844,6 +1016,8 @@
         skyLow: '#4f3b49',
         wallColor: '#5c1424',
         wallCap: '#e2e8f0',
+        subBanner: 'LEFT FIELD LOUNGE',
+        subBanner2: 'STARKVILLE · SEC',
         airDensity: 0.992,
         wallDist(phi) {
           return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
@@ -852,8 +1026,161 @@
           return 9;
         }
       },
+      vandy: {
+        id: 'vandy',
+        tier: 'college',
+        shortName: 'Vandy Hawkins',
+        name: 'Hawkins Field (Vanderbilt)',
+        dimsLabel: 'Hawkins Field · 310 LF · 400 CF · 330 RF',
+        skyTop: '#0a1426',
+        skyMid: '#1f2b42',
+        skyLow: '#3a465c',
+        wallColor: '#1c1917',
+        wallCap: '#cfb87c',
+        subBanner: 'NASHVILLE MONSTER · 35 FT',
+        subBanner2: 'VANDERBILT · SEC',
+        airDensity: 0.995,
+        wallDist(phi) {
+          return phi < 0
+            ? 310 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 90
+            : 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight(phi) {
+          return phi <= -0.25 ? 35 : 8;
+        }
+      },
+      texas: {
+        id: 'texas',
+        tier: 'college',
+        shortName: 'Texas Disch-Falk',
+        name: 'UFCU Disch-Falk (Texas)',
+        dimsLabel: 'Disch-Falk · 340 LF · 400 CF · 325 RF',
+        skyTop: '#161124',
+        skyMid: '#3d243b',
+        skyLow: '#6e3a32',
+        wallColor: '#8c3b0b',
+        wallCap: '#f8fafc',
+        subBanner: 'AUSTIN · LONGHORNS',
+        subBanner2: 'DISCH-FALK FIELD',
+        airDensity: 0.982,
+        wallDist(phi) {
+          return phi < 0
+            ? 340 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60
+            : 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      'hs-central': {
+        id: 'hs-central',
+        tier: 'hs',
+        shortName: 'Central High',
+        name: 'Central High Field',
+        dimsLabel: 'Central High · 315 LF · 375 CF · 315 RF',
+        skyTop: '#0b1e36',
+        skyMid: '#1d456b',
+        skyLow: '#3b739c',
+        wallColor: '#1e3a5f',
+        wallCap: '#facc15',
+        subBanner: 'VARSITY DIAMOND',
+        subBanner2: '375 CENTER',
+        airDensity: 1.0,
+        wallDist(phi) {
+          return 315 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
+        },
+        wallHeight() {
+          return 6;
+        }
+      },
+      'hs-oakridge': {
+        id: 'hs-oakridge',
+        tier: 'hs',
+        shortName: 'Oak Ridge Prep',
+        name: 'Oak Ridge Prep Field',
+        dimsLabel: 'Oak Ridge Prep · 310 LF · 370 CF · 310 RF',
+        skyTop: '#0b2230',
+        skyMid: '#1b4754',
+        skyLow: '#3d746e',
+        wallColor: '#14532d',
+        wallCap: '#fbbf24',
+        subBanner: 'OAK RIDGE PREP',
+        subBanner2: '370 CENTER',
+        airDensity: 0.995,
+        wallDist(phi) {
+          return 310 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
+        },
+        wallHeight() {
+          return 6;
+        }
+      },
+      'hs-coastal': {
+        id: 'hs-coastal',
+        tier: 'hs',
+        shortName: 'Coastal Pines',
+        name: 'Coastal Pines Complex',
+        dimsLabel: 'Coastal Pines · 320 LF · 385 CF · 320 RF',
+        skyTop: '#071c34',
+        skyMid: '#124670',
+        skyLow: '#35799e',
+        wallColor: '#0369a1',
+        wallCap: '#fde047',
+        subBanner: 'COASTAL PINES',
+        subBanner2: 'SHOWCASE FIELD',
+        airDensity: 1.012,
+        wallDist(phi) {
+          return 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+        },
+        wallHeight() {
+          return 6;
+        }
+      },
+      'hs-valley': {
+        id: 'hs-valley',
+        tier: 'hs',
+        shortName: 'Valley View',
+        name: 'Valley View HS Diamond',
+        dimsLabel: 'Valley View · 305 LF · 365 CF · 305 RF',
+        skyTop: '#14152e',
+        skyMid: '#3b2954',
+        skyLow: '#70445e',
+        wallColor: '#7c2d12',
+        wallCap: '#fbbf24',
+        subBanner: 'HIGH DESERT',
+        subBanner2: '365 CENTER',
+        airDensity: 0.955,
+        wallDist(phi) {
+          return 305 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
+        },
+        wallHeight() {
+          return 6;
+        }
+      },
+      'hs-metro': {
+        id: 'hs-metro',
+        tier: 'hs',
+        shortName: 'Metro Varsity',
+        name: 'Metro Varsity Park',
+        dimsLabel: 'Metro Varsity · 312 LF · 378 CF · 312 RF',
+        skyTop: '#091529',
+        skyMid: '#193159',
+        skyLow: '#2e5185',
+        wallColor: '#312e81',
+        wallCap: '#f8fafc',
+        subBanner: 'METRO VARSITY',
+        subBanner2: '378 CENTER',
+        airDensity: 1.0,
+        wallDist(phi) {
+          return 312 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 66;
+        },
+        wallHeight() {
+          return 6;
+        }
+      },
       cage: {
         id: 'cage',
+        tier: 'cage',
+        shortName: 'D1 Rapsodo Lab',
         name: 'D1 Rapsodo Lab',
         dimsLabel: 'D1 Rapsodo Lab · 400 FT Simulated',
         skyTop: '#070d18',
@@ -934,9 +1261,13 @@
     const sprayCanvas = document.getElementById('hittrax-spray-canvas');
     const rapsodoViewTabs = document.getElementById('rapsodo-view-tabs');
     const batRack = document.getElementById('bat-rack');
+    const stadiumTierTabs = document.getElementById('stadium-tier-tabs');
     const stadiumTabs = document.getElementById('stadium-tabs');
+    const deliveryTabs = document.getElementById('delivery-tabs');
     const pitchTabs = document.getElementById('pitch-tabs');
     const windTabs = document.getElementById('wind-tabs');
+    const batterHandTabs = document.getElementById('batter-hand-tabs');
+    const pitcherHandTabs = document.getElementById('pitcher-hand-tabs');
     const cameraTabs = document.getElementById('camera-tabs');
     const swingBtn = document.getElementById('cage-swing-btn');
     const demoBtn = document.getElementById('cage-demo-btn');
@@ -1071,22 +1402,42 @@
         cross8: { label: '8 mph L->R Cross', vx: 11.73, vy: 2.0 }
       };
 
-      const urlBat = new URLSearchParams(window.location.search).get('bat');
-      let activeBatId = urlBat && BATS[urlBat] ? urlBat : 'goods-2026';
-      let activeStadiumId = 'omaha';
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlBat = urlParams.get('bat');
+      const savedUserPrefs = (currentUser && currentUser.preferences) || loadSavedPrefs();
+      let activeBatId =
+        urlBat && BATS[urlBat]
+          ? urlBat
+          : savedUserPrefs.defaultBat && BATS[savedUserPrefs.defaultBat]
+            ? savedUserPrefs.defaultBat
+            : 'goods-2026';
+      let activeStadiumId =
+        savedUserPrefs.preferredStadium && STADIUMS[savedUserPrefs.preferredStadium]
+          ? savedUserPrefs.preferredStadium
+          : 'omaha';
+      let activeStadiumTier = (STADIUMS[activeStadiumId] && STADIUMS[activeStadiumId].tier) || 'college';
       let activeTelemetryView = 'spray'; // 'spray' | 'arc' | 'zone'
       let selectedPitchType = 'mix';
       let activeWindId = 'calm';
+      let batterHand = savedUserPrefs.battingHand === 'L' ? 'L' : 'R'; // 'R' | 'L'
+      let pitcherHand = 'R'; // 'R' | 'L'
+      let activeDeliveryMode = 'pitcher'; // 'pitcher' | 'machine'
       let activeCameraMode = 'pov';
       let autoPciMode = false;
       let soundOn = true;
       let audioCtx = null;
       let cageEngaged = false;
       let engine3D = null;
+      let sizeObserver = null;
 
       if (batRack) {
         batRack.querySelectorAll('[data-bat]').forEach((b) => {
           b.setAttribute('aria-pressed', String(b.dataset.bat === activeBatId));
+        });
+      }
+      if (batterHandTabs) {
+        batterHandTabs.querySelectorAll('[data-bhand]').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b.dataset.bhand === batterHand));
         });
       }
 
@@ -1119,8 +1470,16 @@
         t: 0,
         lastTs: 0,
         camT: 0,
+        rapAnimT: 1,
+        rapZoneAnimT: 1,
         pitch: null,
         pitchPos: null,
+        pciLiveX: 0,
+        pciLiveY: 0.14,
+        deliveryMode: activeDeliveryMode,
+        umpCall: '',
+        umpCallTimer: 0,
+        finishStyle: 'two-hand',
         swingTriggered: false,
         swingPressT: null,
         swingT: 0,
@@ -1146,17 +1505,35 @@
         flightFair: true
       };
 
+      function sync3DSize() {
+        if (!engine3D || !cageCanvas) return;
+        const w = Math.max(320, cageCanvas.clientWidth || LOG_W);
+        const h = Math.max(180, cageCanvas.clientHeight || LOG_H);
+        engine3D.resize(w, h);
+      }
+
       function tryInit3D() {
         if (engine3D || typeof window.createStadium3DEngine !== 'function') return;
         try {
           engine3D = window.createStadium3DEngine(cageCanvas, BATS, STADIUMS);
           engine3D.setStadium(activeStadiumId);
           engine3D.setBat(activeBatId);
+          engine3D.setBatterHand(batterHand);
+          engine3D.setPitcherHand(pitcherHand);
+          if (engine3D.setDeliveryMode) engine3D.setDeliveryMode(activeDeliveryMode);
           engine3D.setCameraMode(activeCameraMode);
-          const dpr = engine3D.isSoftwareGl ? Math.min(window.devicePixelRatio || 1, 1.25) : Math.min(window.devicePixelRatio || 1, 2);
-          engine3D.resize(Math.round(LOG_W * dpr), Math.round(LOG_H * dpr));
+          sync3DSize();
+          if (typeof ResizeObserver === 'function' && !sizeObserver) {
+            sizeObserver = new ResizeObserver(sync3DSize);
+            sizeObserver.observe(cageCanvas);
+          } else {
+            window.addEventListener('resize', sync3DSize);
+          }
         } catch (err) {
           console.error('3D stadium init failed:', err);
+          if (pitchNote) {
+            pitchNote.textContent = '3D WebGL viewport could not start on this browser GPU; 2D Rapsodo spray & HUD remain active.';
+          }
         }
       }
       tryInit3D();
@@ -1541,21 +1918,46 @@
         });
       }
 
+      function animateStatText(el, fromVal, toVal, formatter, duration = 460) {
+        if (!el || toVal == null || Number.isNaN(toVal)) return;
+        const start = performance.now();
+        const step = (now) => {
+          const u = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - u, 3);
+          const cur = fromVal + (toVal - fromVal) * eased;
+          el.textContent = formatter(cur, u >= 1);
+          if (u < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+
       function updateSessionDom(hitInfo = null) {
         if (hitInfo) {
-          if (evEl) evEl.textContent = hitInfo.exitVelo != null ? `${hitInfo.exitVelo} mph` : '-- mph';
-          if (laEl) laEl.textContent = hitInfo.launchAngle != null ? `${hitInfo.launchAngle}°` : '--°';
-          if (distEl) distEl.textContent = hitInfo.dist != null ? `${hitInfo.dist} ft` : '-- ft';
+          if (evEl) {
+            if (hitInfo.exitVelo != null) animateStatText(evEl, 0, Number(hitInfo.exitVelo), (v, done) => `${done ? hitInfo.exitVelo : v.toFixed(1)} mph`);
+            else evEl.textContent = '-- mph';
+          }
+          if (laEl) {
+            if (hitInfo.launchAngle != null) animateStatText(laEl, 0, Number(hitInfo.launchAngle), (v, done) => `${done ? hitInfo.launchAngle : Math.round(v)}°`);
+            else laEl.textContent = '--°';
+          }
+          if (distEl) {
+            if (hitInfo.dist != null) animateStatText(distEl, 0, Number(hitInfo.dist), (v, done) => `${done ? hitInfo.dist : Math.round(v)} ft`);
+            else distEl.textContent = '-- ft';
+          }
           if (apexEl) {
             if (hitInfo.apex != null && hitInfo.hangTime != null) {
-              apexEl.textContent = `${hitInfo.apex} ft · ${hitInfo.hangTime}s`;
+              animateStatText(apexEl, 0, Number(hitInfo.apex), (v, done) => `${done ? hitInfo.apex : Math.round(v)} ft · ${hitInfo.hangTime}s`);
             } else {
               apexEl.textContent = hitInfo.apex != null ? `${hitInfo.apex} ft` : '-- ft';
             }
           }
           if (spinEl) {
             if (hitInfo.backspinRpm != null) {
-              spinEl.textContent = `${hitInfo.backspinRpm >= 0 ? '+' : ''}${hitInfo.backspinRpm} rpm`;
+              animateStatText(spinEl, 0, Number(hitInfo.backspinRpm), (v, done) => {
+                const n = done ? hitInfo.backspinRpm : Math.round(v);
+                return `${n >= 0 ? '+' : ''}${n} rpm`;
+              });
             } else {
               spinEl.textContent = '-- rpm';
             }
@@ -1601,15 +2003,19 @@
         const w = sprayCanvas.width;
         const h = sprayCanvas.height;
         const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
-        if (sprayLabel) sprayLabel.textContent = st.dimsLabel;
+        if (sprayLabel) sprayLabel.textContent = `${st.dimsLabel} · ${pitcherHand}HP v ${batterHand}HB`;
 
         sctx.clearRect(0, 0, w, h);
         sctx.fillStyle = '#091322';
         sctx.fillRect(0, 0, w, h);
 
+        const inFlight = sim.phase === 'flight' && sim.flight;
+        const revAnim = Math.min(1, sim.rapAnimT || 0);
+        const zoneAnim = Math.min(1, sim.rapZoneAnimT || 0);
+
         if (activeTelemetryView === 'arc') {
-          // VIEW 2: Rapsodo Side-View Height vs Distance Flight Arc
-          const fl = session.lastHit;
+          // VIEW 2: Live Animated Rapsodo Side-View Height vs Distance Flight Arc
+          const fl = inFlight ? sim.flight : session.lastHit;
           const padL = 34;
           const padR = 14;
           const padT = 22;
@@ -1619,7 +2025,6 @@
           const maxX = 460;
           const maxZ = Math.max(125, fl ? Math.ceil((fl.apex + 20) / 25) * 25 : 140);
 
-          // Grid lines
           sctx.strokeStyle = 'rgba(255,255,255,0.1)';
           sctx.lineWidth = 1;
           [100, 200, 300, 400].forEach((ft) => {
@@ -1646,7 +2051,6 @@
             sctx.fillText(`${ftZ}ft`, padL - 4, gy + 3);
           });
 
-          // Ground Baseline
           sctx.strokeStyle = 'rgba(74, 222, 128, 0.55)';
           sctx.lineWidth = 1.6;
           sctx.beginPath();
@@ -1654,7 +2058,6 @@
           sctx.lineTo(padL + plotW, padT + plotH);
           sctx.stroke();
 
-          // Stadium Outfield Fence Marker at hit angle
           const wallPhi = fl ? Math.max(-0.785, Math.min(0.785, (fl.sprayDeg * Math.PI) / 180)) : 0;
           const wallDist = st.wallDist(wallPhi);
           const wallH = st.wallHeight(wallPhi);
@@ -1668,35 +2071,58 @@
           sctx.fillText(`WALL ${Math.round(wallDist)}`, wx, padT + plotH - Math.max(12, whPx + 4));
 
           if (fl && Array.isArray(fl.points) && fl.points.length > 1) {
+            const drawMaxIdx = inFlight
+              ? Math.max(1, sim.flightMaxIdx || 1)
+              : Math.max(1, Math.floor((0.25 + revAnim * 0.75) * (fl.points.length - 1)));
             sctx.beginPath();
-            fl.points.forEach((pt, idx) => {
+            let lastPx = padL;
+            let lastPy = padT + plotH;
+            for (let idx = 0; idx <= Math.min(drawMaxIdx, fl.points.length - 1); idx++) {
+              const pt = fl.points[idx];
               const dist = Math.hypot(pt.x, pt.y);
-              const px = padL + Math.min(1, dist / maxX) * plotW;
-              const py = padT + plotH - Math.min(1, pt.z / maxZ) * plotH;
-              if (idx === 0) sctx.moveTo(px, py);
-              else sctx.lineTo(px, py);
-            });
+              lastPx = padL + Math.min(1, dist / maxX) * plotW;
+              lastPy = padT + plotH - Math.min(1, pt.z / maxZ) * plotH;
+              if (idx === 0) sctx.moveTo(lastPx, lastPy);
+              else sctx.lineTo(lastPx, lastPy);
+            }
             sctx.strokeStyle = fl.color || '#38bdf8';
-            sctx.lineWidth = 2.4;
+            sctx.lineWidth = 2.6;
             sctx.stroke();
 
-            // Apex Peak Dot
-            const apexDist = Math.hypot(fl.apexPos.x, fl.apexPos.y);
-            const ax = padL + Math.min(1, apexDist / maxX) * plotW;
-            const ay = padT + plotH - Math.min(1, fl.apexPos.z / maxZ) * plotH;
-            sctx.fillStyle = '#fde047';
+            // Live Moving Baseball Tracer Dot
+            sctx.fillStyle = '#f8fafc';
             sctx.beginPath();
-            sctx.arc(ax, ay, 3.6, 0, Math.PI * 2);
+            sctx.arc(lastPx, lastPy, 4.0, 0, Math.PI * 2);
             sctx.fill();
-            sctx.font = '700 9.5px "IBM Plex Mono", monospace';
-            sctx.textAlign = 'left';
-            sctx.fillText(`APEX ${fl.apex}ft`, Math.min(w - 76, ax + 6), Math.max(padT + 10, ay - 4));
+            sctx.strokeStyle = fl.color || '#38bdf8';
+            sctx.lineWidth = 1.6;
+            sctx.stroke();
 
-            // Carry vs Total summary header
+            if (!inFlight || fl.playTime >= (fl.apexTime || 99)) {
+              const apexDist = Math.hypot(fl.apexPos.x, fl.apexPos.y);
+              const ax = padL + Math.min(1, apexDist / maxX) * plotW;
+              const ay = padT + plotH - Math.min(1, fl.apexPos.z / maxZ) * plotH;
+              sctx.fillStyle = '#fde047';
+              sctx.beginPath();
+              sctx.arc(ax, ay, 3.6, 0, Math.PI * 2);
+              sctx.fill();
+              if (!inFlight) {
+                sctx.font = '700 9.5px "IBM Plex Mono", monospace';
+                sctx.textAlign = 'left';
+                sctx.fillText(`APEX ${fl.apex}ft`, Math.min(w - 76, ax + 6), Math.max(padT + 10, ay - 4));
+              }
+            }
+
             sctx.fillStyle = '#e2e8f0';
             sctx.font = '600 10px "IBM Plex Mono", monospace';
             sctx.textAlign = 'left';
-            sctx.fillText(`LA ${fl.launchAngle}° · CARRY ${fl.carryDist}ft · TOTAL ${fl.dist}ft`, padL, 14);
+            if (inFlight) {
+              const cur = sim.flightCur || fl.points[0];
+              const liveDist = Math.round(Math.hypot(cur.x, cur.y));
+              sctx.fillText(`LIVE FLIGHT · ${liveDist}ft · H ${Math.round(cur.z)}ft`, padL, 14);
+            } else {
+              sctx.fillText(`LA ${fl.launchAngle}° · CARRY ${fl.carryDist}ft · TOTAL ${fl.dist}ft`, padL, 14);
+            }
           } else {
             sctx.fillStyle = '#94a3b8';
             sctx.font = '600 11px "Plus Jakarta Sans", sans-serif';
@@ -1707,7 +2133,7 @@
         }
 
         if (activeTelemetryView === 'zone') {
-          // VIEW 3: Rapsodo Strike Zone Pitch Location + Circular Spin Axis Clock Dial
+          // VIEW 3: Live Animated Rapsodo Strike Zone Break Comet + Sweeping Spin Axis Clock Dial
           const zx = 22;
           const zy = 32;
           const zw = 112;
@@ -1731,32 +2157,35 @@
           sctx.fillStyle = '#94a3b8';
           sctx.font = '600 9.5px "IBM Plex Mono", monospace';
           sctx.textAlign = 'center';
-          sctx.fillText('STRIKE ZONE + BREAK', zx + zw / 2, 18);
+          sctx.fillText(`STRIKE ZONE · ${pitcherHand}HP`, zx + zw / 2, 18);
 
           const lp = session.lastPitch;
+          const zProg = sim.phase === 'pitch' ? Math.min(1, sim.t) : zoneAnim;
           if (lp) {
             const ppx = zx + zw / 2 + lp.endX * (zw * 0.44);
             const ppy = zy + zh / 2 + lp.endY * (zh * 0.44);
-            // Break vector tail
             const sx = ppx - (lp.hbIn / 20) * 26;
             const sy = ppy + (lp.ivbIn / 20) * 24;
-            sctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
-            sctx.lineWidth = 2;
+            const curX = sx + (ppx - sx) * zProg;
+            const curY = sy + (ppy - sy) * zProg;
+
+            sctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+            sctx.lineWidth = 2.2;
             sctx.beginPath();
             sctx.moveTo(sx, sy);
-            sctx.lineTo(ppx, ppy);
+            sctx.lineTo(curX, curY);
             sctx.stroke();
 
             sctx.fillStyle = '#f8fafc';
             sctx.beginPath();
-            sctx.arc(ppx, ppy, 5.2, 0, Math.PI * 2);
+            sctx.arc(curX, curY, 5.2, 0, Math.PI * 2);
             sctx.fill();
             sctx.strokeStyle = '#ef4444';
             sctx.lineWidth = 1.4;
             sctx.stroke();
           }
 
-          // Right Side: Circular Rapsodo Spin Axis Clock Dial
+          // Right Side: Circular Rapsodo Spin Axis Clock Dial with Sweeping Needle + RPM Gauge Arc
           const cx = w - 92;
           const cy = h / 2 + 8;
           const cr = 54;
@@ -1769,24 +2198,33 @@
           sctx.arc(cx, cy, cr, 0, Math.PI * 2);
           sctx.fillStyle = 'rgba(15, 29, 52, 0.9)';
           sctx.fill();
-          sctx.strokeStyle = 'rgba(56, 189, 248, 0.48)';
+          sctx.strokeStyle = 'rgba(56, 189, 248, 0.32)';
           sctx.lineWidth = 1.8;
           sctx.stroke();
 
           [12, 3, 6, 9].forEach((hr) => {
-            const ang = ((hr / 12) * Math.PI * 2) - Math.PI / 2;
+            const ang = (hr / 12) * Math.PI * 2 - Math.PI / 2;
             sctx.fillStyle = '#cbd5e1';
             sctx.font = '700 9px "IBM Plex Mono", monospace';
             sctx.fillText(String(hr), cx + Math.cos(ang) * (cr - 10), cy + Math.sin(ang) * (cr - 10) + 3);
           });
 
           if (lp) {
-            const axisRad = ((lp.spinAxisDeg || 20) * Math.PI) / 180 - Math.PI / 2;
+            const rpmRatio = Math.min(1, (lp.pitchRpm || 2200) / 3000) * zProg;
+            sctx.strokeStyle = '#22c55e';
+            sctx.lineWidth = 2.6;
+            sctx.beginPath();
+            sctx.arc(cx, cy, cr + 4, -Math.PI / 2, -Math.PI / 2 + rpmRatio * Math.PI * 2);
+            sctx.stroke();
+
+            const targetRad = ((lp.spinAxisDeg || 20) * Math.PI) / 180 - Math.PI / 2;
+            const startRad = -Math.PI / 2;
+            const sweepRad = startRad + (targetRad - startRad) * (1 - Math.pow(1 - zProg, 2));
             sctx.strokeStyle = '#38bdf8';
             sctx.lineWidth = 3;
             sctx.beginPath();
             sctx.moveTo(cx, cy);
-            sctx.lineTo(cx + Math.cos(axisRad) * (cr - 18), cy + Math.sin(axisRad) * (cr - 18));
+            sctx.lineTo(cx + Math.cos(sweepRad) * (cr - 18), cy + Math.sin(sweepRad) * (cr - 18));
             sctx.stroke();
             sctx.fillStyle = '#fde047';
             sctx.beginPath();
@@ -1806,12 +2244,11 @@
           return;
         }
 
-        // VIEW 1: Classic Spray Chart (College Stadium Geometry)
+        // VIEW 1: Classic Animated Spray Chart (College Stadium Geometry)
         const ox = w / 2;
         const oy = h - 18;
         const pxPerFt = (h - 38) / 435;
 
-        // Warning Track Edge
         sctx.beginPath();
         sctx.moveTo(ox, oy);
         for (let i = 0; i <= 30; i++) {
@@ -1823,7 +2260,6 @@
         sctx.fillStyle = '#5c341a';
         sctx.fill();
 
-        // Turf Outfield Wedge with Mowed Grass Radial Glow
         sctx.beginPath();
         sctx.moveTo(ox, oy);
         for (let i = 0; i <= 30; i++) {
@@ -1838,7 +2274,6 @@
         sctx.fillStyle = turfGrad;
         sctx.fill();
 
-        // Infield dirt diamond
         sctx.fillStyle = '#a36839';
         sctx.beginPath();
         sctx.arc(ox, oy - 75 * pxPerFt, 48 * pxPerFt, Math.PI * 1.15, Math.PI * 1.85);
@@ -1846,7 +2281,6 @@
         sctx.closePath();
         sctx.fill();
 
-        // Outfield Wall Outline
         sctx.beginPath();
         for (let i = 0; i <= 30; i++) {
           const phi = -0.785 + (i / 30) * 1.57;
@@ -1860,7 +2294,6 @@
         sctx.lineWidth = 2.6;
         sctx.stroke();
 
-        // Foul Lines
         sctx.strokeStyle = 'rgba(255,255,255,0.5)';
         sctx.lineWidth = 1;
         [-0.785, 0.785].forEach((phi) => {
@@ -1871,7 +2304,6 @@
           sctx.stroke();
         });
 
-        // Distance rings
         [200, 300, 400].forEach((ft) => {
           sctx.beginPath();
           sctx.arc(ox, oy, ft * pxPerFt, -Math.PI * 0.75, -Math.PI * 0.25);
@@ -1879,20 +2311,49 @@
           sctx.stroke();
         });
 
-        // Plotted HitTrax Spray Shots
+        // Live In-Flight Radar Tracer Dot on Spray Chart
+        if (inFlight && sim.flightCur) {
+          const lx = ox + sim.flightCur.x * pxPerFt;
+          const ly = oy - sim.flightCur.y * pxPerFt;
+          sctx.strokeStyle = sim.flightColor || '#38bdf8';
+          sctx.setLineDash([4, 3]);
+          sctx.lineWidth = 1.8;
+          sctx.beginPath();
+          sctx.moveTo(ox, oy);
+          sctx.lineTo(lx, ly);
+          sctx.stroke();
+          sctx.setLineDash([]);
+          sctx.fillStyle = '#fde047';
+          sctx.beginPath();
+          sctx.arc(lx, ly, 3.8, 0, Math.PI * 2);
+          sctx.fill();
+        }
+
+        // Plotted HitTrax / Rapsodo Spray Shots with Animated Reveal Sweep + Impact Ripple
         session.sprays.forEach((sp, i) => {
-          const sx = ox + sp.xFt * pxPerFt;
-          const sy = oy - sp.yFt * pxPerFt;
+          const isLatest = i === session.sprays.length - 1;
+          const tBeam = isLatest ? revAnim : 1;
+          const sx = ox + sp.xFt * pxPerFt * tBeam;
+          const sy = oy - sp.yFt * pxPerFt * tBeam;
           sctx.beginPath();
           sctx.moveTo(ox, oy);
           sctx.lineTo(sx, sy);
           sctx.strokeStyle = sp.color;
-          sctx.globalAlpha = i === session.sprays.length - 1 ? 0.92 : 0.4;
-          sctx.lineWidth = i === session.sprays.length - 1 ? 2.2 : 1.2;
+          sctx.globalAlpha = isLatest ? 0.94 : 0.38;
+          sctx.lineWidth = isLatest ? 2.4 : 1.2;
           sctx.stroke();
 
+          if (isLatest && revAnim < 0.99) {
+            sctx.beginPath();
+            sctx.arc(sx, sy, 4 + revAnim * 12, 0, Math.PI * 2);
+            sctx.strokeStyle = sp.color;
+            sctx.globalAlpha = 1 - revAnim;
+            sctx.lineWidth = 1.8;
+            sctx.stroke();
+          }
+
           sctx.beginPath();
-          sctx.arc(sx, sy, sp.isHr ? 4.4 : 3.2, 0, Math.PI * 2);
+          sctx.arc(sx, sy, sp.isHr ? 4.5 : 3.2, 0, Math.PI * 2);
           sctx.fillStyle = sp.color;
           sctx.globalAlpha = 1;
           sctx.fill();
@@ -1902,23 +2363,36 @@
       // Exact Empty Stadium Stepped Seat Surface Query matching stadium3d.js tiers
       function getSeatTierInfo(st, phi, pastWall) {
         if (pastWall < 8) return null;
-        const tiers =
-          st.id === 'omaha'
-            ? [
-                { startPhi: -0.78, endPhi: 0.78, dOff: 12, dSpan: 48, y0: 9, y1: 31, steps: 8 },
-                { startPhi: -0.78, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 },
-                { startPhi: 0.22, endPhi: 0.78, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 }
-              ]
-            : st.id === 'lsu'
-              ? [
-                  { startPhi: -0.78, endPhi: 0.78, dOff: 10, dSpan: 50, y0: 10, y1: 34, steps: 8 },
-                  { startPhi: -0.78, endPhi: 0.78, dOff: 66, dSpan: 38, y0: 39, y1: 57, steps: 6 }
-                ]
-              : [
-                  { startPhi: -0.76, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, steps: 6 },
-                  { startPhi: 0.18, endPhi: 0.76, dOff: 10, dSpan: 46, y0: 10, y1: 32, steps: 7 },
-                  { startPhi: -0.78, endPhi: 0.78, dOff: 62, dSpan: 40, y0: 38, y1: 58, steps: 6 }
-                ];
+        let tiers;
+        if (st.tier === 'pro') {
+          tiers = [
+            { startPhi: -0.78, endPhi: 0.78, dOff: 12, dSpan: 56, y0: 9, y1: 34, steps: 9 },
+            { startPhi: -0.78, endPhi: -0.18, dOff: 74, dSpan: 44, y0: 40, y1: 64, steps: 7 },
+            { startPhi: 0.18, endPhi: 0.78, dOff: 74, dSpan: 44, y0: 40, y1: 64, steps: 7 }
+          ];
+        } else if (st.tier === 'hs') {
+          tiers = [
+            { startPhi: -0.74, endPhi: -0.26, dOff: 12, dSpan: 22, y0: 3.5, y1: 14, steps: 5 },
+            { startPhi: 0.26, endPhi: 0.74, dOff: 12, dSpan: 22, y0: 3.5, y1: 14, steps: 5 }
+          ];
+        } else if (st.id === 'omaha' || st.id === 'vandy') {
+          tiers = [
+            { startPhi: -0.78, endPhi: 0.78, dOff: 12, dSpan: 48, y0: 9, y1: 31, steps: 8 },
+            { startPhi: -0.78, endPhi: -0.22, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 },
+            { startPhi: 0.22, endPhi: 0.78, dOff: 66, dSpan: 36, y0: 37, y1: 54, steps: 6 }
+          ];
+        } else if (st.id === 'lsu' || st.id === 'texas') {
+          tiers = [
+            { startPhi: -0.78, endPhi: 0.78, dOff: 10, dSpan: 50, y0: 10, y1: 34, steps: 8 },
+            { startPhi: -0.78, endPhi: 0.78, dOff: 66, dSpan: 38, y0: 39, y1: 57, steps: 6 }
+          ];
+        } else {
+          tiers = [
+            { startPhi: -0.76, endPhi: -0.18, dOff: 10, dSpan: 44, y0: 12, y1: 34, steps: 6 },
+            { startPhi: 0.18, endPhi: 0.76, dOff: 10, dSpan: 46, y0: 10, y1: 32, steps: 7 },
+            { startPhi: -0.78, endPhi: 0.78, dOff: 62, dSpan: 40, y0: 38, y1: 58, steps: 6 }
+          ];
+        }
 
         for (const tc of tiers) {
           if (phi >= tc.startPhi && phi <= tc.endPhi && pastWall >= tc.dOff && pastWall <= tc.dOff + tc.dSpan) {
@@ -1927,7 +2401,7 @@
             const stepH = (tc.y1 - tc.y0) / tc.steps;
             return {
               floorZ: tc.y0 + stepIdx * stepH + 1.45,
-              isSeat: stepIdx % 2 === 0 || frac < 0.85,
+              isSeat: st.tier !== 'hs' && (stepIdx % 2 === 0 || frac < 0.85),
               isUpper: tc.dOff > 50
             };
           }
@@ -2371,21 +2845,32 @@
         };
       }
 
-      // Precompute realistic RK4 pitched baseball path from mound (-55) across home plate (0)
-      function precomputePitchTrajectory(mph, typeKey, endX, endY, isDemo) {
+      function mirrorClockLabel(clockStr) {
+        const parts = String(clockStr || '12:00').split(':');
+        const h = Number(parts[0]) || 12;
+        const m = Number(parts[1]) || 0;
+        const totalMin = ((12 * 60 - ((h % 12) * 60 + m)) + 720) % 720;
+        const mh = Math.floor(totalMin / 60) || 12;
+        const mm = totalMin % 60;
+        return `${mh}:${String(mm).padStart(2, '0')}`;
+      }
+
+      // Precompute realistic RK4 pitched baseball path from RHP (+0.88), LHP (-0.88), or Dual-Wheel Pitching Machine (0, 3.85)
+      function precomputePitchTrajectory(mph, typeKey, endX, endY, isDemo, hand = pitcherHand, deliveryMode = activeDeliveryMode) {
         const spec = PITCH_TYPES[typeKey] || PITCH_TYPES.fastball;
+        const isMachine = deliveryMode === 'machine';
+        const pSign = hand === 'L' ? -1 : 1;
         const speedFtS = mph * 1.46667;
         const targetX = endX * 0.88;
         const targetY = 2.65 - endY * 1.0;
         const dur = isDemo ? 0.68 : Math.max(0.54, Math.min(0.84, 57 / speedFtS));
 
-        const magX = isDemo ? 0 : spec.magX;
+        const magX = isDemo ? 0 : isMachine ? spec.magX * pSign * 0.52 : spec.magX * pSign;
         const magY = isDemo ? 16.5 : spec.magY;
 
-        // Solve initial velocity components so ball crosses exact (targetX, targetY, z=0) at t=dur
-        const startX = 0.85;
-        const startY = 6.12;
-        const startZ = -55.0;
+        const startX = isMachine ? 0 : 0.88 * pSign;
+        const startY = isMachine ? 3.85 : 6.12;
+        const startZ = isMachine ? -54.5 : -55.0;
         const ayTotal = -32.174 + magY;
         const axTotal = magX;
         const vx0 = (targetX - startX - 0.5 * axTotal * dur * dur) / dur;
@@ -2404,7 +2889,16 @@
             z: startZ + vz0 * t * (1 - 0.025 * t)
           });
         }
-        return { dur, samples, targetX, targetY, descendDeg: Math.atan2(vy0 + ayTotal * dur, vz0) * (180 / Math.PI) };
+        return {
+          dur,
+          samples,
+          targetX,
+          targetY,
+          hbIn: Number((spec.hbIn * pSign * (isMachine ? 0.52 : 1)).toFixed(1)),
+          spinAxisDeg: pSign === 1 ? spec.spinAxisDeg : (360 - spec.spinAxisDeg) % 360,
+          spinAxisClock: pSign === 1 ? spec.spinAxisClock : mirrorClockLabel(spec.spinAxisClock),
+          descendDeg: Math.atan2(vy0 + ayTotal * dur, vz0) * (180 / Math.PI)
+        };
       }
 
       function launchPitch(isDemoHr = false) {
@@ -2423,11 +2917,15 @@
 
         const endX = isDemoHr ? 0.03 : (Math.random() - 0.5) * 1.72;
         const endY = isDemoHr ? 0.02 : (Math.random() - 0.5) * 1.62;
-        const traj = precomputePitchTrajectory(mph, chosenKey, endX, endY, isDemoHr);
+        const traj = precomputePitchTrajectory(mph, chosenKey, endX, endY, isDemoHr, pitcherHand, activeDeliveryMode);
 
         sim.phase = 'windup';
         sim.t = 0;
         sim.camT = 0;
+        sim.rapZoneAnimT = 0;
+        sim.umpCall = '';
+        sim.umpCallTimer = 0;
+        sim.deliveryMode = activeDeliveryMode;
         sim.swingTriggered = false;
         sim.swingPressT = null;
         sim.swingT = 0;
@@ -2440,16 +2938,17 @@
         sim.flightCur = null;
         sim.flightPoints = null;
         sim.flightMaxIdx = 0;
+        const sourceTag = activeDeliveryMode === 'machine' ? 'Machine' : `${pitcherHand}HP`;
         sim.pitch = {
           typeKey: chosenKey,
-          name: isDemoHr ? '89 mph Centerpiece 4-Seam' : `${mph} mph ${spec.name}`,
+          name: isDemoHr ? `89 mph Centerpiece 4-Seam (${sourceTag})` : `${mph} mph ${spec.name} (${sourceTag})`,
           mph,
           pitchRpm,
-          spinAxisClock: spec.spinAxisClock,
-          spinAxisDeg: spec.spinAxisDeg,
+          spinAxisClock: traj.spinAxisClock,
+          spinAxisDeg: traj.spinAxisDeg,
           spinEff: spec.spinEff,
           ivbIn: spec.ivbIn,
-          hbIn: spec.hbIn,
+          hbIn: traj.hbIn,
           dur: traj.dur,
           samples: traj.samples,
           descendDeg: traj.descendDeg,
@@ -2458,7 +2957,9 @@
         };
         session.lastPitch = sim.pitch;
         if (swingBtn) swingBtn.textContent = 'SWING! (Space)';
-        if (pitchNote) pitchNote.textContent = `${sim.pitch.name} (${pitchRpm} rpm · ${spec.spinAxisClock}) · Watch the shrinking ring!`;
+        if (pitchNote) {
+          pitchNote.textContent = `${sim.pitch.name} (${pitchRpm} rpm · ${traj.spinAxisClock}) · vs ${batterHand}HB`;
+        }
       }
 
       function triggerSwingPress() {
@@ -2466,11 +2967,14 @@
         sim.swingTriggered = true;
         sim.swingPressT = sim.t;
         sim.swingT = 0;
+        sim.finishStyle = Math.random() < 0.52 ? 'one-hand' : 'two-hand';
       }
 
       function finalizeFlightTelemetry(fl) {
         if (!fl || fl.telemetryRevealed) return;
         fl.telemetryRevealed = true;
+        sim.rapAnimT = 0;
+        sim.rapZoneAnimT = 0;
         const rep = fl.pendingHitReport;
         if (!rep) return;
 
@@ -2515,6 +3019,8 @@
         if (sim.phase !== 'pitch' || sim.contactResolved || !sim.pitch) return;
         sim.contactResolved = true;
         const bat = BATS[activeBatId] || BATS['goods-2026'];
+        const hSign = batterHand === 'L' ? -1 : 1; // +1 = RHB, -1 = LHB
+        const hasPlatoonEdge = batterHand !== pitcherHand;
 
         const timingErr = (sim.swingPressT != null ? sim.swingPressT : sim.t) - 0.94;
         const absTime = Math.abs(timingErr);
@@ -2542,7 +3048,7 @@
         const underBallOffset = curPciY - sim.pitch.endY; // >0 = PCI below ball -> loft & backspin
         const distFromSweet = Math.hypot(dx * 0.88, underBallOffset * 0.96);
 
-        const maxReach = 0.98 * bat.sweetSpot;
+        const maxReach = 0.98 * bat.sweetSpot * (hasPlatoonEdge ? 1.04 : 0.98);
         if (absTime > 0.24 || distFromSweet > maxReach) {
           playBatAudio('whiff');
           sim.followThroughTimer = 0.3;
@@ -2562,42 +3068,51 @@
           return;
         }
 
-        // Physical Bat-Ball Collision: Barrels = Bombs / XBH! Squaring the inner sweet spot delivers 101-113 mph EV & true 24°-30° launch
+        // Refined MOI / COR Bat-Ball Physics:
+        // Low-MOI 1-piece SFX bats swing fastest; High-MOI X14 end-load Goods bats convert mass into peak EV; Wood punishes off-center miss hits sharply.
         const radialRatio = distFromSweet / maxReach;
-        const isTrueBarrel = radialRatio <= 0.38 && absTime <= 0.11;
-        const radialCurve = isTrueBarrel ? Math.max(0.92, 1 - radialRatio * 0.18) : Math.max(0.32, 1 - radialRatio * radialRatio * 0.68);
-        const timingCurve = absTime <= 0.08 ? 1.0 : Math.max(0.46, 1 - (absTime - 0.08) * 2.2);
-        const sweetSpotEff = radialCurve * timingCurve;
+        const isTrueBarrel = radialRatio <= 0.39 && absTime <= 0.11;
+        const sharpness = bat.taperSharpness || 1.0;
+        const radialCurve = isTrueBarrel
+          ? Math.max(0.92, 1 - radialRatio * 0.16)
+          : Math.max(0.28, 1 - Math.pow(radialRatio, 1.85) * 0.68 * sharpness);
+        const timingCurve = absTime <= 0.085 ? 1.0 : Math.max(0.44, 1 - (absTime - 0.085) * 2.25);
+        const sweetSpotEff = Math.max(0.2, radialCurve * timingCurve);
 
-        const swingMph = Number((sim.demoAutoSwing ? 82.0 : (73.0 + sweetSpotEff * 10.5) * bat.weightMod).toFixed(1));
-        const collisionQ = 0.214 * bat.popMod * (0.95 + 0.08 * sweetSpotEff);
-        const exitVelo = collisionQ * sim.pitch.mph + (1 + collisionQ) * swingMph * (0.81 + 0.23 * sweetSpotEff);
+        const swingMph = Number((sim.demoAutoSwing ? 82.0 * bat.weightMod : (73.5 + sweetSpotEff * 10.6) * bat.weightMod).toFixed(1));
+        const moiInertiaBoost = 1 + ((bat.moi || 1.0) - 1.0) * 0.12 * sweetSpotEff;
+        const collisionQ = (bat.cor || 0.5) * 0.425 * bat.popMod * (0.94 + 0.09 * sweetSpotEff);
+        const exitVelo = Math.min(
+          117.5,
+          collisionQ * sim.pitch.mph + (1 + collisionQ) * swingMph * moiInertiaBoost * (0.81 + 0.22 * sweetSpotEff)
+        );
         const smashFactor = Number((exitVelo / Math.max(55, swingMph)).toFixed(2));
-        const attackAngle = Math.round(isTrueBarrel ? 11 : 9 + Math.max(-4, Math.min(8, underBallOffset * 14)));
+        const attackAngle = Math.round((isTrueBarrel ? 11 : 9 + Math.max(-4, Math.min(8, underBallOffset * 14))) + (bat.launchLift || 0));
 
-        // Oblique Bat-Ball Gear Effect: attack angle (~ +11 deg) + vertical offset drives launch angle & backspin RPM
+        // Oblique Bat-Ball Gear Effect: attack angle + vertical offset + end-load loft drives launch angle & backspin RPM
         const pitchDesc = sim.pitch.descendDeg || -7.5;
         let launchDeg = sim.demoAutoSwing
-          ? 27
+          ? 27 + (bat.launchLift || 0) * 0.4
           : isTrueBarrel
-            ? 24 + Math.max(-4, Math.min(7, underBallOffset * 26)) + (Math.random() - 0.5) * 2.0
-            : 14.5 + underBallOffset * 42 - pitchDesc * 0.2 + (Math.random() - 0.5) * 2.4;
+            ? 24 + (bat.launchLift || 0) + Math.max(-4, Math.min(7, underBallOffset * 26)) + (Math.random() - 0.5) * 2.0
+            : 14.5 + (bat.launchLift || 0) * 0.6 + underBallOffset * 42 - pitchDesc * 0.2 + (Math.random() - 0.5) * 2.4;
         launchDeg = Math.max(-10, Math.min(56, launchDeg));
 
         const backspinRpm = sim.demoAutoSwing
           ? 2220
           : isTrueBarrel
-            ? Math.round(2050 + underBallOffset * 950)
+            ? Math.round(2060 + underBallOffset * 950)
             : Math.max(-1900, Math.min(3500, 1340 + underBallOffset * 2900 + (launchDeg - 15) * 26));
 
-        let sprayDeg = sim.demoAutoSwing ? -14 : timingErr * 148 + dx * 20;
+        // Handedness-accurate spray physics: RHB early timing pulls LF (-sprayDeg), LHB early timing pulls RF (+sprayDeg)!
+        let sprayDeg = sim.demoAutoSwing ? -14 * hSign : timingErr * 148 * hSign + dx * 20;
         if (isTrueBarrel && Math.abs(sprayDeg) > 36) sprayDeg = Math.sign(sprayDeg) * 34;
         if (absTime > 0.165) {
-          sprayDeg = timingErr < 0 ? -56 : 56;
+          sprayDeg = (timingErr < 0 ? -56 : 56) * hSign;
         }
         sprayDeg = Math.max(-68, Math.min(68, sprayDeg));
 
-        const sidespinRpm = Math.max(-1350, Math.min(1350, sprayDeg * 24 + dx * 420));
+        const sidespinRpm = Math.max(-1450, Math.min(1450, sprayDeg * 25 + dx * 420));
 
         const contactStart = {
           x: sim.pitch.endX * 0.88,
@@ -2613,7 +3128,8 @@
         playBatAudio(bat.id, sweetSpotEff, flight.isHr, activeStadiumId);
         sim.flashColor = flight.color;
 
-        const battedSpinAxisClock = Math.abs(sprayDeg) < 10 ? '12:00' : sprayDeg < 0 ? '11:30' : '12:30';
+        const battedSpinAxisClock =
+          Math.abs(sprayDeg) < 9 ? '12:00' : sprayDeg < 0 ? (sprayDeg < -24 ? '11:15' : '11:45') : sprayDeg > 24 ? '12:45' : '12:15';
         const pendingHitReport = {
           exitVelo: flight.exitVelo,
           launchAngle: flight.launchAngle,
@@ -2642,7 +3158,7 @@
         sim.phase = 'flight';
         sim.t = 0;
 
-        // Delayed Rapsodo Tracking State — NEVER spoil EV/Dist/Outcome until the ball finishes flying!
+        // Delayed Rapsodo Tracking State — stats reveal after ball lands/hits wall or net!
         sim.calloutText = '';
         sim.calloutSub = '';
         sim.calloutTimer = 0;
@@ -2701,6 +3217,13 @@
         pci.targetY = Math.max(-1.45, Math.min(1.45, pci.targetY));
         pci.x += (pci.targetX - pci.x) * Math.min(1, dt * 18);
         pci.y += (pci.targetY - pci.y) * Math.min(1, dt * 18);
+        sim.pciLiveX = pci.x;
+        sim.pciLiveY = pci.y;
+        sim.deliveryMode = activeDeliveryMode;
+        if (sim.umpCallTimer > 0) {
+          sim.umpCallTimer = Math.max(0, sim.umpCallTimer - dt);
+          if (sim.umpCallTimer === 0) sim.umpCall = '';
+        }
 
         const desiredCam = sim.phase === 'flight' ? 1 : 0;
         sim.camT += (desiredCam - sim.camT) * Math.min(1, dt * 5.2);
@@ -2710,7 +3233,7 @@
 
         // Advance State Machine & Compute 3D World Ball Positions
         if (sim.phase === 'windup') {
-          sim.t += dt / 0.42;
+          sim.t += dt / (activeDeliveryMode === 'machine' ? 0.16 : 0.42);
           if (sim.t >= 1) {
             sim.phase = 'pitch';
             sim.t = 0;
@@ -2759,10 +3282,12 @@
                 playBatAudio('mitt');
                 const isStrike = Math.abs(sim.pitch.endX) <= 1.05 && Math.abs(sim.pitch.endY) <= 1.05;
                 let call = isStrike ? 'Called Strike' : 'Ball';
+                let umpAction = isStrike ? 'strike' : 'ball';
                 if (isStrike) {
                   session.strikes++;
                   if (session.strikes >= 3) {
                     call = 'Called Strikeout!';
+                    umpAction = 'strikeout';
                     session.balls = 0;
                     session.strikes = 0;
                     session.outs = (session.outs + 1) % 3;
@@ -2775,6 +3300,8 @@
                     session.strikes = 0;
                   }
                 }
+                sim.umpCall = umpAction;
+                sim.umpCallTimer = 1.45;
                 sim.calloutText = call.toUpperCase();
                 sim.calloutSub = sim.pitch.name;
                 sim.calloutTimer = 1.25;
@@ -2828,6 +3355,21 @@
           sim.swingAngle = Math.min(0.95, sim.swingAngle + dt * 5.2);
         } else {
           sim.swingAngle += ((-0.42 + Math.sin(ts * 0.0022) * 0.028) - sim.swingAngle) * Math.min(1, dt * 8);
+        }
+
+        if (sim.rapAnimT < 1) {
+          sim.rapAnimT = Math.min(1, sim.rapAnimT + dt * 1.45);
+          if (activeTelemetryView !== 'zone') drawTelemetryCanvas();
+        }
+        if (sim.rapZoneAnimT < 1) {
+          sim.rapZoneAnimT = Math.min(1, sim.rapZoneAnimT + dt * 1.55);
+          if (activeTelemetryView === 'zone') drawTelemetryCanvas();
+        }
+        if (sim.phase === 'pitch' && activeTelemetryView === 'zone') {
+          drawTelemetryCanvas();
+        }
+        if (sim.phase === 'flight' && (activeTelemetryView === 'arc' || activeTelemetryView === 'spray')) {
+          drawTelemetryCanvas();
         }
 
         // Render True 3D Three.js Ballpark on #cage-canvas
@@ -3076,15 +3618,72 @@
         };
       }
 
+      function renderStadiumButtonsForTier(tierKey, selectedId) {
+        const tierIds = STADIUM_TIERS[tierKey] || STADIUM_TIERS.college;
+        activeStadiumTier = tierKey;
+        activeStadiumId = tierIds.includes(selectedId) ? selectedId : tierIds[0];
+
+        if (stadiumTierTabs) {
+          stadiumTierTabs.querySelectorAll('[data-tier]').forEach((b) => {
+            b.setAttribute('aria-pressed', String(b.dataset.tier === tierKey));
+          });
+        }
+        if (stadiumTabs) {
+          stadiumTabs.innerHTML = tierIds
+            .map((id) => {
+              const stSpec = STADIUMS[id];
+              return `<button type="button" class="segmented-btn" data-stadium="${escapeHtml(id)}" aria-pressed="${String(id === activeStadiumId)}">${escapeHtml(stSpec ? stSpec.shortName : id)}</button>`;
+            })
+            .join('');
+        }
+        if (engine3D) engine3D.setStadium(activeStadiumId);
+        drawSprayChart();
+      }
+
+      if (stadiumTierTabs) {
+        stadiumTierTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-tier]');
+          if (!btn) return;
+          cageEngaged = true;
+          const nextTier = btn.dataset.tier || 'college';
+          renderStadiumButtonsForTier(nextTier, activeStadiumId);
+          const activeSpec = STADIUMS[activeStadiumId];
+          if (pitchNote && activeSpec) {
+            pitchNote.textContent = `${activeSpec.dimsLabel} · Ready in ${nextTier.toUpperCase()} tier.`;
+          }
+        };
+      }
+
       if (stadiumTabs) {
         stadiumTabs.onclick = (e) => {
           const btn = e.target.closest('[data-stadium]');
           if (!btn) return;
           cageEngaged = true;
-          activeStadiumId = btn.dataset.stadium;
+          const nextId = btn.dataset.stadium;
+          if (!STADIUMS[nextId]) return;
+          activeStadiumId = nextId;
+          activeStadiumTier = STADIUMS[nextId].tier || activeStadiumTier;
           stadiumTabs.querySelectorAll('[data-stadium]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
           if (engine3D) engine3D.setStadium(activeStadiumId);
           drawSprayChart();
+        };
+      }
+
+      if (deliveryTabs) {
+        deliveryTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-delivery]');
+          if (!btn) return;
+          cageEngaged = true;
+          activeDeliveryMode = btn.dataset.delivery === 'machine' ? 'machine' : 'pitcher';
+          sim.deliveryMode = activeDeliveryMode;
+          deliveryTabs.querySelectorAll('[data-delivery]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (engine3D && engine3D.setDeliveryMode) engine3D.setDeliveryMode(activeDeliveryMode);
+          if (pitchNote) {
+            pitchNote.textContent =
+              activeDeliveryMode === 'machine'
+                ? 'Dual-wheel pitching machine active — steady release plane.'
+                : `Live ${pitcherHand}HP on the mound — windup & release active.`;
+          }
         };
       }
 
@@ -3108,6 +3707,32 @@
           sim.windVec = { x: wSpec.vx, y: wSpec.vy };
           windTabs.querySelectorAll('[data-wind]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
           if (pitchNote) pitchNote.textContent = `Wind set to ${wSpec.label} · RK4 physics updated.`;
+        };
+      }
+
+      if (batterHandTabs) {
+        batterHandTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-bhand]');
+          if (!btn) return;
+          cageEngaged = true;
+          batterHand = btn.dataset.bhand === 'L' ? 'L' : 'R';
+          batterHandTabs.querySelectorAll('[data-bhand]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (engine3D && engine3D.setBatterHand) engine3D.setBatterHand(batterHand);
+          drawTelemetryCanvas();
+          if (pitchNote) pitchNote.textContent = `Batter set to ${batterHand === 'L' ? 'Left-Handed (LHB)' : 'Right-Handed (RHB)'} · Pull & 3D box mirrored.`;
+        };
+      }
+
+      if (pitcherHandTabs) {
+        pitcherHandTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-phand]');
+          if (!btn) return;
+          cageEngaged = true;
+          pitcherHand = btn.dataset.phand === 'L' ? 'L' : 'R';
+          pitcherHandTabs.querySelectorAll('[data-phand]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (engine3D && engine3D.setPitcherHand) engine3D.setPitcherHand(pitcherHand);
+          drawTelemetryCanvas();
+          if (pitchNote) pitchNote.textContent = `Pitcher set to ${pitcherHand === 'L' ? 'Left-Handed (LHP)' : 'Right-Handed (RHP)'} · Release & horizontal break mirrored.`;
         };
       }
 
@@ -3194,6 +3819,7 @@
         };
       }
 
+      renderStadiumButtonsForTier(activeStadiumTier, activeStadiumId);
       updateBatDom();
       updateSessionDom();
       requestAnimationFrame(renderFrame);
@@ -3829,6 +4455,9 @@
     const aiSummary = document.getElementById('pb-ai-summary');
     const aiTipsWrap = document.getElementById('pb-ai-tips');
     const aiLinksWrap = document.getElementById('pb-ai-links');
+    const prefsCard = document.getElementById('playbook-prefs-card');
+    const prefsForm = document.getElementById('playbook-prefs-form');
+    const prefsFeedback = document.getElementById('pb-prefs-feedback');
 
     const loadAiProfile = async () => {
       if (!aiCard) return;
@@ -3837,9 +4466,17 @@
         const profile = data && data.profile;
         if (!profile) {
           aiCard.hidden = false;
-          if (aiKicker) aiKicker.textContent = 'New Feature · AI Player Checkup';
+          if (aiKicker) {
+            aiKicker.textContent = data && data.onboardingSkipped
+              ? 'Skipped Onboarding · Ready Anytime'
+              : 'New Feature · AI Player Checkup';
+          }
           if (aiHeading) aiHeading.textContent = 'Get Your Personal Swing & Fielding Plan';
-          if (aiSummary) aiSummary.textContent = 'Take our 1-minute AI quiz to get tailored fix tips, slow-mo video links, and a matched 3D cage bat.';
+          if (aiSummary) {
+            aiSummary.textContent = data && data.onboardingSkipped
+              ? 'You skipped the initial checkup quiz earlier. Take it whenever you want for custom slow-mo drills and cage bat recommendations, or chat with Coach Jax anytime.'
+              : 'Take our 1-minute AI quiz to get tailored fix tips, slow-mo video links, and a matched 3D cage bat.';
+          }
           if (aiTipsWrap) {
             aiTipsWrap.hidden = true;
             aiTipsWrap.innerHTML = '';
@@ -3873,6 +4510,7 @@
 
     if (!currentUser) {
       if (aiCard) aiCard.hidden = true;
+      if (prefsCard) prefsCard.hidden = true;
       if (loginNote) loginNote.hidden = false;
       if (userBadge) userBadge.hidden = true;
       if (entriesList) entriesList.innerHTML = '';
@@ -4097,6 +4735,73 @@
       };
     }
 
+    if (prefsCard && prefsForm) {
+      prefsCard.hidden = false;
+      const pUserEl = document.getElementById('pb-prof-username');
+      const pEmailEl = document.getElementById('pb-prof-email');
+      const pBatsEl = document.getElementById('pb-prof-bats');
+      const pThrowsEl = document.getElementById('pb-prof-throws');
+      const pStadiumEl = document.getElementById('pb-prof-stadium');
+      const pBatEl = document.getElementById('pb-prof-bat');
+      const pSaveBtn = document.getElementById('pb-prefs-save-btn');
+      const curPrefs = currentUser.preferences || {};
+
+      if (pUserEl) pUserEl.value = currentUser.username || '';
+      if (pEmailEl) pEmailEl.value = currentUser.email || '';
+      if (pBatsEl) pBatsEl.value = curPrefs.battingHand === 'L' ? 'L' : 'R';
+      if (pThrowsEl) pThrowsEl.value = curPrefs.throwingHand === 'L' ? 'L' : 'R';
+      if (pStadiumEl && curPrefs.preferredStadium) pStadiumEl.value = curPrefs.preferredStadium;
+      if (pBatEl && curPrefs.defaultBat) pBatEl.value = curPrefs.defaultBat;
+
+      prefsForm.onsubmit = async (e) => {
+        e.preventDefault();
+        setBanner(prefsFeedback, '', '');
+        const username = pUserEl ? pUserEl.value.trim() : undefined;
+        const email = pEmailEl ? pEmailEl.value.trim() : undefined;
+        const chosenStadium = pStadiumEl ? pStadiumEl.value : 'omaha';
+        const tierMap = {
+          fenway: 'pro', dodger: 'pro', oracle: 'pro', wrigley: 'pro', yankee: 'pro',
+          omaha: 'college', lsu: 'college', missst: 'college', vandy: 'college', texas: 'college',
+          'hs-central': 'hs', 'hs-oakridge': 'hs', 'hs-coastal': 'hs', 'hs-valley': 'hs', 'hs-metro': 'hs',
+          cage: 'cage'
+        };
+        const preferences = {
+          battingHand: pBatsEl && pBatsEl.value === 'L' ? 'L' : 'R',
+          throwingHand: pThrowsEl && pThrowsEl.value === 'L' ? 'L' : 'R',
+          preferredTier: tierMap[chosenStadium] || 'college',
+          preferredStadium: chosenStadium,
+          defaultBat: pBatEl ? pBatEl.value : 'goods-2026'
+        };
+        if (pSaveBtn) {
+          pSaveBtn.disabled = true;
+          pSaveBtn.classList.add('is-loading');
+          pSaveBtn.textContent = 'Saving...';
+        }
+        try {
+          const data = await api('/api/auth/profile', {
+            method: 'PUT',
+            body: JSON.stringify({ username, email, preferences })
+          });
+          if (data && data.user) {
+            currentUser = data.user;
+            if (userBadge) userBadge.textContent = `Signed in as ${currentUser.username}`;
+            savePrefs({ ...preferences, username: currentUser.username });
+            await syncAuthNav();
+          }
+          showToast('Account & training preferences saved!');
+          setBanner(prefsFeedback, 'success', 'Saved! Your home cage and Coach Jax context now use these defaults.');
+        } catch (err) {
+          setBanner(prefsFeedback, 'error', err.message || 'Could not update profile.');
+        } finally {
+          if (pSaveBtn) {
+            pSaveBtn.disabled = false;
+            pSaveBtn.classList.remove('is-loading');
+            pSaveBtn.textContent = 'Save Account Preferences';
+          }
+        }
+      };
+    }
+
     await Promise.all([loadEntries(), loadFavorites(), loadAiProfile()]);
   }
 
@@ -4158,7 +4863,7 @@
       regPassInput.addEventListener('input', updatePwStrength);
     }
 
-    // Interactive Auth Focus Quiz & Instant Coach Tips (on both Login & Register)
+    // Interactive Scored Baseball Login Quiz & Instant Coach Tips (on both Login & Register)
     const AUTH_FOCUS_GUIDE = {
       'hitting-power': {
         clinic: 'rolling-over',
@@ -4198,16 +4903,89 @@
       }
     };
 
+    const AUTH_MINI_QUESTIONS = [
+      {
+        id: 'mq1',
+        q: '1. High 92 mph fastball at the top of the zone: which bat path avoids weak pop-ups?',
+        options: [
+          { k: 'a', label: 'Match downward plane (+8°) & stay inside ball', correct: true },
+          { k: 'b', label: 'Drop back shoulder sharply (+25° steep uppercut)', correct: false }
+        ],
+        explain: 'Staying above/inside the high heater at +6° to +10° produces true backspin line drives instead of foul pop-ups.'
+      },
+      {
+        id: 'mq2',
+        q: '2. Why does a low-MOI 1-piece bat (Combat Spec-A1) differ from an end-loaded 2-piece?',
+        options: [
+          { k: 'a', label: 'Faster bat whip & wider sweet spot for late catch-up', correct: true },
+          { k: 'b', label: 'Heavier tip inertia with narrower wood-style sweet spot', correct: false }
+        ],
+        explain: 'Lower MOI swings faster for pitch recognition; end-loaded bats boost max exit velocity on squared barrels.'
+      },
+      {
+        id: 'mq3',
+        q: '3. Runners on 1st & 2nd, 0 outs, routine pop-up to shortstop. What rule applies?',
+        options: [
+          { k: 'a', label: 'Infield Fly Rule — batter is out immediately', correct: true },
+          { k: 'b', label: 'Must let the ball drop to turn an easy double play', correct: false }
+        ],
+        explain: 'With <2 outs and runners on 1st & 2nd (or loaded), Umpires call Infield Fly so defense cannot intentionally drop it.'
+      }
+    ];
+
     let selectedAuthFocus = 'hitting-power';
+    const miniAnswers = {};
     const focusOptsWrap = document.getElementById('auth-focus-options');
     const skillLevelEl = document.getElementById('auth-skill-level');
+    const miniQuizEl = document.getElementById('auth-mini-quiz');
+    const miniScoreEl = document.getElementById('auth-quiz-score');
     const tipsPreviewEl = document.getElementById('auth-instant-tips');
+
+    function renderAuthMiniQuiz() {
+      if (!miniQuizEl) return;
+      let correctCount = 0;
+      let answeredCount = 0;
+      AUTH_MINI_QUESTIONS.forEach((item) => {
+        const picked = miniAnswers[item.id];
+        if (picked) {
+          answeredCount++;
+          const opt = item.options.find((o) => o.k === picked);
+          if (opt && opt.correct) correctCount++;
+        }
+      });
+      if (miniScoreEl) {
+        miniScoreEl.textContent = answeredCount > 0 ? `${correctCount} / ${AUTH_MINI_QUESTIONS.length} Correct (${answeredCount}/3)` : '0 / 3 Scored';
+      }
+      miniQuizEl.innerHTML = AUTH_MINI_QUESTIONS.map((item) => {
+        const picked = miniAnswers[item.id];
+        const chosenOpt = picked ? item.options.find((o) => o.k === picked) : null;
+        const cardCls = chosenOpt ? (chosenOpt.correct ? ' is-correct' : ' is-wrong') : '';
+        return `
+          <div class="auth-mini-q${cardCls}">
+            <div class="auth-mini-q-title">${escapeHtml(item.q)}</div>
+            <div class="auth-mini-opts">
+              ${item.options
+                .map((opt) => {
+                  let cls = 'auth-mini-opt';
+                  if (picked === opt.k) cls += opt.correct ? ' is-right' : ' is-wrong';
+                  return `<button type="button" class="${cls}" data-mq="${item.id}" data-mk="${opt.k}" aria-pressed="${picked === opt.k}">${escapeHtml(opt.label)}</button>`;
+                })
+                .join('')}
+            </div>
+            ${chosenOpt ? `<div class="auth-mini-explain">${chosenOpt.correct ? 'Correct — ' : 'Coach Fix — '}${escapeHtml(item.explain)}</div>` : ''}
+          </div>`;
+      }).join('');
+    }
 
     function renderAuthTipsPreview() {
       const guide = AUTH_FOCUS_GUIDE[selectedAuthFocus] || AUTH_FOCUS_GUIDE['hitting-power'];
       const lvl = skillLevelEl ? skillLevelEl.value : 'Rec / Little League (Learning core skills)';
+      const score = AUTH_MINI_QUESTIONS.reduce((acc, q) => {
+        const opt = q.options.find((o) => o.k === miniAnswers[q.id]);
+        return acc + (opt && opt.correct ? 1 : 0);
+      }, 0);
       try {
-        localStorage.setItem('diamondiq_auth_focus', JSON.stringify({ focus: selectedAuthFocus, level: lvl }));
+        localStorage.setItem('diamondiq_auth_focus', JSON.stringify({ focus: selectedAuthFocus, level: lvl, loginQuizScore: score }));
       } catch {
         /* ignore */
       }
@@ -4218,8 +4996,21 @@
         <div style="margin-top:0.25rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
           <a href="training.html?clinic=${encodeURIComponent(guide.clinic)}&slow=1&bat=${encodeURIComponent(guide.bat)}#video-clinic-section" style="font-weight:700;font-size:0.8rem;">Watch Slow-Mo Tutorial &rarr;</a>
           <span style="color:var(--text-muted);">·</span>
-          <a href="index.html?bat=${encodeURIComponent(guide.bat)}#gameday-studio" style="font-weight:700;font-size:0.8rem;">Try in 3D Stadium &rarr;</a>
+          <a href="training.html#diagnostic-quiz-section" style="font-weight:700;font-size:0.8rem;">20-Q Flaw Quiz &rarr;</a>
+          <span style="color:var(--text-muted);">·</span>
+          <a href="index.html?bat=${encodeURIComponent(guide.bat)}#gameday-studio" style="font-weight:700;font-size:0.8rem;">Test Bat in 3D &rarr;</a>
         </div>`;
+    }
+
+    if (miniQuizEl) {
+      miniQuizEl.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-mq]');
+        if (!btn) return;
+        miniAnswers[btn.dataset.mq] = btn.dataset.mk;
+        renderAuthMiniQuiz();
+        renderAuthTipsPreview();
+      });
+      renderAuthMiniQuiz();
     }
 
     if (focusOptsWrap) {
@@ -4254,12 +5045,24 @@
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
       const errEl = document.getElementById('login-error');
+      const userEl = document.getElementById('login-user');
+      const rememberCheck = document.getElementById('login-remember');
       const openQuizCheck = document.getElementById('login-open-quiz');
       const submitBtn = document.getElementById('login-submit-btn') || loginForm.querySelector('button[type="submit"]');
+
+      const savedLocal = loadSavedPrefs();
+      if (userEl && savedLocal.rememberMe && savedLocal.username) {
+        userEl.value = savedLocal.username;
+        if (rememberCheck) rememberCheck.checked = true;
+      }
+      if (skillLevelEl && savedLocal.skillLevel) {
+        skillLevelEl.value = savedLocal.skillLevel;
+      }
+
       loginForm.onsubmit = async (e) => {
         e.preventDefault();
         setBanner(errEl, '', '');
-        const identifier = document.getElementById('login-user').value.trim();
+        const identifier = userEl ? userEl.value.trim() : '';
         const password = document.getElementById('login-pass').value;
         if (!identifier) {
           setBanner(errEl, 'error', 'Enter your username or email.');
@@ -4280,18 +5083,27 @@
             body: JSON.stringify({ identifier, password })
           });
           if (data && data.sessionToken) setStoredSessionToken(data.sessionToken);
-          const wantsQuiz = openQuizCheck ? openQuizCheck.checked : Boolean(data && data.needsOnboarding);
+          const wantsRemember = rememberCheck ? rememberCheck.checked : false;
+          savePrefs({
+            rememberMe: wantsRemember,
+            username: wantsRemember ? (data.user?.username || identifier) : '',
+            skillLevel: skillLevelEl ? skillLevelEl.value : '',
+            ...(data.user?.preferences || {})
+          });
+          const wantsQuiz = openQuizCheck ? openQuizCheck.checked : false;
           if (nextUrl) {
             window.location.href = nextUrl;
+          } else if (wantsQuiz || (data && data.needsOnboarding)) {
+            window.location.href = buildOnboardingUrl();
           } else {
-            window.location.href = wantsQuiz || (data && data.needsOnboarding) ? buildOnboardingUrl() : 'playbook.html';
+            window.location.href = 'playbook.html';
           }
         } catch (err) {
           setBanner(errEl, 'error', err.message);
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('is-loading');
-            submitBtn.textContent = 'Log In & Open Coaching Plan';
+            submitBtn.textContent = 'Log In & Continue';
           }
         }
       };
@@ -4300,6 +5112,10 @@
     const regForm = document.getElementById('register-form');
     if (regForm) {
       const errEl = document.getElementById('register-error');
+      const batsEl = document.getElementById('reg-bats');
+      const throwsEl = document.getElementById('reg-throws');
+      const rememberCheck = document.getElementById('reg-remember');
+      const regSkipQuiz = document.getElementById('reg-skip-quiz');
       const submitBtn = document.getElementById('reg-submit-btn') || regForm.querySelector('button[type="submit"]');
       regForm.onsubmit = async (e) => {
         e.preventDefault();
@@ -4307,6 +5123,12 @@
         const username = document.getElementById('reg-user').value.trim();
         const email = document.getElementById('reg-email').value.trim();
         const password = document.getElementById('reg-pass').value;
+        const guide = AUTH_FOCUS_GUIDE[selectedAuthFocus] || AUTH_FOCUS_GUIDE['hitting-power'];
+        const preferences = {
+          battingHand: batsEl && batsEl.value === 'L' ? 'L' : 'R',
+          throwingHand: throwsEl && throwsEl.value === 'L' ? 'L' : 'R',
+          defaultBat: guide.bat || 'goods-2026'
+        };
 
         if (!/^[a-zA-Z0-9_-]{3,30}$/.test(username)) {
           setBanner(errEl, 'error', 'Username must be 3–30 characters (letters, numbers, _ or -).');
@@ -4329,10 +5151,22 @@
         try {
           const data = await api('/api/auth/register', {
             method: 'POST',
-            body: JSON.stringify({ username, email, password })
+            body: JSON.stringify({ username, email, password, preferences })
           });
           if (data && data.sessionToken) setStoredSessionToken(data.sessionToken);
-          window.location.href = nextUrl || buildOnboardingUrl();
+          const wantsRemember = rememberCheck ? rememberCheck.checked : true;
+          savePrefs({
+            rememberMe: wantsRemember,
+            username: wantsRemember ? username : '',
+            skillLevel: skillLevelEl ? skillLevelEl.value : '',
+            ...preferences
+          });
+          if (regSkipQuiz && regSkipQuiz.checked) {
+            await api('/api/onboarding/skip', { method: 'POST' }).catch(() => {});
+            window.location.href = nextUrl || 'index.html';
+          } else {
+            window.location.href = nextUrl || buildOnboardingUrl();
+          }
         } catch (err) {
           setBanner(errEl, 'error', err.message);
           if (submitBtn) {
@@ -4342,6 +5176,247 @@
           }
         }
       };
+    }
+  }
+
+  /* =========================================================
+     Coach Jax — Global Conversational Baseball AI Drawer
+     ========================================================= */
+  function initCoachJaxWidget() {
+    if (document.getElementById('coach-jax-launcher')) return;
+
+    const launcher = document.createElement('button');
+    launcher.type = 'button';
+    launcher.id = 'coach-jax-launcher';
+    launcher.className = 'jax-launcher';
+    launcher.setAttribute('aria-haspopup', 'dialog');
+    launcher.setAttribute('aria-expanded', 'false');
+    launcher.innerHTML = `
+      <span class="jax-avatar" aria-hidden="true">JX</span>
+      <span>Ask Coach Jax</span>`;
+
+    const drawer = document.createElement('aside');
+    drawer.id = 'coach-jax-drawer';
+    drawer.className = 'jax-drawer';
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'false');
+    drawer.setAttribute('aria-labelledby', 'jax-drawer-title');
+    drawer.hidden = true;
+    drawer.innerHTML = `
+      <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
+      <div class="jax-drawer-head">
+        <div style="display:flex;align-items:center;gap:0.65rem;">
+          <span class="jax-avatar jax-avatar--lg" aria-hidden="true">JX</span>
+          <div>
+            <h2 id="jax-drawer-title" style="margin:0;font-size:1.05rem;">Coach Jax</h2>
+            <p style="margin:0;font-size:0.78rem;color:var(--text-secondary);">Hitting, Fielding &amp; Game IQ AI Coach</p>
+          </div>
+        </div>
+        <button type="button" id="jax-close-btn" class="btn btn-ghost btn-sm" aria-label="Close Coach Jax">Close</button>
+      </div>
+      <div class="jax-starter-chips" id="jax-starter-chips">
+        <button type="button" class="jax-chip" data-jax-q="I keep rolling over pull-side grounders. How do I fix my swing?">Fix Rollovers</button>
+        <button type="button" class="jax-chip" data-jax-q="I'm late on high inside fastballs (bat drag). What drill fixes it?">Fix Bat Drag</button>
+        <button type="button" class="jax-chip" data-jax-q="How do I stop taking banana routes on deep outfield fly balls?">Outfield Routes</button>
+        <button type="button" class="jax-chip" data-jax-q="What is the difference between Baum Bat Gold and 2026 The Goods?">Bat Fit Advice</button>
+      </div>
+      <div class="jax-messages" id="jax-messages" aria-live="polite"></div>
+      <form class="jax-input-row" id="jax-chat-form" novalidate>
+        <label class="sr-only" for="jax-chat-input">Ask Coach Jax a baseball question</label>
+        <input type="text" id="jax-chat-input" maxlength="1200" placeholder="Ask Coach Jax about swings, fielding, rules, or bats..." autocomplete="off" required>
+        <button type="submit" id="jax-send-btn" class="btn btn-primary btn-sm">Send</button>
+      </form>`;
+
+    document.body.appendChild(launcher);
+    document.body.appendChild(drawer);
+
+    const messagesEl = document.getElementById('jax-messages');
+    const chatForm = document.getElementById('jax-chat-form');
+    const chatInput = document.getElementById('jax-chat-input');
+    const sendBtn = document.getElementById('jax-send-btn');
+    const closeBtn = document.getElementById('jax-close-btn');
+    const chipsWrap = document.getElementById('jax-starter-chips');
+
+    const chatHistory = [
+      {
+        role: 'jax',
+        text: "Hey, I'm Coach Jax. Tell me what's feeling off at the plate, in the field, or with your pitch approach—and I'll give you straight fixes, slow-mo clinic links, and YouTube drill videos."
+      }
+    ];
+
+    function safeYouTubeHref(url) {
+      return typeof url === 'string' && url.startsWith('https://www.youtube.com/') ? url : '';
+    }
+
+    function safeLocalHref(url) {
+      return typeof url === 'string' && /^(training|detail|index|scenarios|compare|playbook|onboarding)\.html/.test(url) ? url : '';
+    }
+
+    function appendMessageBubble(msg) {
+      const wrap = document.createElement('div');
+      wrap.className = `jax-msg ${msg.role === 'user' ? 'jax-msg--user' : msg.isError ? 'jax-msg--error' : 'jax-msg--jax'}`;
+
+      const bodyP = document.createElement('p');
+      bodyP.className = 'jax-msg-text';
+      bodyP.textContent = msg.text;
+      wrap.appendChild(bodyP);
+
+      if (Array.isArray(msg.actionableTips) && msg.actionableTips.length) {
+        const ul = document.createElement('ul');
+        ul.className = 'jax-tips-list';
+        msg.actionableTips.forEach((tip) => {
+          const li = document.createElement('li');
+          li.textContent = tip;
+          ul.appendChild(li);
+        });
+        wrap.appendChild(ul);
+      }
+
+      const links = [];
+      (msg.videoLinks || []).forEach((v) => {
+        const href = safeLocalHref(v.url);
+        if (href) links.push({ label: `Video Lab: ${v.title}`, href, external: false });
+      });
+      (msg.recommendedScenarios || []).forEach((s) => {
+        const href = safeLocalHref(s.url);
+        if (href) links.push({ label: `Rule Lesson: ${s.title}`, href, external: false });
+      });
+      (msg.youtubeLinks || []).forEach((y) => {
+        const href = safeYouTubeHref(y.url);
+        if (href) links.push({ label: `YouTube: ${y.label}`, href, external: true });
+      });
+      if (msg.recommendedBatId && msg.recommendedBatName) {
+        links.push({
+          label: `Test ${msg.recommendedBatName.split(' (')[0]} in 3D`,
+          href: `index.html?bat=${encodeURIComponent(msg.recommendedBatId)}#gameday-studio`,
+          external: false
+        });
+      }
+
+      if (links.length) {
+        const linkRow = document.createElement('div');
+        linkRow.className = 'jax-links-row';
+        links.forEach((lnk) => {
+          const a = document.createElement('a');
+          a.className = 'jax-link-card';
+          a.href = lnk.href;
+          a.textContent = lnk.label;
+          if (lnk.external) {
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+          }
+          linkRow.appendChild(a);
+        });
+        wrap.appendChild(linkRow);
+      }
+
+      messagesEl.appendChild(wrap);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    appendMessageBubble(chatHistory[0]);
+
+    function openDrawer(prefillPrompt) {
+      drawer.hidden = false;
+      launcher.setAttribute('aria-expanded', 'true');
+      if (prefillPrompt && chatInput) {
+        chatInput.value = prefillPrompt;
+      }
+      if (chatInput) chatInput.focus();
+    }
+
+    function closeDrawer() {
+      drawer.hidden = true;
+      launcher.setAttribute('aria-expanded', 'false');
+    }
+
+    launcher.addEventListener('click', () => {
+      if (drawer.hidden) openDrawer();
+      else closeDrawer();
+    });
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
+    });
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-open-jax]');
+      if (trigger) {
+        openDrawer(trigger.dataset.jaxPrompt || '');
+      }
+    });
+
+    let sending = false;
+    async function sendJaxQuestion(text) {
+      const clean = String(text || '').trim();
+      if (!clean || sending) return;
+      sending = true;
+      if (chatInput) chatInput.value = '';
+      if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.textContent = '...';
+      }
+
+      const userMsg = { role: 'user', text: clean };
+      chatHistory.push(userMsg);
+      appendMessageBubble(userMsg);
+
+      const typingEl = document.createElement('div');
+      typingEl.className = 'jax-msg jax-msg--jax jax-msg--typing';
+      typingEl.textContent = 'Coach Jax is reviewing your mechanics...';
+      messagesEl.appendChild(typingEl);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      try {
+        const res = await api('/api/ai/jax', {
+          method: 'POST',
+          body: JSON.stringify({
+            message: clean,
+            history: chatHistory.slice(-10).map((m) => ({ role: m.role, text: m.text }))
+          })
+        });
+        typingEl.remove();
+        const jaxMsg = {
+          role: 'jax',
+          text: res.reply || 'Keep your hands inside the ball and drive cleanly through center field.',
+          actionableTips: res.actionableTips || [],
+          videoLinks: res.videoLinks || [],
+          recommendedScenarios: res.recommendedScenarios || [],
+          youtubeLinks: res.youtubeLinks || [],
+          recommendedBatId: res.recommendedBatId || '',
+          recommendedBatName: res.recommendedBatName || ''
+        };
+        chatHistory.push({ role: 'jax', text: jaxMsg.text });
+        appendMessageBubble(jaxMsg);
+      } catch (err) {
+        typingEl.remove();
+        appendMessageBubble({
+          role: 'jax',
+          isError: true,
+          text: err && err.message ? err.message : 'Coach Jax could not connect right now. Check server configuration and try again.'
+        });
+      } finally {
+        sending = false;
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send';
+        }
+        if (chatInput && !drawer.hidden) chatInput.focus();
+      }
+    }
+
+    if (chipsWrap) {
+      chipsWrap.addEventListener('click', (e) => {
+        const chip = e.target.closest('[data-jax-q]');
+        if (!chip) return;
+        sendJaxQuestion(chip.dataset.jaxQ);
+      });
+    }
+
+    if (chatForm) {
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (chatInput) sendJaxQuestion(chatInput.value);
+      });
     }
   }
 
@@ -4391,5 +5466,6 @@
     await initDetailPage();
     await initComparePage();
     await initPlaybookPage();
+    initCoachJaxWidget();
   });
 })();
