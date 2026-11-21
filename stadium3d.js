@@ -3860,7 +3860,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         const sail = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([
           new THREE.Vector3(0, 2, 0), new THREE.Vector3(0, 17, 0), new THREE.Vector3(0, 3, 9)
         ]), new THREE.MeshStandardMaterial({ color: '#e2e8f0', side: THREE.DoubleSide }));
-        sail.computeVertexNormals();
+        sail.geometry.computeVertexNormals();
         boat.add(hull, mast, sail);
         grp.add(boat);
       });

@@ -500,6 +500,10 @@ function createPostgresStore(connectionString) {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS google_uid TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_skipped BOOLEAN NOT NULL DEFAULT FALSE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences_json JSONB NOT NULL DEFAULT '{}'::jsonb;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS username_normalized TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS email_normalized TEXT;
+      UPDATE users SET username_normalized = LOWER(username) WHERE username_normalized IS NULL;
+      UPDATE users SET email_normalized = LOWER(email) WHERE email_normalized IS NULL;
       CREATE TABLE IF NOT EXISTS sessions (
         token TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -668,10 +672,21 @@ function createPostgresStore(connectionString) {
         throw err;
       }
       const res = await pool.query(
-        `INSERT INTO users (username, email, password_hash, auth_provider, onboarding_skipped, preferences_json)
-         VALUES ($1, $2, $3, $4, FALSE, $5)
+        `INSERT INTO users (
+           username, username_normalized, email, email_normalized,
+           password_hash, auth_provider, onboarding_skipped, preferences_json
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7)
          RETURNING id, username, email, auth_provider, onboarding_skipped, preferences_json, created_at`,
-        [cleanUser, normEmail, hashPassword(password), 'password', JSON.stringify(cleanPrefs)]
+        [
+          cleanUser,
+          cleanUser.toLowerCase(),
+          normEmail,
+          normEmail,
+          hashPassword(password),
+          'password',
+          JSON.stringify(cleanPrefs)
+        ]
       );
       const r = res.rows[0];
       return {
@@ -724,10 +739,20 @@ function createPostgresStore(connectionString) {
       }
       const uniqueUsername = await buildUniquePgUsername(displayName, normEmail);
       const res = await pool.query(
-        `INSERT INTO users (username, email, password_hash, auth_provider, google_uid, onboarding_skipped, preferences_json)
-         VALUES ($1, $2, $3, 'google', $4, FALSE, '{}'::jsonb)
+        `INSERT INTO users (
+           username, username_normalized, email, email_normalized,
+           password_hash, auth_provider, google_uid, onboarding_skipped, preferences_json
+         )
+         VALUES ($1, $2, $3, $4, $5, 'google', $6, FALSE, '{}'::jsonb)
          RETURNING id, username, email, auth_provider, onboarding_skipped, preferences_json, created_at`,
-        [uniqueUsername, normEmail, hashPassword(crypto.randomBytes(24).toString('hex')), uid]
+        [
+          uniqueUsername,
+          uniqueUsername.toLowerCase(),
+          normEmail,
+          normEmail,
+          hashPassword(crypto.randomBytes(24).toString('hex')),
+          uid
+        ]
       );
       const r = res.rows[0];
       return {
@@ -864,10 +889,12 @@ function createPostgresStore(connectionString) {
         ? sanitizePreferences({ ...(cur.preferences_json || {}), ...preferences })
         : sanitizePreferences(cur.preferences_json);
       const upd = await pool.query(
-        `UPDATE users SET username = $1, email = $2, preferences_json = $3
-         WHERE id = $4
+        `UPDATE users
+         SET username = $1, username_normalized = $2, email = $3, email_normalized = $4,
+             preferences_json = $5
+         WHERE id = $6
          RETURNING id, username, email, auth_provider, onboarding_skipped, preferences_json, created_at`,
-        [nextUsername, nextEmail, JSON.stringify(nextPrefs), userId]
+        [nextUsername, nextUsername.toLowerCase(), nextEmail, nextEmail, JSON.stringify(nextPrefs), userId]
       );
       const r = upd.rows[0];
       const opRes = await pool.query('SELECT 1 FROM onboarding_profiles WHERE user_id = $1', [userId]);
