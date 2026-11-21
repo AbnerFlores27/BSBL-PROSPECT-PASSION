@@ -60,68 +60,57 @@
   <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
-<main id="home" class="container">
-  <section class="hero-editorial hero-broadcast" aria-label="Welcome and Quick Scoreboard">
-    <div class="hero-copy-col">
-      <div>
-        <div class="kicker-line">MLB The Show Camera Views · True 120Hz RK4 Physics · Coach Jax AI</div>
-        <h1>Step into the box. Master every pitch &amp; play.</h1>
-        <p class="hero-lead">Face RHP, LHP, or Pitching Machine across 15 realistic Pro, College &amp; High School ballparks, track real cowhide-on-wood &amp; BBCOR bat acoustics, and get instant fixes from Coach Jax.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#gameday-studio" id="hero-open-hitlab">Step Into Broadcast Studio</a>
-          <button type="button" class="btn btn-secondary" data-open-jax data-jax-prompt="Give me a quick 3-step hitting & fielding checkup to start today's session.">Ask Coach Jax</button>
-          <a class="btn btn-secondary" href="training.html">Drill Videos &amp; 20-Q Quiz</a>
-          <a class="btn btn-secondary" href="scenarios.html">All 8 Game Plays</a>
-        </div>
-      </div>
-
-      <div class="hero-metrics" aria-label="DiamondIQ Scoreboard">
-        <div class="hero-metric">
-          <div class="score-label">Plays</div>
-          <div class="score-value">8</div>
-          <p class="score-note">Rules &amp; Statcast</p>
-        </div>
-        <div class="hero-metric">
-          <div class="score-label">Opening Day</div>
-          <div class="score-value" id="kpi-countdown">--</div>
-          <p class="score-note">2027 opener</p>
-        </div>
-        <div class="hero-metric">
-          <div class="score-label">Mastered</div>
-          <div class="score-value" id="kpi-mastered">0 / 8</div>
-          <p class="score-note">Trivia checks</p>
-        </div>
-        <div class="hero-metric">
-          <div class="score-label">Saved &amp; Notes</div>
-          <div class="score-value" id="kpi-saved-notes">0</div>
-          <p class="score-note" id="kpi-saved-sub"><a href="login.html">Log in</a> or <a href="register.html">Sign up</a></p>
-        </div>
+<main id="home" class="container container--home">
+  <section class="hero-compact" aria-label="Welcome and Quick Scoreboard">
+    <div class="hero-compact-copy">
+      <div class="kicker-line">MLB The Show Camera Views · 120Hz Wind &amp; Roll Physics · Coach Jax AI</div>
+      <h1>Step into the box. Own every pitch &amp; play.</h1>
+      <p class="hero-lead hero-lead--compact">15 distinct Pro, College &amp; HS ballparks, authentic Baum Wood, Goods &amp; Combat bat audio, real wind aerodynamics, and curated YouTube training.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-sm" href="#gameday-studio" id="hero-open-hitlab">Step Into 3D Studio</a>
+        <button type="button" class="btn btn-secondary btn-sm" data-open-jax data-jax-prompt="Give me a quick 3-step hitting & fielding checkup to start today's session.">Ask Coach Jax</button>
+        <a class="btn btn-secondary btn-sm" href="training.html">YouTube Drills &amp; 28-Q Quiz</a>
+        <a class="btn btn-ghost btn-sm" href="scenarios.html">All 8 Game Plays</a>
       </div>
     </div>
 
-    <div class="hero-visual-panel">
-      <img
-        src="/src/assets/images/baseball_stadium_scoreboard_1794855945361.jpg"
-        alt="Sunny baseball stadium field and scoreboard before the first pitch"
-        referrerpolicy="no-referrer"
-      >
-      <div class="hero-visual-scrim">
-        <div class="meta-line" style="color:rgb(186,214,255);margin-bottom:0.35rem;">
-          <span>Featured Breakdown</span>
-          <span aria-hidden="true">·</span>
-          <span>Live Diamond Walkthrough</span>
+    <aside class="hero-scoreboard-card" aria-label="DiamondIQ Live Scoreboard">
+      <div class="rgb-led-rail" aria-hidden="true"></div>
+      <div class="hero-scoreboard-inner">
+        <div class="hero-scoreboard-grid">
+          <div class="hero-metric hero-metric--compact">
+            <div class="score-label">Plays</div>
+            <div class="score-value">8</div>
+            <p class="score-note">Rules &amp; Statcast</p>
+          </div>
+          <div class="hero-metric hero-metric--compact">
+            <div class="score-label">Opening Day</div>
+            <div class="score-value" id="kpi-countdown">--</div>
+            <p class="score-note">2027 opener</p>
+          </div>
+          <div class="hero-metric hero-metric--compact">
+            <div class="score-label">Mastered</div>
+            <div class="score-value" id="kpi-mastered">0 / 8</div>
+            <p class="score-note">Trivia checks</p>
+          </div>
+          <div class="hero-metric hero-metric--compact">
+            <div class="score-label">Saved &amp; Notes</div>
+            <div class="score-value" id="kpi-saved-notes">0</div>
+            <p class="score-note" id="kpi-saved-sub"><a href="login.html">Log in</a> or <a href="register.html">Sign up</a></p>
+          </div>
         </div>
-        <h2>Force Out vs. Tag Out</h2>
-        <p>Step through real infield timing, relay angles, and why stepping on 2nd beats chasing the runner.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-          <a class="btn btn-primary btn-sm" href="#gameday-studio" id="hero-open-featured">Watch Play Diagram</a>
-          <a class="btn btn-secondary btn-sm" href="onboarding.html">Take AI Checkup</a>
+        <div class="hero-scoreboard-foot">
+          <span>Featured Play: <strong>Force Out vs. Tag Out</strong></span>
+          <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
+            <a class="btn btn-secondary btn-sm" href="#gameday-studio" id="hero-open-featured">Play Diagram</a>
+            <a class="btn btn-primary btn-sm" href="onboarding.html">AI Checkup</a>
+          </div>
         </div>
       </div>
-    </div>
+    </aside>
   </section>
 
-  <section id="gameday-studio" class="section-block gameday-studio" aria-labelledby="studio-heading">
+  <section id="gameday-studio" class="section-block section-block--studio-top gameday-studio" aria-labelledby="studio-heading">
     <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
     <div class="studio-topbar">
       <div>
@@ -168,7 +157,8 @@
                 <button type="button" class="segmented-btn" data-wind="calm" aria-pressed="true">Calm</button>
                 <button type="button" class="segmented-btn" data-wind="out10" aria-pressed="false">10 Out</button>
                 <button type="button" class="segmented-btn" data-wind="in12" aria-pressed="false">12 In</button>
-                <button type="button" class="segmented-btn" data-wind="cross8" aria-pressed="false">8 Cross</button>
+                <button type="button" class="segmented-btn" data-wind="cross8" aria-pressed="false">8 L&rarr;R</button>
+                <button type="button" class="segmented-btn" data-wind="cross12r" aria-pressed="false">12 R&rarr;L</button>
               </div>
             </div>
           </div>
@@ -349,7 +339,16 @@
                 <button type="button" id="test-bat-sound-btn" class="btn btn-secondary btn-sm">Hear Bat Sound</button>
               </div>
               <div id="bat-preview-svg" class="bat-preview-wrap" aria-hidden="true"></div>
-              <p id="bat-spec-desc">Pale ice-blue X14 Alloy barrel paired with black 1375 composite handle, red arrow/stencil graphics, notched black Tremor end cap, and deep damped thud.</p>
+              <div class="bat-zone-bar">
+                <div class="segmented-group" id="bat-zone-tabs" role="group" aria-label="Audition bat contact zone">
+                  <button type="button" class="segmented-btn" data-bzone="sweet" aria-pressed="true">Sweet Spot</button>
+                  <button type="button" class="segmented-btn" data-bzone="endcap" aria-pressed="false">End Cap</button>
+                  <button type="button" class="segmented-btn" data-bzone="jam" aria-pressed="false">Inside Jam</button>
+                  <button type="button" class="segmented-btn" data-bzone="glance" aria-pressed="false">Foul Glance</button>
+                </div>
+                <span class="bat-zone-note" id="bat-zone-note">Squared barrel · Peak exit velo &amp; clean signature ping/crack</span>
+              </div>
+              <p id="bat-spec-desc">Pale ice-blue X14 Alloy barrel paired with black 1375 composite handle, red arrow/stencil graphics, notched black Tremor end cap, and high-pitch X14 ping.</p>
             </div>
           </div>
 
@@ -375,7 +374,7 @@
 
             <div style="display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center;justify-content:space-between;">
               <a class="btn btn-secondary btn-sm" href="detail.html?id=launch-angle-exit-velo">Open Barrel Lesson</a>
-              <a class="btn btn-primary btn-sm" href="training.html#video-clinic-section">Fix Swing Flaws in Training Lab</a>
+              <a class="btn btn-primary btn-sm" href="training.html#video-clinic-section">Open YouTube Drill Library</a>
             </div>
           </div>
         </div>
@@ -441,13 +440,13 @@
       <div class="bento-side-stack">
         <article class="card explore-card">
           <div>
-            <div class="meta-line">8 Videos · 20-Q Diagnosis</div>
-            <h3>Training Lab &amp; Flaw Quiz</h3>
-            <p style="color:var(--text-secondary);margin-bottom:0;">Watch side-by-side swing &amp; fielding fix videos and get custom drills from the 20-question quiz.</p>
+            <div class="meta-line">YouTube Drills · 28-Q Baseline</div>
+            <h3>Training Lab &amp; Baseline Quiz</h3>
+            <p style="color:var(--text-secondary);margin-bottom:0;">Short, practical drill guides with real coaching videos on YouTube plus a 28-question get-to-know-you baseline profile.</p>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-            <a class="btn btn-primary btn-sm" href="training.html">Watch Drills</a>
-            <a class="btn btn-secondary btn-sm" href="training.html#diagnostic-quiz-section">Take 20-Q Quiz</a>
+            <a class="btn btn-primary btn-sm" href="training.html">YouTube Drills</a>
+            <a class="btn btn-secondary btn-sm" href="training.html#diagnostic-quiz-section">Take 28-Q Quiz</a>
           </div>
         </article>
 

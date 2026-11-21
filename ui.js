@@ -737,7 +737,7 @@
         name: '2026 DeMarini The Goods',
         shortLabel: 'GOODS',
         meta: '2-Piece Hybrid · Heavy End-Load · 2 5/8" Barrel',
-        desc: 'Pale ice-blue X14 Alloy barrel paired with black 1375 composite handle, red arrow/stencil graphics, notched black Tremor end cap, and deep damped thud.',
+        desc: 'Pale ice-blue X14 Alloy barrel paired with black 1375 composite handle, red arrow/stencil graphics, notched black Tremor end cap, and high-pitch X14 ping.',
         construction: '2pc',
         cuffColor: '#181a20',
         cuffTrim: '#334155',
@@ -764,7 +764,7 @@
         name: '2022 DeMarini The Goods',
         shortLabel: 'The GOODS',
         meta: 'Half+Half Hybrid · Classic End-Load · 2 5/8" Barrel',
-        desc: 'Brushed metallic chrome silver X14 Alloy barrel + matte black Paraflex composite handle with monochromatic black graphics and loud metallic ping-crack.',
+        desc: 'Brushed metallic chrome silver X14 Alloy barrel + matte black Paraflex composite handle with monochromatic black graphics and loud dual-mode NCAA ping.',
         construction: '2pc',
         cuffColor: '#18191e',
         cuffTrim: '#334155',
@@ -791,7 +791,7 @@
         name: 'Combat MFG Spec-A1 Rodeo',
         shortLabel: 'NOT MY FIRST RODEO!',
         meta: '1-Piece SFX Alloy · Balanced Whip · Crimson Grip',
-        desc: 'Vintage buttercream barrel & taper, crimson-red perforated grip & flared pommel, western bronco art ("Not My First Rodeo!"), and loud Combat thwack.',
+        desc: 'Vintage buttercream barrel & taper, crimson-red perforated grip & flared pommel, western bronco art ("Not My First Rodeo!"), and unmistakable 1-piece SFX metallic ping.',
         construction: '1pc',
         weightMod: 1.026,
         popMod: 1.022,
@@ -818,7 +818,7 @@
         name: 'Combat Spec-A1 Members Club Blue',
         shortLabel: 'Members Only',
         meta: '1-Piece Country Club Alloy · Ultra-Balanced · Widest Sweet Spot',
-        desc: 'Powder sky-blue 1-piece SFX barrel & handle with sky-blue grip, royal blue flared knob & end cap, gold pinstripes, and crisp alloy thwack.',
+        desc: 'Powder sky-blue 1-piece SFX barrel & handle with sky-blue grip, royal blue flared knob & end cap, gold pinstripes, and snappy high-pitched alloy ping.',
         construction: '1pc',
         weightMod: 1.032,
         popMod: 1.018,
@@ -1298,6 +1298,8 @@
     const countReadout = document.getElementById('count-readout');
 
     const testBatSoundBtn = document.getElementById('test-bat-sound-btn');
+    const batZoneTabs = document.getElementById('bat-zone-tabs');
+    const batZoneNote = document.getElementById('bat-zone-note');
 
     function renderBatSvg(bat) {
       const isWood = bat.id === 'baum-gold';
@@ -1398,10 +1400,18 @@
       const LOG_H = 450;
 
       const WIND_PRESETS = {
-        calm: { label: 'Calm 0 mph', vx: 0, vy: 0 },
-        out10: { label: '10 mph Out to CF', vx: 0, vy: 14.67 },
-        in12: { label: '12 mph In from CF', vx: 0, vy: -17.6 },
-        cross8: { label: '8 mph L->R Cross', vx: 11.73, vy: 2.0 }
+        calm: { label: 'Calm 0 mph', shortLabel: 'CALM 0', vx: 0, vy: 0, mph: 0 },
+        out10: { label: '10 mph Out to CF', shortLabel: '10 MPH OUT', vx: 0, vy: 14.67, mph: 10 },
+        in12: { label: '12 mph In from CF', shortLabel: '12 MPH IN', vx: 0, vy: -17.6, mph: 12 },
+        cross8: { label: '8 mph L->R Cross', shortLabel: '8 MPH L→R', vx: 11.73, vy: 2.0, mph: 8 },
+        cross12r: { label: '12 mph R->L Cross', shortLabel: '12 MPH R→L', vx: -17.6, vy: 1.5, mph: 12 }
+      };
+
+      const CONTACT_ZONE_META = {
+        sweet: 'Squared barrel · Peak exit velo & signature ping/crack',
+        endcap: 'Off end cap · Higher hollow toe pop & reduced transfer',
+        jam: 'Inside taper jam · Lower muted thud & handle feedback',
+        glance: 'Thin vertical edge · Sharp brief leather skim / foul tick'
       };
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -1421,6 +1431,7 @@
       let activeTelemetryView = 'spray'; // 'spray' | 'arc' | 'zone'
       let selectedPitchType = 'mix';
       let activeWindId = 'calm';
+      let activeContactZone = 'sweet';
       let batterHand = savedUserPrefs.battingHand === 'L' ? 'L' : 'R'; // 'R' | 'L'
       let pitcherHand = 'R'; // 'R' | 'L'
       let activeDeliveryMode = 'pitcher'; // 'pitcher' | 'machine'
@@ -1495,6 +1506,7 @@
         flashColor: '#38bdf8',
         impactBurstId: 0,
         impactPos: null,
+        lastExitVelo: 92,
         windVec: { x: 0, y: 0 },
         calloutText: '',
         calloutSub: '',
@@ -1665,15 +1677,20 @@
         return audioCtx;
       }
 
-      // Authentic Dry-Crack Bat Audio PCM Synthesis (powered by DiamondPhysics)
-      function getBatImpactBuffer(ctx, kind, barrelFactor) {
-        const sweetBucket = barrelFactor < 0.62 ? 'jam' : 'sweet';
-        const key = `${kind}:${sweetBucket}:v4`;
+      // Authentic 4-Zone Signature Bat Audio PCM Synthesis (powered by DiamondPhysics)
+      function getBatImpactBuffer(ctx, kind, barrelFactor, contactZone) {
+        const zone =
+          contactZone === 'jam' || contactZone === 'endcap' || contactZone === 'glance' || contactZone === 'sweet'
+            ? contactZone
+            : barrelFactor < 0.62
+              ? 'jam'
+              : 'sweet';
+        const key = `${kind}:${zone}:v5`;
         if (batSoundCache[key]) return batSoundCache[key];
 
         const sr = ctx.sampleRate;
         const chSamples = window.DiamondPhysics
-          ? window.DiamondPhysics.synthesizeBatImpactSamples(kind, sweetBucket, sr)
+          ? window.DiamondPhysics.synthesizeBatImpactSamples(kind, zone, sr)
           : new Float32Array(Math.floor(sr * 0.08));
         const buf = ctx.createBuffer(1, chSamples.length, sr);
         buf.getChannelData(0).set(chSamples);
@@ -1721,13 +1738,17 @@
         osc.stop(startTime + dur + 0.02);
       }
 
-      function playBatAudio(kind, barrelFactor = 0.85, isHr = false, stadiumId = activeStadiumId, forcePlay = false) {
+      function playBatAudio(kind, barrelFactor = 0.85, isHr = false, stadiumId = activeStadiumId, forcePlay = false, opts = {}) {
         if (!soundOn && !forcePlay) return;
         try {
           const ctx = ensureAudioBus();
           if (!ctx || !masterBus) return;
           const now = ctx.currentTime;
-          const power = Math.max(0.55, Math.min(1.08, 0.62 + barrelFactor * 0.44));
+          const zone = opts.contactZone || (barrelFactor < 0.62 ? 'jam' : 'sweet');
+          const ev = opts.exitVelo != null ? opts.exitVelo : zone === 'sweet' ? 102 : zone === 'endcap' ? 88 : zone === 'jam' ? 79 : 72;
+          const evNorm = Math.max(0, Math.min(1, (ev - 60) / 50));
+          const zoneGainMul = zone === 'glance' ? 0.68 : zone === 'jam' ? 0.86 : zone === 'endcap' ? 0.9 : 1.0;
+          const power = Math.max(0.5, Math.min(1.12, (0.58 + barrelFactor * 0.34 + evNorm * 0.2) * zoneGainMul));
           const convolver = stadiumId === 'cage' ? cageConvolver : stadiumConvolver;
 
           if (kind === 'whiff') {
@@ -1780,26 +1801,64 @@
             return;
           }
 
-          const buf = getBatImpactBuffer(ctx, kind, barrelFactor);
+          const buf = getBatImpactBuffer(ctx, kind, barrelFactor, zone);
           const src = ctx.createBufferSource();
           src.buffer = buf;
-          src.playbackRate.value = 0.985 + Math.random() * 0.03;
+          src.playbackRate.value = (0.985 + evNorm * 0.035) + (Math.random() - 0.5) * 0.015;
 
           const hitGain = ctx.createGain();
           hitGain.gain.value = power;
           src.connect(hitGain);
-          hitGain.connect(masterBus);
-          if (convolver) hitGain.connect(convolver);
+
+          if (typeof ctx.createStereoPanner === 'function' && opts.sprayDeg != null) {
+            const pan = ctx.createStereoPanner();
+            pan.pan.value = Math.max(-0.55, Math.min(0.55, opts.sprayDeg / 54));
+            hitGain.connect(pan);
+            pan.connect(masterBus);
+          } else {
+            hitGain.connect(masterBus);
+          }
+
+          if (convolver) {
+            const wetSend = ctx.createGain();
+            wetSend.gain.value = isHr ? 1.05 : zone === 'sweet' ? 0.85 : zone === 'glance' ? 0.35 : 0.62;
+            hitGain.connect(wetSend);
+            wetSend.connect(convolver);
+          }
           src.start(now);
         } catch {
           /* ignore */
         }
       }
 
+      function setActiveContactZone(zone) {
+        const resolved = CONTACT_ZONE_META[zone] ? zone : 'sweet';
+        activeContactZone = resolved;
+        if (batZoneTabs) {
+          batZoneTabs.querySelectorAll('[data-bzone]').forEach((b) => {
+            b.setAttribute('aria-pressed', String(b.dataset.bzone === resolved));
+          });
+        }
+        if (batZoneNote) batZoneNote.textContent = CONTACT_ZONE_META[resolved];
+        if (cageCanvas) cageCanvas.dataset.bzone = resolved;
+      }
+
+      if (batZoneTabs) {
+        batZoneTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-bzone]');
+          if (!btn) return;
+          cageEngaged = true;
+          setActiveContactZone(btn.dataset.bzone);
+          const barrelSim = activeContactZone === 'sweet' ? 0.94 : activeContactZone === 'endcap' ? 0.72 : activeContactZone === 'jam' ? 0.56 : 0.44;
+          playBatAudio(activeBatId, barrelSim, false, activeStadiumId, true, { contactZone: activeContactZone });
+        };
+      }
+
       if (testBatSoundBtn) {
         testBatSoundBtn.onclick = () => {
           cageEngaged = true;
-          playBatAudio(activeBatId, 0.94, false, activeStadiumId, true);
+          const barrelSim = activeContactZone === 'sweet' ? 0.94 : activeContactZone === 'endcap' ? 0.72 : activeContactZone === 'jam' ? 0.56 : 0.44;
+          playBatAudio(activeBatId, barrelSim, false, activeStadiumId, true, { contactZone: activeContactZone });
           testBatSoundBtn.classList.remove('is-ringing');
           void testBatSoundBtn.offsetWidth;
           testBatSoundBtn.classList.add('is-ringing');
@@ -2289,6 +2348,7 @@
       function precomputePitchTrajectory(mph, typeKey, endX, endY, isDemo, hand = pitcherHand, deliveryMode = activeDeliveryMode) {
         const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
         const spec = PITCH_TYPES[typeKey] || PITCH_TYPES.fastball;
+        const wind = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
         return window.DiamondPhysics.simulatePitchRK4({
           mph,
           spec,
@@ -2297,6 +2357,7 @@
           isDemo,
           hand,
           deliveryMode,
+          wind,
           airDensity: st.airDensity || 1.0
         });
       }
@@ -2315,9 +2376,11 @@
           : Math.round(spec.mphMin + Math.random() * (spec.mphMax - spec.mphMin));
         const pitchRpm = Math.round(spec.rpmMin + Math.random() * (spec.rpmMax - spec.rpmMin));
 
-        const endX = isDemoHr ? 0.03 : (Math.random() - 0.5) * 1.72;
-        const endY = isDemoHr ? 0.02 : (Math.random() - 0.5) * 1.62;
-        const traj = precomputePitchTrajectory(mph, chosenKey, endX, endY, isDemoHr, pitcherHand, activeDeliveryMode);
+        const aimX = isDemoHr ? 0.03 : (Math.random() - 0.5) * 1.72;
+        const aimY = isDemoHr ? 0.02 : (Math.random() - 0.5) * 1.62;
+        const traj = precomputePitchTrajectory(mph, chosenKey, aimX, aimY, isDemoHr, pitcherHand, activeDeliveryMode);
+        const endX = traj.plateEndX != null ? traj.plateEndX : aimX;
+        const endY = traj.plateEndY != null ? traj.plateEndY : aimY;
 
         sim.phase = 'windup';
         sim.t = 0;
@@ -2349,6 +2412,7 @@
           spinEff: spec.spinEff,
           ivbIn: spec.ivbIn,
           hbIn: traj.hbIn,
+          windDriftInX: traj.windDriftInX || 0,
           dur: traj.dur,
           samples: traj.samples,
           descendDeg: traj.descendDeg,
@@ -2358,7 +2422,10 @@
         session.lastPitch = sim.pitch;
         if (swingBtn) swingBtn.textContent = 'SWING! (Space)';
         if (pitchNote) {
-          pitchNote.textContent = `${sim.pitch.name} (${pitchRpm} rpm · ${traj.spinAxisClock}) · vs ${batterHand}HB`;
+          const wDriftTag = !isDemoHr && Math.abs(traj.windDriftInX || 0) >= 0.4
+            ? ` · Wind push ${traj.windDriftInX > 0 ? '+' : ''}${traj.windDriftInX}"`
+            : '';
+          pitchNote.textContent = `${sim.pitch.name} (${pitchRpm} rpm · ${traj.spinAxisClock})${wDriftTag} · vs ${batterHand}HB`;
         }
       }
 
@@ -2404,7 +2471,9 @@
           });
           if (session.sprays.length > 24) session.sprays.shift();
           sim.calloutText = fl.outcome;
-          sim.calloutSub = `${fl.dist} FT (${fl.carryDist} CARRY) · ${fl.exitVelo} MPH · SMASH ${rep.smashFactor}`;
+          const wDelta = fl.windCarryDeltaFt || 0;
+          const wTag = Math.abs(wDelta) >= 2 ? ` · ${wDelta > 0 ? '+' : ''}${wDelta} FT WIND` : '';
+          sim.calloutSub = `${fl.dist} FT (${fl.carryDist} CARRY${wTag}) · ${fl.exitVelo} MPH · SMASH ${rep.smashFactor}`;
         }
         sim.calloutTimer = 2.9;
 
@@ -2414,7 +2483,8 @@
         }
         if (pitchNote) {
           const spinWord = fl.backspinRpm >= 0 ? `${fl.backspinRpm} rpm backspin` : `${Math.abs(fl.backspinRpm)} rpm topspin`;
-          pitchNote.textContent = `${fl.outcome} — ${fl.dist} ft (${fl.carryDist} ft carry · ${fl.launchAngle}° · ${spinWord})`;
+          const wCarryTxt = Math.abs(fl.windCarryDeltaFt || 0) >= 2 ? ` · ${fl.windCarryDeltaFt > 0 ? '+' : ''}${fl.windCarryDeltaFt} ft wind` : '';
+          pitchNote.textContent = `${fl.outcome} — ${fl.dist} ft (${fl.carryDist} ft carry${wCarryTxt} · ${fl.launchAngle}° · ${spinWord})`;
         }
       }
 
@@ -2484,6 +2554,15 @@
         const timingCurve = absTime <= 0.085 ? 1.0 : Math.max(0.44, 1 - (absTime - 0.085) * 2.25);
         const sweetSpotEff = Math.max(0.2, radialCurve * timingCurve);
 
+        const contactZone = window.DiamondPhysics.classifyContactZone({
+          dx,
+          underBallOffset,
+          hSign,
+          radialRatio,
+          isTrueBarrel
+        });
+        setActiveContactZone(contactZone);
+
         const kin = window.DiamondPhysics.computeSwingKinematics({
           bat,
           pitchMph: sim.pitch.mph,
@@ -2508,10 +2587,15 @@
 
         sim.flashTimer = 1;
         sim.impactBurstId++;
+        sim.lastExitVelo = exitVelo;
         sim.impactPos = { x: contactStart.x, y: contactStart.z, z: -contactStart.y };
 
         const flight = simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg, backspinRpm, sidespinRpm, contactStart);
-        playBatAudio(bat.id, sweetSpotEff, flight.isHr, activeStadiumId);
+        playBatAudio(bat.id, sweetSpotEff, flight.isHr, activeStadiumId, false, {
+          contactZone,
+          exitVelo,
+          sprayDeg
+        });
         sim.flashColor = flight.color;
 
         const battedSpinAxisClock =
@@ -2765,6 +2849,12 @@
         // Render True 3D Three.js Ballpark on #cage-canvas
         if (engine3D) {
           engine3D.updateAndRender(sim, dt);
+          if (engine3D.getCameraInfo && cageCanvas) {
+            const ci = engine3D.getCameraInfo();
+            const fovStr = String(ci.fov);
+            if (cageCanvas.dataset.camFov !== fovStr) cageCanvas.dataset.camFov = fovStr;
+            if (cageCanvas.dataset.camMode !== ci.mode) cageCanvas.dataset.camMode = ci.mode;
+          }
         }
 
         // Draw Transparent Broadcast HUD Overlay on #pci-hud-canvas
@@ -2935,6 +3025,58 @@
           hctx.textAlign = 'right';
           hctx.fillText(`${st.name.toUpperCase()}`, LOG_W - 24, 30);
 
+          // Live Wind Compass + Speed Badge
+          if (st.id !== 'cage') {
+            const wSpec = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
+            const wMph = wSpec.mph || 0;
+            hctx.fillStyle = 'rgba(10, 18, 32, 0.78)';
+            hctx.fillRect(LOG_W - 190, 44, 176, 28);
+            hctx.strokeStyle = wMph > 0 ? 'rgba(56, 189, 248, 0.42)' : 'rgba(255, 255, 255, 0.14)';
+            hctx.lineWidth = 1;
+            hctx.strokeRect(LOG_W - 190, 44, 176, 28);
+
+            // Compass Circle
+            const cx = LOG_W - 172;
+            const cy = 58;
+            hctx.strokeStyle = 'rgba(148, 163, 184, 0.55)';
+            hctx.lineWidth = 1.2;
+            hctx.beginPath();
+            hctx.arc(cx, cy, 9, 0, Math.PI * 2);
+            hctx.stroke();
+
+            if (wMph > 0) {
+              // Compass arrow: (vx, -vy) on screen where -vy is UP (toward CF)
+              const ang = Math.atan2(-wSpec.vy, wSpec.vx);
+              hctx.save();
+              hctx.translate(cx, cy);
+              hctx.rotate(ang);
+              hctx.strokeStyle = '#38bdf8';
+              hctx.fillStyle = '#38bdf8';
+              hctx.lineWidth = 1.8;
+              hctx.beginPath();
+              hctx.moveTo(-6, 0);
+              hctx.lineTo(5, 0);
+              hctx.stroke();
+              hctx.beginPath();
+              hctx.moveTo(7, 0);
+              hctx.lineTo(2, -3.2);
+              hctx.lineTo(2, 3.2);
+              hctx.closePath();
+              hctx.fill();
+              hctx.restore();
+            } else {
+              hctx.fillStyle = '#94a3b8';
+              hctx.beginPath();
+              hctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
+              hctx.fill();
+            }
+
+            hctx.fillStyle = wMph > 0 ? '#7dd3fc' : '#cbd5e1';
+            hctx.font = '700 10px "IBM Plex Mono", monospace';
+            hctx.textAlign = 'right';
+            hctx.fillText(`WIND · ${wSpec.shortLabel || wSpec.label.toUpperCase()}`, LOG_W - 22, 61.5);
+          }
+
           // Broadcast Outcome Banner
           if (sim.calloutTimer > 0) {
             sim.calloutTimer = Math.max(0, sim.calloutTimer - dt);
@@ -3098,6 +3240,7 @@
           activeWindId = btn.dataset.wind;
           const wSpec = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
           sim.windVec = { x: wSpec.vx, y: wSpec.vy };
+          if (cageCanvas) cageCanvas.dataset.wind = activeWindId;
           windTabs.querySelectorAll('[data-wind]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
           if (pitchNote) pitchNote.textContent = `Wind set to ${wSpec.label} · RK4 physics updated.`;
         };
@@ -3228,6 +3371,8 @@
       }
 
       renderStadiumButtonsForTier(activeStadiumTier, activeStadiumId);
+      setActiveContactZone('sweet');
+      if (cageCanvas) cageCanvas.dataset.wind = activeWindId;
       updateBatDom();
       updateSessionDom();
       requestAnimationFrame(renderFrame);
@@ -4402,9 +4547,9 @@
         <strong>Coach AI Quick Tips (${escapeHtml(guide.title)}):</strong>
         <ul>${guide.tips.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
         <div style="margin-top:0.25rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-          <a href="training.html?clinic=${encodeURIComponent(guide.clinic)}&slow=1&bat=${encodeURIComponent(guide.bat)}#video-clinic-section" style="font-weight:700;font-size:0.8rem;">Watch Slow-Mo Tutorial &rarr;</a>
+          <a href="training.html?clinic=${encodeURIComponent(guide.clinic)}#video-clinic-section" style="font-weight:700;font-size:0.8rem;">Open YouTube Drill Guide &rarr;</a>
           <span style="color:var(--text-muted);">·</span>
-          <a href="training.html#diagnostic-quiz-section" style="font-weight:700;font-size:0.8rem;">20-Q Flaw Quiz &rarr;</a>
+          <a href="training.html#diagnostic-quiz-section" style="font-weight:700;font-size:0.8rem;">28-Q Baseline Quiz &rarr;</a>
           <span style="color:var(--text-muted);">·</span>
           <a href="index.html?bat=${encodeURIComponent(guide.bat)}#gameday-studio" style="font-weight:700;font-size:0.8rem;">Test Bat in 3D &rarr;</a>
         </div>`;
@@ -4617,21 +4762,22 @@
           <span class="jax-avatar jax-avatar--lg" aria-hidden="true">JX</span>
           <div>
             <h2 id="jax-drawer-title" style="margin:0;font-size:1.05rem;">Coach Jax</h2>
-            <p style="margin:0;font-size:0.78rem;color:var(--text-secondary);">Hitting, Fielding &amp; Game IQ AI Coach</p>
+            <p style="margin:0;font-size:0.78rem;color:var(--text-secondary);">Beginner &amp; Flaw-Fix Baseball Coach</p>
           </div>
         </div>
         <button type="button" id="jax-close-btn" class="btn btn-ghost btn-sm" aria-label="Close Coach Jax">Close</button>
       </div>
       <div class="jax-starter-chips" id="jax-starter-chips">
-        <button type="button" class="jax-chip" data-jax-q="I keep rolling over pull-side grounders. How do I fix my swing?">Fix Rollovers</button>
-        <button type="button" class="jax-chip" data-jax-q="I'm late on high inside fastballs (bat drag). What drill fixes it?">Fix Bat Drag</button>
-        <button type="button" class="jax-chip" data-jax-q="How do I stop taking banana routes on deep outfield fly balls?">Outfield Routes</button>
-        <button type="button" class="jax-chip" data-jax-q="What is the difference between Baum Bat Gold and 2026 The Goods?">Bat Fit Advice</button>
+        <button type="button" class="jax-chip" data-jax-q="I am a total beginner at baseball. What are the 3 simplest hitting & fielding things to start with?">Beginner Start</button>
+        <button type="button" class="jax-chip" data-jax-q="I keep rolling over pull-side grounders. How do I fix it cleanly?">Fix Rollovers</button>
+        <button type="button" class="jax-chip" data-jax-q="I feel late on fastballs and jam pitches off my hands (bat drag). What drill fixes it?">Fix Bat Drag</button>
+        <button type="button" class="jax-chip" data-jax-q="Give me a quick 10-minute infield glove-work and outfield drop-step routine.">Defense Basics</button>
+        <button type="button" class="jax-chip" data-jax-q="What is the difference between Baum Bat Gold, 2026 The Goods, and Combat Spec-A1?">Bat Fit Advice</button>
       </div>
       <div class="jax-messages" id="jax-messages" aria-live="polite"></div>
       <form class="jax-input-row" id="jax-chat-form" novalidate>
         <label class="sr-only" for="jax-chat-input">Ask Coach Jax a baseball question</label>
-        <input type="text" id="jax-chat-input" maxlength="1200" placeholder="Ask Coach Jax about swings, fielding, rules, or bats..." autocomplete="off" required>
+        <input type="text" id="jax-chat-input" maxlength="1200" placeholder="Ask Coach Jax about beginner basics, swing flaws, fielding, or bats..." autocomplete="off" required>
         <button type="submit" id="jax-send-btn" class="btn btn-primary btn-sm">Send</button>
       </form>`;
 
@@ -4648,7 +4794,7 @@
     const chatHistory = [
       {
         role: 'jax',
-        text: "Hey, I'm Coach Jax. Tell me what's feeling off at the plate, in the field, or with your pitch approach—and I'll give you straight fixes, slow-mo clinic links, and YouTube drill videos."
+        text: "Hey, I'm Coach Jax! Whether you're brand new to baseball or working through a swing/fielding flaw, tell me what's going on and I'll give you plain-English cues, short 10-minute drills, and real YouTube coaching clips."
       }
     ];
 
@@ -4683,7 +4829,7 @@
       const links = [];
       (msg.videoLinks || []).forEach((v) => {
         const href = safeLocalHref(v.url);
-        if (href) links.push({ label: `Video Lab: ${v.title}`, href, external: false });
+        if (href) links.push({ label: `Drill Guide: ${v.title}`, href, external: false });
       });
       (msg.recommendedScenarios || []).forEach((s) => {
         const href = safeLocalHref(s.url);
@@ -4727,8 +4873,9 @@
     function openDrawer(prefillPrompt) {
       drawer.hidden = false;
       launcher.setAttribute('aria-expanded', 'true');
-      if (prefillPrompt && chatInput) {
-        chatInput.value = prefillPrompt;
+      if (prefillPrompt) {
+        sendJaxQuestion(prefillPrompt);
+        return;
       }
       if (chatInput) chatInput.focus();
     }

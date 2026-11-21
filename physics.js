@@ -14,8 +14,28 @@
     calm: { label: 'Calm 0 mph', vx: 0, vy: 0 },
     out10: { label: '10 mph Out to CF', vx: 0, vy: 14.67 },
     in12: { label: '12 mph In from CF', vx: 0, vy: -17.6 },
-    cross8: { label: '8 mph L->R Cross', vx: 11.73, vy: 2.0 }
+    cross8: { label: '8 mph L->R Cross', vx: 11.73, vy: 2.0 },
+    cross12r: { label: '12 mph R->L Cross', vx: -17.6, vy: 1.5 }
   };
+
+  function classifyContactZone(params) {
+    const dx = params.dx || 0;
+    const underBallOffset = params.underBallOffset || 0;
+    const hSign = params.hSign || 1;
+    const radialRatio = params.radialRatio || 0;
+    const isTrueBarrel = Boolean(params.isTrueBarrel);
+
+    if (isTrueBarrel) return 'sweet';
+    // Thin vertical edge graze (pop-up under-cut or top-chopped foul skim)
+    if (Math.abs(underBallOffset) > 0.42 || (radialRatio > 0.72 && Math.abs(underBallOffset) > Math.abs(dx) * 1.15)) {
+      return 'glance';
+    }
+    // dx * hSign > 0 means pitch was closer to batter's body/hands (jam/taper); < 0 means off endcap/toe
+    const alongBarrel = dx * hSign;
+    if (alongBarrel > 0.22) return 'jam';
+    if (alongBarrel < -0.22) return 'endcap';
+    return 'sweet';
+  }
 
   function clamp(v, lo, hi) {
     return v < lo ? lo : v > hi ? hi : v;
@@ -624,6 +644,40 @@
     const reportEndX = outdoorProj ? outdoorProj.endX : last.x;
     const reportEndY = outdoorProj ? outdoorProj.endY : last.y;
 
+    let windCarryDeltaFt = 0;
+    if (Math.hypot(wind.vx || 0, wind.vy || 0) > 0.5 && !isCage) {
+      let cx = startPos.x || 0;
+      let cy = startPos.y != null ? startPos.y : 1.4;
+      let cz = Math.max(1.2, startPos.z != null ? startPos.z : 2.65);
+      let cvx = v0 * Math.cos(theta) * Math.sin(phi);
+      let cvy = v0 * Math.cos(theta) * Math.cos(phi);
+      let cvz = v0 * Math.sin(theta);
+      let cwx = (backspinRpm * 2 * Math.PI) / 60;
+      let cwz = -(sidespinRpm * 2 * Math.PI) / 60;
+      const cDt = 1 / 60;
+      for (let s = 0; s < 420; s++) {
+        const csp = Math.hypot(cvx, cvy, cvz);
+        if (csp < 0.5) break;
+        const spinM = Math.hypot(cwx, cwz);
+        const sFac = (0.12 * spinM) / csp;
+        const cCd = 0.326 + 0.148 * Math.min(0.48, sFac);
+        const cCl = sFac > 0.004 ? 0.94 / (2.36 + 0.42 / sFac) : 0;
+        const cDr = K * cCd * csp;
+        const cMg = spinM > 0.1 ? (K * cCl * csp) / spinM : 0;
+        cvx += (-cDr * cvx + cMg * (-cwz * cvy)) * cDt;
+        cvy += (-cDr * cvy + cMg * (cwz * cvx - cwx * cvz)) * cDt;
+        cvz += (-32.174 - cDr * cvz + cMg * (cwx * cvy)) * cDt;
+        cx += cvx * cDt;
+        cy += cvy * cDt;
+        cz += cvz * cDt;
+        cwx *= 1 - 0.06 * cDt;
+        cwz *= 1 - 0.06 * cDt;
+        if (cz <= 0.14 && cvz < 0) break;
+      }
+      const calmCarry = Math.round(Math.hypot(cx, cy));
+      windCarryDeltaFt = Math.round((carryDist != null ? carryDist : finalCarry) - calmCarry);
+    }
+
     let xbaNum = 0.08;
     if (fair) {
       if (reportIsHr) xbaNum = 0.99;
@@ -674,6 +728,7 @@
       points,
       dist: finalDist,
       carryDist: finalCarry,
+      windCarryDeltaFt,
       apex: finalApex,
       apexTime,
       apexPos,
@@ -709,7 +764,7 @@
     };
   }
 
-  // True 120Hz RK4 Pitched Baseball Aerodynamics (Pitcher Mound RHP/LHP or Dual-Wheel Machine)
+  // True 120Hz RK4 Pitched Baseball Aerodynamics (Pitcher Mound RHP/LHP or Dual-Wheel Machine + Real Stadium Wind)
   function simulatePitchRK4(params) {
     const mph = params.mph || 90;
     const spec = params.spec || { magX: 7.0, magY: 16.5, hbIn: 11, spinAxisDeg: 25, spinAxisClock: '1:00' };
@@ -719,6 +774,7 @@
     const hand = params.hand || 'R';
     const deliveryMode = params.deliveryMode || 'pitcher';
     const airDensity = params.airDensity || 1.0;
+    const wind = isDemo || !params.wind ? { vx: 0, vy: 0 } : params.wind;
 
     const isMachine = deliveryMode === 'machine';
     const pSign = hand === 'L' ? -1 : 1;
@@ -733,14 +789,14 @@
     const startY = isMachine ? 3.85 : 6.12;
     const startZ = isMachine ? -54.5 : -55.0; // ft from home plate
 
-    // Solve initial aim vector with air drag + gravity + Magnus using quick 2-pass shooting so RK4 passes squarely through (targetX, targetY, 0)
+    // Solve release aim under calm air, then integrate final trajectory WITH active stadium wind so cross/head/tail winds genuinely move the pitch!
     const Kdrag = 0.00535 * 0.34 * airDensity;
     const flightTimeEst = isDemo ? 0.68 : clamp(57.2 / speedFtS, 0.44, 0.78);
     let vx0 = (targetX - startX - 0.5 * magX * flightTimeEst * flightTimeEst) / flightTimeEst;
     let vy0 = (targetY - startY - 0.5 * (-32.174 + magY) * flightTimeEst * flightTimeEst) / flightTimeEst;
     let vz0 = (0 - startZ) / flightTimeEst + 0.5 * Kdrag * speedFtS * (0 - startZ);
 
-    function integrate(ivx, ivy, ivz, dt, maxZ) {
+    function integrate(ivx, ivy, ivz, dt, maxZ, windVx, windVy) {
       let x = startX;
       let y = startY;
       let z = startZ;
@@ -749,19 +805,25 @@
       let vz = ivz;
       let t = 0;
       const pts = [{ x, y, z, t: 0 }];
+      // In 3D world, pitch travels +Z toward home plate; +wind.vy points out toward CF (-Z world)
       const deriv = (cvx, cvy, cvz) => {
-        const sp = Math.hypot(cvx, cvy, cvz);
+        const rvx = cvx - windVx;
+        const rvy = cvy;
+        const rvz = cvz + windVy;
+        const sp = Math.hypot(rvx, rvy, rvz);
         const drag = Kdrag * sp;
         return {
-          ax: -drag * cvx + magX,
-          ay: -drag * cvy - 32.174 + magY,
-          az: -drag * cvz
+          ax: -drag * rvx + magX,
+          ay: -drag * rvy - 32.174 + magY,
+          az: -drag * rvz
         };
       };
       let plateVz = vz;
       let plateVy = vy;
       let plateT = flightTimeEst;
-      for (let i = 0; i < 160; i++) {
+      let plateX;
+      let plateY;
+      for (let i = 0; i < 180; i++) {
         const k1 = deriv(vx, vy, vz);
         const k2 = deriv(vx + 0.5 * dt * k1.ax, vy + 0.5 * dt * k1.ay, vz + 0.5 * dt * k1.az);
         const k3 = deriv(vx + 0.5 * dt * k2.ax, vy + 0.5 * dt * k2.ay, vz + 0.5 * dt * k2.az);
@@ -781,8 +843,8 @@
           plateT = t - dt + frac * dt;
           plateVy = vy;
           plateVz = vz;
-          var plateX = prevX + (x - prevX) * frac;
-          var plateY = prevY + (y - prevY) * frac;
+          plateX = prevX + (x - prevX) * frac;
+          plateY = prevY + (y - prevY) * frac;
         }
         pts.push({ x, y: Math.max(0.32, y), z, t });
         if (z >= maxZ) break;
@@ -791,19 +853,20 @@
     }
 
     const dt = 1 / 120;
-    // 2 shooting iterations to calibrate exact aim to PCI target
     for (let iter = 0; iter < 2; iter++) {
-      const probe = integrate(vx0, vy0, vz0, dt, 0.2);
+      const probe = integrate(vx0, vy0, vz0, dt, 0.2, 0, 0);
       const errX = targetX - probe.plateX;
       const errY = targetY - probe.plateY;
       vx0 += errX / Math.max(0.25, probe.plateT);
       vy0 += errY / Math.max(0.25, probe.plateT);
     }
 
-    const finalRun = integrate(vx0, vy0, vz0, dt, 3.4);
+    // Apply amplified crosswind drift (~1.5x subtle aerodynamic curve amplification so 12 mph winds are palpably felt at plate without wild misses)
+    const windVx = (wind.vx || 0) * 1.45;
+    const windVy = (wind.vy || 0) * 1.25;
+    const finalRun = integrate(vx0, vy0, vz0, dt, 3.4, windVx, windVy);
     const dur = finalRun.plateT;
 
-    // Resample uniformly onto 61 progress frames (0 .. 1.06 of dur) matching 3D engine contract
     const samples = [];
     const steps = 60;
     const pts = finalRun.pts;
@@ -822,11 +885,18 @@
       });
     }
 
+    const plateEndX = clamp(finalRun.plateX / 0.88, -1.5, 1.5);
+    const plateEndY = clamp(2.65 - finalRun.plateY, -1.5, 1.5);
+
     return {
       dur,
       samples,
-      targetX,
-      targetY,
+      targetX: finalRun.plateX,
+      targetY: finalRun.plateY,
+      plateEndX,
+      plateEndY,
+      windDriftInX: Number(((finalRun.plateX - targetX) * 12).toFixed(1)),
+      windDriftInY: Number(((finalRun.plateY - targetY) * 12).toFixed(1)),
       hbIn: Number((spec.hbIn * pSign * (isMachine ? 0.52 : 1)).toFixed(1)),
       spinAxisDeg: pSign === 1 ? spec.spinAxisDeg : (360 - spec.spinAxisDeg) % 360,
       spinAxisClock: pSign === 1 ? spec.spinAxisClock : mirrorClockLabel(spec.spinAxisClock),
@@ -834,103 +904,140 @@
     };
   }
 
-  // Authentic Dry-Crack Bat Audio Waveform Synthesis:
-  // Eliminates plastic 1.18kHz wood resonances and hollow "metal pipe" long sines.
-  // Real wood: sub-ms Hertzian shock + dry wide maple crack + ultra-short grain slam (zero plastic pitch!).
-  // Real BBCOR alloy/hybrid: heavy compressed leather THWACK + tightly damped asymmetric barrel shell bite (<55-120ms)!
-  function synthesizeBatImpactSamples(kind, sweetBucket, sr) {
-    const isOffCenter = sweetBucket === 'jam';
+  // Authentic Signature Bat Acoustic Synthesis (Each Bat + 4 Contact Zones Unmistakably Distinct):
+  // - Baum Bat Gold: Iconic pro wood crack — dry crisp maple/composite SNAP, zero metallic ping!
+  // - 2022 The Goods: Iconic college baseball dual-mode high-pitched X14 alloy shimmer PING (~2380/2406Hz + 3520Hz)
+  // - 2026 The Goods: Ultra-crisp high-pitch X14 PING (~2840Hz + 3960Hz) with tighter composite-damped decay
+  // - Combat Spec-A1 Rodeo: 1-piece SFX shotgun punch + bright metallic PING (~2540Hz + 3620Hz + 1680Hz)
+  // - Combat Members Club Blue: Snappier brighter 1-piece PING (~2690Hz + 3840Hz + 1820Hz)
+  function synthesizeBatImpactSamples(kind, contactZone, sr) {
+    const zone = contactZone === 'jam' || contactZone === 'endcap' || contactZone === 'glance' ? contactZone : 'sweet';
+    const isJam = zone === 'jam';
+    const isEndcap = zone === 'endcap';
+    const isGlance = zone === 'glance';
+
     const isWood = kind === 'baum-gold' || kind === 'wood';
     const isGoods22 = kind === 'goods-2022' || kind === 'hybrid';
     const isGoods26 = kind === 'goods-2026';
     const isCombatBlue = kind === 'combat-blue';
 
-    const durSec = isGoods22 ? 0.145 : isGoods26 ? 0.085 : isWood ? 0.048 : 0.105;
+    const baseDur = isWood ? 0.058 : isGoods22 ? 0.25 : isGoods26 ? 0.19 : isCombatBlue ? 0.22 : 0.21;
+    const durSec = isGlance ? 0.046 : isJam ? (isWood ? 0.065 : 0.145) : baseDur;
     const len = Math.floor(sr * durSec);
     const ch = new Float32Array(len);
-    const rnd = makeSeededRand(kind.length * 9137 + (isOffCenter ? 99 : 42));
-    const fScale = isOffCenter ? 0.91 : 1.0;
+    const zoneSeed = isGlance ? 401 : isEndcap ? 271 : isJam ? 99 : 42;
+    const rnd = makeSeededRand(kind.length * 9137 + zoneSeed);
 
-    // Wide, natural acoustic filters — NO high-Q plastic bandpass!
-    const bpThump = makeBiquadBP(isOffCenter ? 240 : 320, 0.65, sr);
-    const bpCrackMid = makeBiquadBP(isOffCenter ? 1150 : 1480, 0.62, sr);
-    const bpCrackHi = makeBiquadBP(isOffCenter ? 2600 : 3650, 0.58, sr);
-    const lpAir = makeBiquadLP(isWood ? 6800 : 7600, 0.7, sr);
+    const fScale = isEndcap ? 1.14 : isJam ? 0.86 : isGlance ? 1.28 : 1.0;
+
+    const bpThump = makeBiquadBP(isJam ? 210 : isEndcap ? 420 : isGlance ? 640 : isWood ? 380 : 290, 0.72, sr);
+    const bpCrackMid = makeBiquadBP(isJam ? 920 : isEndcap ? 1850 : isGlance ? 2500 : isWood ? 1580 : 1380, 0.7, sr);
+    const bpCrackHi = makeBiquadBP(isJam ? 1950 : isEndcap ? 4100 : isGlance ? 5600 : isWood ? 3100 : 3450, 0.65, sr);
+    const lpAir = makeBiquadLP(isJam ? 3200 : isGlance ? 9000 : isWood ? 6200 : 7800, 0.7, sr);
 
     for (let i = 0; i < len; i++) {
       const t = i / sr;
 
-      // 1. Sub-millisecond Hertzian cowhide-on-barrel compression transient (~0.42ms front edge)
+      // 1. Sub-millisecond ball-on-barrel compression impulse
       let hertz = 0;
+      const hAmp = isGlance ? 0.55 : isJam ? 0.72 : isEndcap ? 0.92 : isWood ? 1.35 : 0.98;
       if (t < 0.00042) {
-        const u = t / 0.00042;
-        hertz = Math.sin(u * Math.PI) * 1.45;
+        hertz = Math.sin((t / 0.00042) * Math.PI) * hAmp;
       } else if (t < 0.0009) {
-        const u = (t - 0.00042) / 0.00048;
-        hertz = -Math.sin(u * Math.PI) * 0.48;
+        hertz = -Math.sin(((t - 0.00042) / 0.00048) * Math.PI) * (hAmp * 0.34);
+      }
+      if (isGlance && t >= 0.0024 && t < 0.0031) {
+        hertz += Math.sin(((t - 0.0024) / 0.0007) * Math.PI) * 0.55;
       }
 
-      // 2. Wide broadband percussive air & cowhide crack (no narrow tonal plastic honk!)
+      // 2. Percussive cowhide crack & wood grain vs metal impact body
       const raw = rnd();
-      const thump = bpThump(raw) * Math.exp(-t * 165);
-      const crackMid = bpCrackMid(raw) * Math.exp(-t * (isWood ? 235 : 195));
-      const crackHi = bpCrackHi(raw) * Math.exp(-t * (isWood ? 310 : 270));
-      const grainFloor = lpAir(raw) * Math.exp(-t * (isWood ? 390 : 340)) * 0.42;
+      const thump = bpThump(raw) * Math.exp(-t * (isGlance ? 340 : 175));
+      const crackMid = bpCrackMid(raw) * Math.exp(-t * (isWood || isGlance ? 235 : 210));
+      const crackHi = bpCrackHi(raw) * Math.exp(-t * (isGlance ? 210 : isWood ? 290 : 280));
+      const grainFloor = lpAir(raw) * Math.exp(-t * (isGlance ? 460 : isWood ? 350 : 340)) * 0.32;
 
-      const leatherCrack = hertz + thump * 1.55 + crackMid * 2.15 + crackHi * 2.45 + grainFloor;
-      const modeIn = 1 - Math.exp(-t * 2400);
+      const thumpW = isGlance ? 0.35 : isJam ? 1.8 : isEndcap ? 0.82 : isWood ? 1.4 : 1.05;
+      const midW = isGlance ? 1.05 : isJam ? 0.95 : isEndcap ? 1.55 : isWood ? 2.45 : 1.4;
+      const hiW = isGlance ? 2.45 : isJam ? 0.55 : isEndcap ? 1.75 : isWood ? 2.1 : 1.5;
+      const leatherCrack = hertz + thump * thumpW + crackMid * midW + crackHi * hiW + grainFloor;
+      const modeIn = 1 - Math.exp(-t * 2800);
 
       let sample = 0;
-      if (isWood) {
-        // Real Pro Maple / Baum Composite: Pure dry gunshot CRACK (~22ms decay), zero metallic/plastic overtones.
-        // Only minor damped 172Hz/520Hz wood bending clunk when jammed near the taper!
-        if (isOffCenter) {
-          const jamThud = Math.sin(2 * Math.PI * 172 * t) * Math.exp(-t * 110) * 0.22 +
-                          Math.sin(2 * Math.PI * 525 * t) * Math.exp(-t * 145) * 0.14;
-          sample = hertz * 0.8 + thump * 1.7 + crackMid * 1.25 + crackHi * 0.9 + jamThud;
+      if (isGlance) {
+        // Grazing cowhide skim off top/bottom edge: sharp brief tick/zip with light metal whisper on BBCOR bats
+        const glancePing = !isWood
+          ? Math.sin(2 * Math.PI * (3450 * (isGoods26 ? 1.12 : 1.0)) * t) * Math.exp(-t * 125) * 0.22
+          : Math.sin(2 * Math.PI * 1650 * t) * Math.exp(-t * 230) * 0.08;
+        sample = leatherCrack + glancePing;
+      } else if (isWood) {
+        // ICONIC REAL WOOD CRACK (Baum Bat Gold): ZERO metallic ping — pure crisp dense maple snap + grain body!
+        if (isJam) {
+          const jamThud =
+            Math.sin(2 * Math.PI * 162 * t) * Math.exp(-t * 105) * 0.42 +
+            Math.sin(2 * Math.PI * 435 * t) * Math.exp(-t * 135) * 0.24;
+          sample = leatherCrack * 0.9 + jamThud;
+        } else if (isEndcap) {
+          const cupKnock =
+            Math.sin(2 * Math.PI * 695 * t) * Math.exp(-t * 175) * 0.32 +
+            Math.sin(2 * Math.PI * 1310 * t) * Math.exp(-t * 215) * 0.16;
+          sample = leatherCrack * 1.05 + cupKnock;
         } else {
-          // Slight super-fast damped wood grain body knock (28ms decay)
-          const grainKnock = Math.sin(2 * Math.PI * 395 * t) * Math.exp(-t * 180) * 0.08;
-          sample = leatherCrack * 1.15 + crackHi * 0.55 + grainKnock;
+          // Iconic pro wood crack: solid 440Hz maple knock + crisp dry transient snap
+          const woodBody =
+            Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 155) * 0.36 +
+            Math.sin(2 * Math.PI * 890 * t) * Math.exp(-t * 195) * 0.18;
+          sample = leatherCrack * 1.15 + woodBody;
         }
       } else if (isGoods26) {
-        // 2026 DeMarini The Goods: Massive dry composite-stiff THWACK + ultra-short high barrel bite (only ~45ms!)
-        const shimmer =
-          (Math.sin(2 * Math.PI * (2095 * fScale) * t) * Math.exp(-t * 78) * 0.085 +
-            Math.sin(2 * Math.PI * (2760 * fScale) * t) * Math.exp(-t * 92) * 0.055) *
-          (0.85 + 0.15 * raw);
-        sample = leatherCrack + modeIn * shimmer;
+        // 2026 THE GOODS: Unmistakable high-pitch X14 Alloy PING! (2840 Hz + 3960 Hz + 5120 Hz)
+        const amp = isJam ? 0.16 : isEndcap ? 1.18 : 1.0;
+        const dec = isJam ? 2.8 : isEndcap ? 1.15 : 1.0;
+        const ping =
+          Math.sin(2 * Math.PI * (2840 * fScale) * t) * Math.exp(-t * 21 * dec) * (0.62 * amp) +
+          Math.sin(2 * Math.PI * (3960 * fScale) * t) * Math.exp(-t * 26 * dec) * (0.42 * amp) +
+          Math.sin(2 * Math.PI * (5120 * fScale) * t) * Math.exp(-t * 36 * dec) * (0.20 * amp);
+        sample = leatherCrack * 0.65 + modeIn * ping;
       } else if (isGoods22) {
-        // 2022 DeMarini The Goods: Loud punchy X14 alloy THWACK + crisp dual-mode NCAA ring (~85-100ms, never pipe-like)
-        const hoop =
-          (Math.sin(2 * Math.PI * (2210 * fScale) * t) * Math.exp(-t * 40) * 0.11 +
-            Math.sin(2 * Math.PI * (2227 * fScale) * t) * Math.exp(-t * 42) * 0.075 +
-            Math.sin(2 * Math.PI * (2910 * fScale) * t) * Math.exp(-t * 52) * 0.065) *
-          (0.88 + 0.12 * raw);
-        sample = leatherCrack + modeIn * hoop;
+        // 2022 THE GOODS: Legendary NCAA dual-mode shimmering X14 high-pitched RING (2380/2406 Hz + 3520 Hz)
+        const amp = isJam ? 0.16 : isEndcap ? 1.16 : 1.0;
+        const dec = isJam ? 2.7 : isEndcap ? 1.1 : 1.0;
+        const ping =
+          Math.sin(2 * Math.PI * (2380 * fScale) * t) * Math.exp(-t * 16.5 * dec) * (0.52 * amp) +
+          Math.sin(2 * Math.PI * (2406 * fScale) * t) * Math.exp(-t * 17.2 * dec) * (0.36 * amp) +
+          Math.sin(2 * Math.PI * (3520 * fScale) * t) * Math.exp(-t * 23 * dec) * (0.34 * amp);
+        sample = leatherCrack * 0.65 + modeIn * ping;
       } else {
-        // Combat Spec-A1 (Rodeo / Members Blue): Heavy 1-piece SFX shotgun THWACK + tight brief alloy crunch (~60ms)
-        const mul = isCombatBlue ? 1.045 : 1.0;
-        const sfx =
-          (Math.sin(2 * Math.PI * (2150 * mul * fScale) * t) * Math.exp(-t * 62) * 0.085 +
-            Math.sin(2 * Math.PI * (2880 * mul * fScale) * t) * Math.exp(-t * 78) * 0.05) *
-          (0.86 + 0.14 * raw);
-        sample = leatherCrack * 1.08 + thump * 0.4 + modeIn * sfx;
+        // COMBAT SPEC-A1 (Rodeo & Members Blue): Crisp 1-piece SFX high-alloy PING!
+        const mul = isCombatBlue ? 1.06 : 1.0;
+        const amp = isJam ? 0.22 : isEndcap ? 1.2 : 1.0;
+        const dec = isJam ? 2.6 : isEndcap ? 1.12 : 1.0;
+        const ping =
+          Math.sin(2 * Math.PI * (2540 * mul * fScale) * t) * Math.exp(-t * 19.5 * dec) * (0.56 * amp) +
+          Math.sin(2 * Math.PI * (3620 * mul * fScale) * t) * Math.exp(-t * 24 * dec) * (0.38 * amp) +
+          Math.sin(2 * Math.PI * (1680 * mul * fScale) * t) * Math.exp(-t * 26 * dec) * (0.24 * amp);
+        sample = leatherCrack * 0.7 + modeIn * ping;
       }
 
-      if (isOffCenter && !isWood) {
-        sample += Math.sin(2 * Math.PI * 195 * t) * Math.exp(-t * 95) * 0.11;
+      if (isJam && !isWood) {
+        const isOnePc = !isGoods26 && !isGoods22;
+        sample +=
+          Math.sin(2 * Math.PI * 178 * t) * Math.exp(-t * 68) * (isOnePc ? 0.56 : 0.34) +
+          Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 95) * (isOnePc ? 0.32 : 0.14);
+      } else if (isEndcap && !isWood) {
+        sample += Math.sin(2 * Math.PI * (4250 * (isGoods26 ? 1.08 : 1.0)) * t) * Math.exp(-t * 48) * 0.24;
       }
+
       ch[i] = sample;
     }
 
-    // Soft-clip only extreme > 0.96 transients while keeping natural sharp crest factor
     let peak = 0;
     for (let i = 0; i < len; i++) {
       const a = Math.abs(ch[i]);
       if (a > peak) peak = a;
     }
-    const norm = peak > 0 ? 0.94 / peak : 1;
+    const targetPeak = isGlance ? 0.68 : isJam ? 0.84 : isEndcap ? 0.88 : 0.94;
+    const norm = peak > 0 ? targetPeak / peak : 1;
     for (let i = 0; i < len; i++) {
       ch[i] *= norm;
     }
@@ -939,6 +1046,7 @@
 
   return {
     WIND_PRESETS,
+    classifyContactZone,
     getParkStructureSurface,
     mirrorClockLabel,
     computeSwingKinematics,

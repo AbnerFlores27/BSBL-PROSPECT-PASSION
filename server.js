@@ -2,11 +2,122 @@
    Serves all 7 pages, scrypt cookie auth, 8 seeded scenarios with search/filter/sort,
    protected Playbook CRUD, Favorites, Trivia scoring/mastery, 5-Star Ratings, and Stats. */
 
+const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const { GoogleGenAI, Type } = require('@google/genai');
 const { store } = require('./db');
 const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
+
+// Load optional .env values if not already provided by the runtime environment
+try {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const raw = fs.readFileSync(envPath, 'utf8');
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eq = trimmed.indexOf('=');
+      if (eq === -1) continue;
+      const k = trimmed.slice(0, eq).trim();
+      let v = trimmed.slice(eq + 1).trim();
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1);
+      }
+      if (k && !(k in process.env)) {
+        process.env[k] = v;
+      }
+    }
+  }
+} catch {
+  /* ignore optional .env read errors */
+}
+
+const GEMINI_MODEL = 'gemini-3.1-flash-lite';
+
+function getGeminiApiKey() {
+  const k = (process.env.GEMINI_API_KEY || '').trim();
+  if (!k || k === 'undefined' || k === 'null') return '';
+  return k;
+}
+
+async function callWithTimeout(ai, params, timeoutMs) {
+  let timeoutHandle;
+  try {
+    const aiPromise = ai.models.generateContent(params);
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        reject(new Error('Gemini coaching request timed out'));
+      }, timeoutMs);
+    });
+    const res = await Promise.race([aiPromise, timeoutPromise]);
+    clearTimeout(timeoutHandle);
+    return res;
+  } catch (err) {
+    clearTimeout(timeoutHandle);
+    throw err;
+  }
+}
+
+async function generateWithRetry(ai, params, timeoutMs = 20000) {
+  let lastErr;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await callWithTimeout(
+        ai,
+        {
+          ...params,
+          model: GEMINI_MODEL
+        },
+        timeoutMs
+      );
+    } catch (err) {
+      lastErr = err;
+      const msg = String(err && err.message ? err.message : err || '');
+      const status = Number(err && (err.status || err.statusCode)) || 0;
+      const isNonRetryable =
+        status === 400 ||
+        status === 401 ||
+        status === 403 ||
+        status === 404 ||
+        /API_KEY|PERMISSION_DENIED|NOT_FOUND|unauthorized/i.test(msg);
+      console.warn(`Gemini attempt ${attempt + 1} (${GEMINI_MODEL}) failed:`, status || '', msg);
+      if (attempt === 0 && !isNonRetryable) {
+        await new Promise((r) => setTimeout(r, 600));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+
+function classifyGeminiError(err) {
+  const msg = String(err && err.message ? err.message : err || '');
+  const status = Number(err && (err.status || err.statusCode)) || 0;
+  if (status === 400 || status === 401 || status === 403 || /API_KEY_INVALID|API key|PERMISSION_DENIED|unauthorized/i.test(msg)) {
+    return {
+      httpStatus: 403,
+      message: 'Coach Jax could not authenticate with GEMINI_API_KEY. Please check or update your GEMINI_API_KEY in Settings > Secrets.'
+    };
+  }
+  if (status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit/i.test(msg)) {
+    return {
+      httpStatus: 429,
+      message: 'Coach Jax hit a temporary rate or quota limit. Wait a moment and try again, or verify your key quota in Settings > Secrets.'
+    };
+  }
+  if (status === 404 || /NOT_FOUND|not found|unsupported/i.test(msg)) {
+    return {
+      httpStatus: 502,
+      message: 'Coach Jax hit an upstream model configuration error. Please try again in a moment.'
+    };
+  }
+  return {
+    httpStatus: 502,
+    message: 'Coach Jax could not reach the AI coaching service right now. Please try again in a second.'
+  };
+}
 
 const app = express();
 app.set('trust proxy', 1);
@@ -16,44 +127,52 @@ const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 const VALID_CLINICS = {
   'bat-drag': {
-    title: 'Fix Bat Drag (Rear Elbow Getting Stuck)',
+    title: 'Keep Your Hands Connected (Bat Drag Fix)',
     domain: 'Hitting Mechanics',
-    scenarioId: 'launch-angle-exit-velo'
+    scenarioId: 'launch-angle-exit-velo',
+    youtube: { label: 'MLB Bat Drag Fix Drill (YouGoProBaseball)', url: 'https://www.youtube.com/watch?v=bkXB66PSKvw' }
   },
   casting: {
-    title: 'Stop Casting & Looping the Barrel',
+    title: 'Stay Short & Inside the Ball (Stop Casting)',
     domain: 'Hitting Mechanics',
-    scenarioId: 'launch-angle-exit-velo'
+    scenarioId: 'launch-angle-exit-velo',
+    youtube: { label: 'Improve Your Bat Path (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=oh9rdbm6ne8' }
   },
   'rolling-over': {
-    title: 'Fix Rolling Over (Weak Pull-Side Grounders)',
+    title: 'Drive Line Drives (Stop Rolling Over)',
     domain: 'Hitting Mechanics',
-    scenarioId: 'xwoba-metrics'
+    scenarioId: 'xwoba-metrics',
+    youtube: { label: 'Why You Roll Over & Fix (Ultimate Baseball Training)', url: 'https://www.youtube.com/watch?v=0Qa-GRJ7CE0' }
   },
   lunging: {
-    title: 'Stop Lunging Forward at Off-Speed Pitches',
+    title: 'Stay Balanced on Off-Speed & Timing',
     domain: 'Hitting Mechanics',
-    scenarioId: 'xwoba-metrics'
+    scenarioId: 'xwoba-metrics',
+    youtube: { label: 'Keep Your Load with Stride (DNA Sports)', url: 'https://www.youtube.com/watch?v=FQus_SP0DKQ' }
   },
   'glove-stab': {
-    title: 'Fix Glove Stabbing & Stiff Funneling',
+    title: 'Soft Hands & Infield Funnel Routine',
     domain: 'Fielding Mechanics',
-    scenarioId: 'force-vs-tag'
+    scenarioId: 'force-vs-tag',
+    youtube: { label: 'Infield Hands Routine (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=WoSNZqN5G9E' }
   },
   'footwork-cadence': {
-    title: 'Fix Flat-Footed Infield Approaches (Right-Left-Catch)',
+    title: 'Infield Footwork & Smooth Exchanges',
     domain: 'Fielding Mechanics',
-    scenarioId: 'stealing-second'
+    scenarioId: 'stealing-second',
+    youtube: { label: 'Infield Footwork Drills (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=0_Z3vLKtVl4' }
   },
   'banana-route': {
-    title: 'Fix "Banana" Routes on Outfield Fly Balls',
+    title: '45° Outfield Drop Step & Direct Routes',
     domain: 'Fielding Mechanics',
-    scenarioId: 'tagging-up'
+    scenarioId: 'tagging-up',
+    youtube: { label: 'Outfield Drop Step Guide (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=tH9-7NyhtTg' }
   },
   'crow-hop': {
-    title: 'Fix Weak Off-Balance Throws (Crow Hop & Cutoff)',
+    title: 'Clean Crow Hop & Relay Throws',
     domain: 'Fielding Mechanics',
-    scenarioId: 'relay-throw'
+    scenarioId: 'relay-throw',
+    youtube: { label: 'Outfield Crow Hop vs. Step Behind (Ultimate Baseball Training)', url: 'https://www.youtube.com/watch?v=vMU7ds_WpiM' }
   }
 };
 
@@ -436,21 +555,21 @@ function buildDeterministicCoachProfile({
     fieldingDiagnosis,
     iqBreakdown,
     actionableTips: [
-      `Hitting Cue — Watch "${VALID_CLINICS[hitClinicId].title}" in 0.45x Slow-Mo Split View and pause at Stage 2 & Stage 3 to match back-hip coil, rear-elbow slot, and barrel path.`,
-      `Cage Drill — Match the pitch plane (+6° to +13° attack angle) during 3×10 tee reps before facing live arms or the pitching machine.`,
-      `Fielding Cue — Train "${VALID_CLINICS[fieldClinicId].title}" slow-mo footwork and soft two-hand funnels (right-left-catch-throw) before practice.`,
-      `Game IQ & Bat — Test ${VALID_BATS[chosenBatId].split(' (')[0]} in the 3D Stadium (${handTag} box) targeting 1.32+ Smash Factor and 24°–31° carries.`
+      `Hitting Cue — Open "${VALID_CLINICS[hitClinicId].title}" in the Training Lab for 3 quick cues and a verified YouTube coach demo.`,
+      `Cage Drill — Run 3×10 tee reps focusing on your simple contact cue before facing live arms or the pitching machine.`,
+      `Fielding Cue — Practice "${VALID_CLINICS[fieldClinicId].title}" with short 10-minute footwork & soft-hand reps.`,
+      `Game IQ & Bat — Test ${VALID_BATS[chosenBatId].split(' (')[0]} in the 3D Stadium (${handTag} box) targeting balanced timing and clean line drives.`
     ],
     videoLinks: videoIds.filter((cid) => VALID_CLINICS[cid]).map((cid) => ({
       clinicId: cid,
       title: VALID_CLINICS[cid].title,
       domain: VALID_CLINICS[cid].domain,
       reason: cid === hitClinicId
-        ? 'Primary swing fix matched directly to your reported plate feel.'
+        ? 'Primary swing focus matched to your reported plate feel.'
         : cid === fieldClinicId
-          ? 'Primary defensive drill tailored to your glove/footwork habit.'
-          : 'Bonus Rapsodo/contact clinic to build complete barrel control.',
-      url: `training.html?clinic=${encodeURIComponent(cid)}&slow=1&bat=${encodeURIComponent(chosenBatId)}`
+          ? 'Primary defensive drill tailored to your glove and footwork.'
+          : 'Bonus contact routine to build everyday consistency.',
+      url: `training.html?clinic=${encodeURIComponent(cid)}#video-clinic-section`
     })),
     recommendedScenarios: baseScenarios.slice(0, 2).map((s) => ({
       scenarioId: s.scenarioId,
@@ -465,7 +584,7 @@ function buildDeterministicCoachProfile({
 }
 
 app.post('/api/ai/onboarding-quiz', async (req, res) => {
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  const apiKey = getGeminiApiKey();
 
   const body = req.body || {};
   const experienceLevel = String(body.experienceLevel || '').trim();
@@ -593,92 +712,74 @@ Rules:
 - Pick 2 recommendedScenarios matching any IQ gaps or positional focus.
 - Pick the single best recommendedBatId matching their swing profile and experience level.`;
 
-  let timeoutHandle;
   try {
-    const aiPromise = ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite',
-      contents: promptText,
-      config: {
-        systemInstruction:
-          'You are Coach Jax at DiamondIQ, an encouraging, ultra-clear MLB hitting and fielding biomechanics coach and sabermetrics educator.',
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            skillTier: {
-              type: Type.STRING,
-              enum: ['Beginner', 'Developing', 'Intermediate', 'Varsity / Advanced']
-            },
-            readinessScore: { type: Type.INTEGER },
-            headline: { type: Type.STRING },
-            summary: { type: Type.STRING },
-            swingDiagnosis: { type: Type.STRING },
-            fieldingDiagnosis: { type: Type.STRING },
-            iqBreakdown: { type: Type.STRING },
-            actionableTips: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
-            },
-            videoLinks: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  clinicId: {
-                    type: Type.STRING,
-                    enum: Object.keys(VALID_CLINICS)
+    const response = await generateWithRetry(
+      ai,
+      {
+        model: GEMINI_MODEL,
+        contents: promptText,
+        config: {
+          systemInstruction:
+            'You are Coach Jax at DiamondIQ, a patient, ultra-clear MLB and youth baseball coach who helps both complete beginners and players fixing mechanical flaws.',
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              skillTier: { type: Type.STRING },
+              readinessScore: { type: Type.INTEGER },
+              headline: { type: Type.STRING },
+              summary: { type: Type.STRING },
+              swingDiagnosis: { type: Type.STRING },
+              fieldingDiagnosis: { type: Type.STRING },
+              iqBreakdown: { type: Type.STRING },
+              actionableTips: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              videoLinks: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    clinicId: { type: Type.STRING },
+                    reason: { type: Type.STRING }
                   },
-                  reason: { type: Type.STRING }
-                },
-                required: ['clinicId', 'reason']
-              }
-            },
-            recommendedScenarios: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  scenarioId: {
-                    type: Type.STRING,
-                    enum: Object.keys(VALID_SCENARIOS)
+                  required: ['clinicId', 'reason']
+                }
+              },
+              recommendedScenarios: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    scenarioId: { type: Type.STRING },
+                    reason: { type: Type.STRING }
                   },
-                  reason: { type: Type.STRING }
-                },
-                required: ['scenarioId', 'reason']
-              }
+                  required: ['scenarioId', 'reason']
+                }
+              },
+              recommendedBatId: { type: Type.STRING },
+              batReason: { type: Type.STRING }
             },
-            recommendedBatId: {
-              type: Type.STRING,
-              enum: Object.keys(VALID_BATS)
-            },
-            batReason: { type: Type.STRING }
-          },
-          required: [
-            'skillTier',
-            'readinessScore',
-            'headline',
-            'summary',
-            'swingDiagnosis',
-            'fieldingDiagnosis',
-            'iqBreakdown',
-            'actionableTips',
-            'videoLinks',
-            'recommendedScenarios',
-            'recommendedBatId',
-            'batReason'
-          ]
+            required: [
+              'skillTier',
+              'readinessScore',
+              'headline',
+              'summary',
+              'swingDiagnosis',
+              'fieldingDiagnosis',
+              'iqBreakdown',
+              'actionableTips',
+              'videoLinks',
+              'recommendedScenarios',
+              'recommendedBatId',
+              'batReason'
+            ]
+          }
         }
-      }
-    });
-
-    const timeoutPromise = new Promise((_, reject) => {
-      timeoutHandle = setTimeout(() => {
-        reject(new Error('Coach AI timed out after 25s'));
-      }, 25000);
-    });
-
-    const response = await Promise.race([aiPromise, timeoutPromise]);
-    clearTimeout(timeoutHandle);
+      },
+      20000
+    );
 
     const parsed = JSON.parse(response.text || '{}');
     const chosenBatId = VALID_BATS[parsed.recommendedBatId] ? parsed.recommendedBatId : 'goods-2026';
@@ -693,7 +794,7 @@ Rules:
           title: meta.title,
           domain: meta.domain,
           reason: String(v.reason || ''),
-          url: `training.html?clinic=${encodeURIComponent(v.clinicId)}&slow=1&bat=${encodeURIComponent(chosenBatId)}`
+          url: `training.html?clinic=${encodeURIComponent(v.clinicId)}#video-clinic-section`
         };
       });
 
@@ -743,7 +844,6 @@ Rules:
 
     return res.json({ profile: finalProfile, saved: Boolean(req.user), source: 'gemini' });
   } catch (err) {
-    clearTimeout(timeoutHandle);
     console.warn('Gemini Onboarding Quiz fallback triggered:', err && err.message ? err.message : err);
     const profile = buildDeterministicCoachProfile(fallbackParams);
     if (req.user) {
@@ -758,7 +858,7 @@ Rules:
    Coach Jax — Conversational Baseball AI Coach (Gemini API)
    ========================================================= */
 app.post('/api/ai/jax', async (req, res) => {
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  const apiKey = getGeminiApiKey();
   const body = req.body || {};
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message || message.length > 1200) {
@@ -767,7 +867,7 @@ app.post('/api/ai/jax', async (req, res) => {
 
   if (!apiKey) {
     return res.status(503).json({
-      error: 'Coach Jax AI requires GEMINI_API_KEY to be configured on the server.'
+      error: 'Coach Jax AI needs GEMINI_API_KEY set in Settings > Secrets (or .env) to reply.'
     });
   }
 
@@ -803,7 +903,7 @@ app.post('/api/ai/jax', async (req, res) => {
     ? cleanHistory.map((h) => `${h.role}: ${h.text}`).join('\n')
     : '(First message in conversation)';
 
-  const promptText = `You are Coach Jax — DiamondIQ's direct, realistic, encouraging MLB-caliber baseball coach. You answer ANY baseball question: swing flaws, bat drag, casting, rolling over, infield footwork, outfield routes, pitcher grips, catcher framing, bat sizing/BBCOR feel, Statcast metrics, rules, or mental approach.
+  const promptText = `You are Coach Jax — DiamondIQ's patient, encouraging, practical baseball coach built specifically to help BOTH complete beginners learning baseball AND experienced players fixing mechanical flaws (bat drag, casting, rolling over, lunging, infield glove stabbing, flat footwork, banana routes, crow hop throws, bat choice, timing, or rules).
 
 Player Context:
 ${playerContextText}
@@ -814,85 +914,78 @@ ${historyBlock}
 Player's Current Question:
 ${message}
 
-Available DiamondIQ Interactive Slow-Mo Video Clinics (pick up to 2 relevant IDs if applicable):
+Available DiamondIQ Short Drill Guides & Real YouTube Links (pick 1–2 relevant IDs if helpful):
 ${clinicCatalogText}
 
-Available 5-Expert Rule & Analytics Lessons (pick up to 2 relevant IDs if applicable):
+Available 5-Expert Rule & Analytics Lessons (pick 1–2 relevant IDs if helpful):
 ${scenarioCatalogText}
 
-Available 3D Cage Bats (pick the best match if bat choice is relevant, else "goods-2026"):
+Available 3D Cage Bats (pick best match if relevant, else "goods-2026"):
 ${batCatalogText}
 
-Instructions:
-- Answer realistically like an experienced college/MLB hitting & fielding coach talking 1-on-1 in the cage. Keep the main reply tight, actionable, and easy to follow (3-5 sentences).
-- Give 2-4 specific drills or mechanical cues in actionableTips.
-- Suggest 1-2 short YouTube drill search queries in youtubeTopics (e.g., "baseball rolling over swing fix drill tee") so the player can open real drill videos immediately.`;
+Coaching Guidelines:
+- Speak in plain, friendly, beginner-accessible English—translate any baseball jargon briefly in 4–6 words so beginners never feel lost, while still giving sharp, concrete mechanical fixes for players with flaws.
+- Structure reply tightly (3–5 short sentences): (1) validate what's happening and why, (2) give 1 clear mental feel cue to try on their very next rep.
+- In actionableTips, provide 2–4 short 10-minute drills anyone can do on a tee, with a partner, or in the 3D Stadium.
+- Put 1–2 relevant clinic IDs in recommendedClinicIds so the player can jump straight into our Training Lab and curated YouTube coaching videos.`;
 
   const ai = new GoogleGenAI({
     apiKey,
     httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
   });
 
-  let timeoutHandle;
   try {
-    const aiPromise = ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite',
-      contents: promptText,
-      config: {
-        systemInstruction:
-          'You are Coach Jax, an expert baseball hitting, fielding, pitching, bat-fitting, and baseball rules AI coach at DiamondIQ. Never fabricate fake URLs; choose clinicIds and scenarioIds strictly from the allowed enums and put YouTube drill search queries in youtubeTopics.',
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            reply: { type: Type.STRING },
-            actionableTips: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
+    const response = await generateWithRetry(
+      ai,
+      {
+        model: GEMINI_MODEL,
+        contents: promptText,
+        config: {
+          systemInstruction:
+            'You are Coach Jax at DiamondIQ, a warm, crystal-clear baseball hitting, fielding, rules, and gear coach for beginners and players fixing flaws. Never fabricate URLs; select clinicIds and scenarioIds strictly from the allowed enum values.',
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              reply: { type: Type.STRING },
+              actionableTips: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              recommendedClinicIds: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              recommendedScenarioIds: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              youtubeTopics: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              recommendedBatId: { type: Type.STRING }
             },
-            recommendedClinicIds: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING, enum: Object.keys(VALID_CLINICS) }
-            },
-            recommendedScenarioIds: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING, enum: Object.keys(VALID_SCENARIOS) }
-            },
-            youtubeTopics: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
-            },
-            recommendedBatId: {
-              type: Type.STRING,
-              enum: Object.keys(VALID_BATS)
-            }
-          },
-          required: ['reply', 'actionableTips', 'recommendedClinicIds', 'recommendedScenarioIds', 'youtubeTopics', 'recommendedBatId']
+            required: ['reply', 'actionableTips', 'recommendedClinicIds', 'recommendedScenarioIds', 'youtubeTopics', 'recommendedBatId']
+          }
         }
-      }
-    });
-
-    const timeoutPromise = new Promise((_, reject) => {
-      timeoutHandle = setTimeout(() => {
-        reject(new Error('Coach Jax timed out after 25s'));
-      }, 25000);
-    });
-
-    const response = await Promise.race([aiPromise, timeoutPromise]);
-    clearTimeout(timeoutHandle);
+      },
+      12000
+    );
 
     const parsed = JSON.parse(response.text || '{}');
     const chosenBatId = VALID_BATS[parsed.recommendedBatId] ? parsed.recommendedBatId : 'goods-2026';
 
-    const videoLinks = (Array.isArray(parsed.recommendedClinicIds) ? parsed.recommendedClinicIds : [])
+    const clinicIds = (Array.isArray(parsed.recommendedClinicIds) ? parsed.recommendedClinicIds : [])
       .filter((id, idx, arr) => VALID_CLINICS[id] && arr.indexOf(id) === idx)
-      .slice(0, 2)
-      .map((id) => ({
-        clinicId: id,
-        title: VALID_CLINICS[id].title,
-        domain: VALID_CLINICS[id].domain,
-        url: `training.html?clinic=${encodeURIComponent(id)}&slow=1&bat=${encodeURIComponent(chosenBatId)}`
-      }));
+      .slice(0, 2);
+
+    const videoLinks = clinicIds.map((id) => ({
+      clinicId: id,
+      title: VALID_CLINICS[id].title,
+      domain: VALID_CLINICS[id].domain,
+      url: `training.html?clinic=${encodeURIComponent(id)}#video-clinic-section`
+    }));
 
     const recommendedScenarios = (Array.isArray(parsed.recommendedScenarioIds) ? parsed.recommendedScenarioIds : [])
       .filter((id, idx, arr) => VALID_SCENARIOS[id] && arr.indexOf(id) === idx)
@@ -903,16 +996,22 @@ Instructions:
         url: `detail.html?id=${encodeURIComponent(id)}`
       }));
 
-    const youtubeLinks = (Array.isArray(parsed.youtubeTopics) ? parsed.youtubeTopics : [])
+    const curatedYts = clinicIds
+      .map((id) => VALID_CLINICS[id].youtube)
+      .filter(Boolean);
+
+    const searchYts = (Array.isArray(parsed.youtubeTopics) ? parsed.youtubeTopics : [])
       .filter((t) => typeof t === 'string' && t.trim().length > 2)
-      .slice(0, 2)
+      .slice(0, 1)
       .map((topic) => {
         const cleanTopic = topic.trim().slice(0, 80);
         return {
-          label: cleanTopic,
+          label: `Search YouTube: ${cleanTopic}`,
           url: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanTopic)}`
         };
       });
+
+    const youtubeLinks = [...curatedYts, ...searchYts].slice(0, 3);
 
     return res.json({
       coach: 'Jax',
@@ -928,10 +1027,10 @@ Instructions:
       recommendedBatName: VALID_BATS[chosenBatId]
     });
   } catch (err) {
-    clearTimeout(timeoutHandle);
     console.error('Coach Jax Gemini error:', err && err.message ? err.message : err);
-    return res.status(502).json({
-      error: 'Coach Jax could not connect to the AI coaching service right now. Please try again.'
+    const classified = classifyGeminiError(err);
+    return res.status(classified.httpStatus).json({
+      error: classified.message
     });
   }
 });

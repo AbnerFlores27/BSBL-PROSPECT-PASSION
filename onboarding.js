@@ -128,10 +128,10 @@
         .map(
           (v) => `
           <article class="card">
-            <div class="meta-line">${esc(v.domain)} · Slow-Mo Interactive Video</div>
+            <div class="meta-line">${esc(v.domain)} · YouTube Drill Guide</div>
             <h4 style="margin-bottom:0.35rem;">${esc(v.title)}</h4>
             <p style="color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.85rem;">${esc(v.reason)}</p>
-            <a class="btn btn-primary btn-sm" href="${esc(v.url)}">Watch Slow-Mo Fix Video &rarr;</a>
+            <a class="btn btn-primary btn-sm" href="${esc(v.url)}">Open Drill &amp; YouTube Video &rarr;</a>
           </article>`
         )
         .join('');
@@ -213,14 +213,14 @@
         </div>
 
         <div style="padding:0 1.45rem 1.25rem;">
-          <div class="kicker-line">Recommended Drill Videos (Slow-Mo Pre-Loaded)</div>
-          <h3 style="margin-bottom:0.55rem;">Click Any Video Link to Open &amp; Train</h3>
+          <div class="kicker-line">Recommended Drill Guides &amp; Real YouTube Coaching</div>
+          <h3 style="margin-bottom:0.55rem;">Click Any Drill Below to Open &amp; Train</h3>
           <div class="card-subtle" style="margin-bottom:0.9rem;padding:0.85rem 1rem;">
-            <strong style="display:block;margin-bottom:0.35rem;font-size:0.92rem;">How to Do Your Tutorial Videos &amp; Practice Drills:</strong>
+            <strong style="display:block;margin-bottom:0.35rem;font-size:0.92rem;">How to Run Your Practice Drills:</strong>
             <ol style="margin:0;padding-left:1.2rem;color:var(--text-secondary);font-size:0.88rem;line-height:1.5;">
-              <li>Open any Slow-Mo Fix Video below — it boots into <strong>0.45x Split View</strong> comparing your Common Flaw vs. Pro Mechanic side-by-side.</li>
-              <li>Use the <strong>Stage 1–4 buttons</strong> (or timeline scrubber) to freeze contact/catch points and match the live step-by-step body cues.</li>
-              <li>Run the 2 listed tee/glove drills, save them to <strong>My Playbook</strong>, and test <strong>${esc(profile.recommendedBatName.split(' (')[0])}</strong> in the D1 3D Stadium.</li>
+              <li>Open any Drill Guide below to watch curated <strong>YouTube coach demos</strong> and follow 3 simple setup cues.</li>
+              <li>Take your 10-minute reps on a tee, net, or yard and save the drill to <strong>My Playbook</strong>.</li>
+              <li>Test <strong>${esc(profile.recommendedBatName.split(' (')[0])}</strong> in the 3D Stadium simulator or ask <strong>Coach Jax</strong> any follow-up.</li>
             </ol>
           </div>
           <div class="ob-video-grid">${videosHtml}</div>

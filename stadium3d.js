@@ -2900,6 +2900,29 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     }
   }
 
+  // Zero-GC 3D Wind-Drift Chalk/Air Mote Layer across Outfield
+  const WIND_MOTE_COUNT = 96;
+  const windMotePos = new Float32Array(WIND_MOTE_COUNT * 3);
+  const windMotePhase = new Float32Array(WIND_MOTE_COUNT);
+  for (let i = 0; i < WIND_MOTE_COUNT; i++) {
+    windMotePos[i * 3 + 0] = (((i * 73) % 440) - 220);
+    windMotePos[i * 3 + 1] = 3 + ((i * 29) % 62);
+    windMotePos[i * 3 + 2] = 18 - ((i * 97) % 455);
+    windMotePhase[i] = i * 0.71;
+  }
+  const windMotesGeom = new THREE.BufferGeometry();
+  windMotesGeom.setAttribute('position', new THREE.BufferAttribute(windMotePos, 3));
+  const windMotesMat = new THREE.PointsMaterial({
+    color: '#e2e8f0',
+    size: 1.35,
+    transparent: true,
+    opacity: 0.14,
+    depthWrite: false
+  });
+  const windMotes = new THREE.Points(windMotesGeom, windMotesMat);
+  windMotes.frustumCulled = false;
+  scene.add(windMotes);
+
   // Pre-allocated Dynamic 3D Comet Trail Ribbon
   const MAX_TRAIL_PTS = 180;
   const trailVerts = new Float32Array(MAX_TRAIL_PTS * 2 * 3);
@@ -4177,6 +4200,9 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   const _camTargetPos = new THREE.Vector3();
   const _camTargetLook = new THREE.Vector3();
   const _camCurLook = new THREE.Vector3(0, 3.1, -55);
+  const _camStartPos = new THREE.Vector3(0.22, 4.9, 14.5);
+  const _camStartLook = new THREE.Vector3(0, 3.1, -55);
+  const _camArcDir = new THREE.Vector3();
   const _projVec = new THREE.Vector3();
   const _batUp = new THREE.Vector3(0, 1, 0);
   const _batDown = new THREE.Vector3(0, -1, 0);
@@ -4199,6 +4225,35 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   const _batContactK = new THREE.Vector3();
   const _batContactD = new THREE.Vector3();
   const _topHandReleaseTarget = new THREE.Vector3();
+
+  const CAMERA_FOVS = {
+    'strike-zone': 40,
+    'fish-eye': 55,
+    'show-15': 43,
+    broadcast: 34,
+    'swing-lab': 42
+  };
+  const camTrans = {
+    active: false,
+    t: 0,
+    dur: 0.6,
+    arcLift: 1.4,
+    arcOut: 2.8,
+    fromFov: 40
+  };
+  let impactShake = 0;
+  let lastRenderPhase = 'idle';
+
+  function startCamTransition(dur = 0.6, arcLift = 1.4, arcOut = 2.8) {
+    _camStartPos.copy(camera.position);
+    _camStartLook.copy(_camCurLook);
+    camTrans.fromFov = camera.fov;
+    camTrans.dur = Math.max(0.18, dur);
+    camTrans.arcLift = arcLift;
+    camTrans.arcOut = arcOut;
+    camTrans.t = 0;
+    camTrans.active = true;
+  }
 
   let curStadiumId = '';
   let curBatId = '';
@@ -4255,6 +4310,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     if (curBatterHand === next) return;
     curBatterHand = next;
     applyBatterHandLayout();
+    startCamTransition(0.46, 0.6, 1.4);
   }
 
   function setPitcherHand(hand) {
@@ -4316,11 +4372,19 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       broadcast: 'broadcast',
       'swing-lab': 'swing-lab'
     };
-    if (aliases[mode]) curCameraMode = aliases[mode];
+    const next = aliases[mode];
+    if (next && next !== curCameraMode) {
+      curCameraMode = next;
+      const isSideSwap = next === 'swing-lab' || next === 'broadcast';
+      startCamTransition(isSideSwap ? 0.64 : 0.52, isSideSwap ? 1.8 : 0.9, isSideSwap ? 4.2 : 1.6);
+    }
   }
 
   function setFollowBall(enabled) {
-    curFollowBall = Boolean(enabled);
+    const next = Boolean(enabled);
+    if (curFollowBall === next) return;
+    curFollowBall = next;
+    startCamTransition(0.42, 0.8, 0.5);
   }
 
   applyBatterHandLayout();
@@ -4552,6 +4616,8 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       lastImpactToken = simState.impactBurstId;
       const ip = simState.impactPos || { x: 0, y: 2.6, z: 0 };
       triggerImpactBurst(ip.x, ip.y, ip.z, simState.flightColor);
+      const ev = simState.lastExitVelo || 92;
+      impactShake = clamp((ev - 76) / 34, 0.14, 1.0) * 0.34;
     }
     for (let i = 0; i < SPARK_COUNT; i++) {
       const sp = sparks[i];
@@ -4567,10 +4633,45 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     }
 
     const wDir = simState.windVec || { x: 0, y: 0 };
-    const wAngle = Math.hypot(wDir.x, wDir.y) > 0.5 ? Math.atan2(wDir.x, -wDir.y) : -0.35;
-    const flutter = Math.sin(performance.now() * 0.009) * 0.14;
+    const wMagFtS = Math.hypot(wDir.x || 0, wDir.y || 0);
+    const windMph = wMagFtS / 1.46667;
+    const nowSec = performance.now() * 0.001;
+    // Flag extends along +X locally -> rotate Y by atan2(wDir.y, wDir.x) so it points strictly downwind in 3D world (X, -Z)!
+    const wAngle = wMagFtS > 0.5 ? Math.atan2(wDir.y, wDir.x) : -0.35;
+    const flutterSpeed = 4.2 + windMph * 0.85;
+    const flutterAmp = 0.03 + clamp(windMph / 12, 0, 1.2) * 0.15;
+    const droopZ = -0.46 * (1 - clamp(windMph / 9.5, 0, 1));
+    const stretchX = 0.72 + clamp(windMph / 12, 0, 1) * 0.32;
     for (let i = 0; i < windFlags.length; i++) {
-      windFlags[i].rotation.y = wAngle + flutter;
+      windFlags[i].rotation.y = wAngle + Math.sin(nowSec * flutterSpeed + i * 1.1) * flutterAmp;
+      windFlags[i].rotation.z = droopZ + Math.cos(nowSec * (flutterSpeed * 0.7) + i) * (flutterAmp * 0.25);
+      windFlags[i].scale.x = stretchX;
+    }
+
+    // Zero-GC 3D Outfield Wind-Drift Air Motes
+    const showMotes = curStadiumId !== 'cage';
+    windMotes.visible = showMotes;
+    if (showMotes) {
+      windMotesMat.opacity = windMph < 1 ? 0.05 : clamp(0.11 + windMph * 0.015, 0.11, 0.34);
+      const driftX = (wDir.x || 0) * 1.35;
+      const driftZ = -(wDir.y || 0) * 1.35;
+      for (let i = 0; i < WIND_MOTE_COUNT; i++) {
+        const idx = i * 3;
+        const ph = windMotePhase[i];
+        let mx = windMotePos[idx + 0] + (driftX + Math.sin(nowSec * 1.4 + ph) * 1.8) * dt;
+        let my = windMotePos[idx + 1] + Math.sin(nowSec * 1.8 + ph) * 1.4 * dt;
+        let mz = windMotePos[idx + 2] + (driftZ + Math.cos(nowSec * 1.3 + ph) * 1.8) * dt;
+        if (mx > 220) mx -= 440;
+        else if (mx < -220) mx += 440;
+        if (my > 66) my = 6;
+        else if (my < 3) my = 62;
+        if (mz > 20) mz -= 460;
+        else if (mz < -440) mz += 460;
+        windMotePos[idx + 0] = mx;
+        windMotePos[idx + 1] = my;
+        windMotePos[idx + 2] = mz;
+      }
+      windMotesGeom.attributes.position.needsUpdate = true;
     }
 
     let followX = 0;
@@ -4713,17 +4814,78 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       setPlatePose();
     }
 
-    const dampK = simState.phase === 'flight' ? (curFollowBall ? 5.6 : 4.2) : 6.5;
-    camera.position.x = THREE.MathUtils.damp(camera.position.x, _camTargetPos.x, dampK, dt);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, _camTargetPos.y, dampK, dt);
-    camera.position.z = THREE.MathUtils.damp(camera.position.z, _camTargetPos.z, dampK, dt);
+    // Smooth phase return dolly (flight -> idle)
+    if (lastRenderPhase === 'flight' && simState.phase !== 'flight') {
+      startCamTransition(0.72, 1.3, 2.2);
+    }
+    lastRenderPhase = simState.phase;
 
-    _camCurLook.x = THREE.MathUtils.damp(_camCurLook.x, _camTargetLook.x, dampK + 1.5, dt);
-    _camCurLook.y = THREE.MathUtils.damp(_camCurLook.y, _camTargetLook.y, dampK + 1.5, dt);
-    _camCurLook.z = THREE.MathUtils.damp(_camCurLook.z, _camTargetLook.z, dampK + 1.5, dt);
+    const baseFov = CAMERA_FOVS[curCameraMode] || 40;
+    const targetFov = simState.phase === 'flight' && curFollowBall ? baseFov + 4 : baseFov;
+
+    if (camTrans.active) {
+      camTrans.t = Math.min(1, camTrans.t + dt / camTrans.dur);
+      const u = camTrans.t;
+      const e = 1 - Math.pow(1 - u, 3); // Cubic ease-out dolly
+      const bell = Math.sin(Math.PI * e);
+
+      // Orbital outward swing around plate so camera never clips through the batter
+      _camArcDir.lerpVectors(_camStartPos, _camTargetPos, e);
+      _camArcDir.y = 0;
+      const horizLen = _camArcDir.length();
+      const invLen = horizLen > 0.25 ? 1 / horizLen : 0;
+      camera.position.set(
+        THREE.MathUtils.lerp(_camStartPos.x, _camTargetPos.x, e) + _camArcDir.x * invLen * camTrans.arcOut * bell,
+        THREE.MathUtils.lerp(_camStartPos.y, _camTargetPos.y, e) + camTrans.arcLift * bell,
+        THREE.MathUtils.lerp(_camStartPos.z, _camTargetPos.z, e) + _camArcDir.z * invLen * camTrans.arcOut * bell
+      );
+      _camCurLook.lerpVectors(_camStartLook, _camTargetLook, e);
+
+      const prevFov = camera.fov;
+      camera.fov = THREE.MathUtils.lerp(camTrans.fromFov, targetFov, e);
+      if (Math.abs(camera.fov - prevFov) > 0.015) camera.updateProjectionMatrix();
+
+      if (u >= 1) camTrans.active = false;
+    } else {
+      const dampK = simState.phase === 'flight' ? (curFollowBall ? 5.6 : 4.2) : 6.5;
+      camera.position.x = THREE.MathUtils.damp(camera.position.x, _camTargetPos.x, dampK, dt);
+      camera.position.y = THREE.MathUtils.damp(camera.position.y, _camTargetPos.y, dampK, dt);
+      camera.position.z = THREE.MathUtils.damp(camera.position.z, _camTargetPos.z, dampK, dt);
+
+      _camCurLook.x = THREE.MathUtils.damp(_camCurLook.x, _camTargetLook.x, dampK + 1.5, dt);
+      _camCurLook.y = THREE.MathUtils.damp(_camCurLook.y, _camTargetLook.y, dampK + 1.5, dt);
+      _camCurLook.z = THREE.MathUtils.damp(_camCurLook.z, _camTargetLook.z, dampK + 1.5, dt);
+
+      const prevFov = camera.fov;
+      camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 7.5, dt);
+      if (Math.abs(camera.fov - prevFov) > 0.015) camera.updateProjectionMatrix();
+    }
+
+    // Broadcast impact micro-shake (exponential decay on hard barrels)
+    if (impactShake > 0.004) {
+      const sPhase = nowSec * 68;
+      camera.position.x += Math.sin(sPhase) * impactShake;
+      camera.position.y += Math.cos(sPhase * 1.3) * impactShake * 0.72;
+      impactShake *= Math.exp(-15 * dt);
+    } else {
+      impactShake = 0;
+    }
+
     camera.lookAt(_camCurLook);
-
     renderer.render(scene, camera);
+  }
+
+  function getCameraInfo() {
+    return {
+      mode: curCameraMode,
+      fov: Number(camera.fov.toFixed(2)),
+      transitioning: camTrans.active,
+      pos: {
+        x: Number(camera.position.x.toFixed(2)),
+        y: Number(camera.position.y.toFixed(2)),
+        z: Number(camera.position.z.toFixed(2))
+      }
+    };
   }
 
   return {
@@ -4735,6 +4897,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     setDeliveryMode,
     setCameraMode,
     setFollowBall,
+    getCameraInfo,
     resize,
     projectWorldToNorm,
     updateAndRender
