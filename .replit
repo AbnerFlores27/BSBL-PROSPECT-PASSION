@@ -40,3 +40,8 @@ externalPort = 80
 [deployment]
 deploymentTarget = "cloudrun"
 run = "node server.js"
+
+[userenv]
+
+[userenv.shared]
+GEMINI_API_KEY = "GEMINI_API_KEY"
