@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const { GoogleGenAI, Type } = require('@google/genai');
 const { store } = require('./db');
@@ -403,6 +404,225 @@ app.post('/api/auth/logout', async (req, res, next) => {
     return res.json({ ok: true });
   } catch (err) {
     return next(err);
+  }
+});
+
+/* =========================================================
+   Google OAuth 2.0 Popup Flow (Authorization Code)
+   ========================================================= */
+const OAUTH_STATE_COOKIE = 'diamondiq_oauth_state';
+const oauthPendingStates = new Map();
+
+function isAllowedOAuthHost(hostHeader) {
+  const host = String(hostHeader || '').trim().toLowerCase().split(':')[0];
+  if (!host) return false;
+  return (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.endsWith('.run.app') ||
+    host.endsWith('.replit.app') ||
+    host.endsWith('.repl.co') ||
+    host.endsWith('.replit.dev')
+  );
+}
+
+function getPublicBaseUrl(req) {
+  const envUrl = String(process.env.APP_URL || '').trim().replace(/\/+$/, '');
+  if (envUrl && /^https?:\/\//i.test(envUrl)) {
+    return envUrl;
+  }
+  const xfHost = String(req.headers['x-forwarded-host'] || '').split(',')[0].trim();
+  const rawHost = xfHost || String(req.headers.host || '').trim();
+  const xfProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();
+  const proto = xfProto === 'https' || req.secure ? 'https' : 'http';
+  if (rawHost && isAllowedOAuthHost(rawHost)) {
+    return `${proto}://${rawHost}`;
+  }
+  return `http://localhost:${PORT}`;
+}
+
+function getGoogleOAuthConfig(req) {
+  const clientId = String(process.env.GOOGLE_CLIENT_ID || '').trim();
+  const clientSecret = String(process.env.GOOGLE_CLIENT_SECRET || '').trim();
+  const redirectUri = `${getPublicBaseUrl(req)}/auth/callback`;
+  return {
+    configured: Boolean(clientId && clientSecret),
+    clientId,
+    clientSecret,
+    redirectUri
+  };
+}
+
+function escapeHtmlAttr(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderOAuthResultHtml({ ok, needsOnboarding, error }) {
+  const payload = ok
+    ? { type: 'OAUTH_AUTH_SUCCESS', needsOnboarding: Boolean(needsOnboarding) }
+    : { type: 'OAUTH_AUTH_ERROR', error: String(error || 'Google sign-in failed.') };
+  const safeJson = JSON.stringify(payload).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+  const titleText = ok ? 'Signed in to DiamondIQ' : 'Google Sign-In Issue';
+  const msgText = ok
+    ? 'Sign-in complete! Returning you to DiamondIQ...'
+    : String(error || 'Google sign-in could not be completed.');
+  const fallbackHref = ok ? (needsOnboarding ? '/onboarding.html?welcome=1' : '/playbook.html') : '/login.html';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtmlAttr(titleText)}</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #f8fafc; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; text-align: center; }
+  .box { max-width: 380px; padding: 1.5rem; border-radius: 12px; background: #1e293b; border: 1px solid #334155; }
+  a { color: #38bdf8; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1 style="margin:0 0 0.5rem;font-size:1.15rem;">${escapeHtmlAttr(titleText)}</h1>
+    <p style="margin:0 0 1rem;color:#cbd5e1;font-size:0.92rem;">${escapeHtmlAttr(msgText)}</p>
+    <p style="margin:0;font-size:0.84rem;"><a href="${escapeHtmlAttr(fallbackHref)}">Continue to DiamondIQ</a></p>
+  </div>
+  <script>
+    (function () {
+      var data = ${safeJson};
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage(data, '*');
+          setTimeout(function () { window.close(); }, 120);
+          return;
+        }
+      } catch (e) {}
+      if (data.type === 'OAUTH_AUTH_SUCCESS') {
+        window.location.replace(data.needsOnboarding ? '/onboarding.html?welcome=1' : '/playbook.html');
+      }
+    })();
+  </script>
+</body>
+</html>`;
+}
+
+app.get('/api/auth/google/status', (req, res) => {
+  const cfg = getGoogleOAuthConfig(req);
+  res.json({
+    configured: cfg.configured,
+    redirectUri: cfg.redirectUri
+  });
+});
+
+app.get('/api/auth/google/url', (req, res) => {
+  const cfg = getGoogleOAuthConfig(req);
+  if (!cfg.configured) {
+    return res.status(503).json({
+      error: 'Google Login requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Settings > Secrets (or .env).'
+    });
+  }
+
+  const now = Date.now();
+  for (const [k, exp] of oauthPendingStates.entries()) {
+    if (exp < now) oauthPendingStates.delete(k);
+  }
+
+  const state = crypto.randomBytes(24).toString('hex');
+  oauthPendingStates.set(state, now + 10 * 60 * 1000);
+
+  const secure = isSecureRequest(req);
+  res.cookie(OAUTH_STATE_COOKIE, state, {
+    httpOnly: true,
+    sameSite: secure ? 'none' : 'lax',
+    secure,
+    partitioned: secure,
+    path: '/',
+    maxAge: 10 * 60 * 1000
+  });
+
+  const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  authUrl.searchParams.set('client_id', cfg.clientId);
+  authUrl.searchParams.set('redirect_uri', cfg.redirectUri);
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('scope', 'openid email profile');
+  authUrl.searchParams.set('state', state);
+  authUrl.searchParams.set('prompt', 'select_account');
+
+  return res.json({ url: authUrl.toString() });
+});
+
+app.get(['/auth/callback', '/auth/callback/'], async (req, res) => {
+  const cfg = getGoogleOAuthConfig(req);
+  const code = typeof req.query.code === 'string' ? req.query.code.trim() : '';
+  const state = typeof req.query.state === 'string' ? req.query.state.trim() : '';
+  const oauthErr = typeof req.query.error === 'string' ? req.query.error.trim() : '';
+
+  if (oauthErr) {
+    return res.status(400).send(renderOAuthResultHtml({ ok: false, error: `Google sign-in cancelled (${oauthErr}).` }));
+  }
+
+  const cookies = parseCookies(req.headers.cookie);
+  const cookieState = cookies[OAUTH_STATE_COOKIE] || '';
+  const memExp = state ? oauthPendingStates.get(state) : 0;
+  oauthPendingStates.delete(state);
+
+  const secure = isSecureRequest(req);
+  res.clearCookie(OAUTH_STATE_COOKIE, {
+    httpOnly: true,
+    sameSite: secure ? 'none' : 'lax',
+    secure,
+    partitioned: secure,
+    path: '/'
+  });
+
+  if (!state || !memExp || memExp < Date.now() || (cookieState && cookieState !== state)) {
+    return res.status(403).send(renderOAuthResultHtml({ ok: false, error: 'Security state expired. Please click Continue with Google again.' }));
+  }
+  if (!cfg.configured || !code) {
+    return res.status(400).send(renderOAuthResultHtml({ ok: false, error: 'Missing Google authorization code or OAuth credentials.' }));
+  }
+
+  try {
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: cfg.clientId,
+        client_secret: cfg.clientSecret,
+        redirect_uri: cfg.redirectUri,
+        grant_type: 'authorization_code'
+      }).toString()
+    });
+    const tokenData = await tokenRes.json().catch(() => ({}));
+    if (!tokenRes.ok || !tokenData.access_token) {
+      throw new Error(tokenData.error_description || tokenData.error || 'Could not exchange Google code for token.');
+    }
+
+    const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    const profile = await profileRes.json().catch(() => ({}));
+    if (!profileRes.ok || !profile.sub || !profile.email) {
+      throw new Error('Could not load your Google email and profile.');
+    }
+
+    const { user, isNewUser } = await store.upsertGoogleUser({
+      uid: String(profile.sub),
+      email: String(profile.email),
+      displayName: String(profile.name || profile.given_name || profile.email.split('@')[0])
+    });
+    const sessionToken = await store.createSession(user.id);
+    setSessionCookie(req, res, sessionToken);
+
+    const needsOnboarding = Boolean(isNewUser || (!user.hasOnboarding && !user.onboardingSkipped));
+    return res.send(renderOAuthResultHtml({ ok: true, needsOnboarding }));
+  } catch (err) {
+    console.error('Google OAuth callback error:', err && err.message ? err.message : err);
+    return res.status(502).send(renderOAuthResultHtml({ ok: false, error: err && err.message ? err.message : 'Google authentication failed.' }));
   }
 });
 
@@ -857,6 +1077,56 @@ Rules:
 /* =========================================================
    Coach Jax — Conversational Baseball AI Coach (Gemini API)
    ========================================================= */
+function parseDelimitedJaxResponse(rawText) {
+  const text = String(rawText || '').trim();
+  const headings = ['REPLY', 'TIPS', 'CLINICS', 'SCENARIOS', 'BAT', 'YOUTUBE_TOPICS'];
+  const sections = {};
+  let currentKey = 'REPLY';
+  sections[currentKey] = [];
+
+  for (const rawLine of text.split(/\r?\n/)) {
+    const trimmed = rawLine.trim();
+    const matched = trimmed.match(/^\*{0,2}(REPLY|TIPS|CLINICS|SCENARIOS|BAT|YOUTUBE_TOPICS)\*{0,2}\s*:\s*(.*)$/i);
+    if (matched) {
+      currentKey = matched[1].toUpperCase();
+      if (!sections[currentKey]) sections[currentKey] = [];
+      if (matched[2] && matched[2].trim()) {
+        sections[currentKey].push(matched[2].trim());
+      }
+    } else if (trimmed) {
+      if (!sections[currentKey]) sections[currentKey] = [];
+      sections[currentKey].push(trimmed);
+    }
+  }
+
+  const reply = (sections.REPLY || []).join('\n').trim() || text.slice(0, 700);
+  const tips = (sections.TIPS || [])
+    .join('\n')
+    .split(/\n|;/)
+    .map((line) => line.replace(/^[-*•\d.)\s]+/, '').trim())
+    .filter((line) => line.length > 4)
+    .slice(0, 4);
+
+  const clinicTokens = (sections.CLINICS || []).join(',').toLowerCase().match(/[a-z0-9-]+/g) || [];
+  const scenarioTokens = (sections.SCENARIOS || []).join(',').toLowerCase().match(/[a-z0-9-]+/g) || [];
+  const batTokens = (sections.BAT || []).join(',').toLowerCase().match(/[a-z0-9-]+/g) || [];
+  const ytTopics = (sections.YOUTUBE_TOPICS || [])
+    .join('\n')
+    .split(/\n|,|;/)
+    .map((t) => t.replace(/^[-*•\d.)\s]+/, '').trim())
+    .filter((t) => t.length > 2)
+    .slice(0, 2);
+
+  return {
+    reply,
+    tips,
+    clinicTokens,
+    scenarioTokens,
+    batId: batTokens.find((b) => VALID_BATS[b]) || 'goods-2026',
+    ytTopics
+  };
+}
+
 app.post('/api/ai/jax', async (req, res) => {
   const apiKey = getGeminiApiKey();
   const body = req.body || {};
@@ -879,7 +1149,10 @@ app.post('/api/ai/jax', async (req, res) => {
       text: m.text.trim().slice(0, 600)
     }));
 
-  let playerContextText = 'Guest player (no saved profile yet).';
+  const baselineSummary = typeof body.baselineContext === 'string' ? body.baselineContext.trim().slice(0, 500) : '';
+  const cageSummary = typeof body.cageContext === 'string' ? body.cageContext.trim().slice(0, 500) : '';
+
+  let playerContextText = 'Guest player (no signed-in account yet).';
   if (req.user) {
     const saved = await store.getOnboardingProfile(req.user.id);
     const prefs = req.user.preferences || {};
@@ -887,6 +1160,12 @@ app.post('/api/ai/jax', async (req, res) => {
     playerContextText = p
       ? `Username: ${req.user.username} | Level: ${p.inputs?.experienceLevel || 'N/A'} | Position: ${p.inputs?.primaryPosition || 'N/A'} | Bats/Throws: ${prefs.battingHand || 'R'}/${prefs.throwingHand || 'R'} | Swing Symptom: ${p.inputs?.hittingSymptom || 'N/A'} | Fielding Symptom: ${p.inputs?.fieldingSymptom || 'N/A'} | Saved Bat: ${prefs.defaultBat || p.recommendedBatId || 'goods-2026'}`
       : `Username: ${req.user.username} | Bats/Throws: ${prefs.battingHand || 'R'}/${prefs.throwingHand || 'R'} | Preferred Bat: ${prefs.defaultBat || 'goods-2026'}`;
+  }
+  if (baselineSummary) {
+    playerContextText += `\nLocal Baseline Diagnostic: ${baselineSummary}`;
+  }
+  if (cageSummary) {
+    playerContextText += `\nLive 3D Cage Setup & Last Rep: ${cageSummary}`;
   }
 
   const clinicCatalogText = Object.entries(VALID_CLINICS)
@@ -903,7 +1182,7 @@ app.post('/api/ai/jax', async (req, res) => {
     ? cleanHistory.map((h) => `${h.role}: ${h.text}`).join('\n')
     : '(First message in conversation)';
 
-  const promptText = `You are Coach Jax — DiamondIQ's patient, encouraging, practical baseball coach built specifically to help BOTH complete beginners learning baseball AND experienced players fixing mechanical flaws (bat drag, casting, rolling over, lunging, infield glove stabbing, flat footwork, banana routes, crow hop throws, bat choice, timing, or rules).
+  const promptText = `You are Coach Jax — DiamondIQ's patient, encouraging, practical baseball coach built specifically to help BOTH complete beginners learning baseball AND experienced players fixing mechanical flaws (bat drag, casting, rolling over, lunging, infield glove stabbing, flat footwork, banana routes, crow hop throws, bat choice, timing, pitch recognition, or NCAA/MLB/HS stadium scouting). You have live Google Search grounding when needed for real MLB/college/HS rules, BBCOR bats, ballparks, or player questions.
 
 Player Context:
 ${playerContextText}
@@ -914,20 +1193,25 @@ ${historyBlock}
 Player's Current Question:
 ${message}
 
-Available DiamondIQ Short Drill Guides & Real YouTube Links (pick 1–2 relevant IDs if helpful):
+Available DiamondIQ Short Drill Guides (choose 1–2 exact IDs if relevant):
 ${clinicCatalogText}
 
-Available 5-Expert Rule & Analytics Lessons (pick 1–2 relevant IDs if helpful):
+Available 5-Expert Rule & Analytics Lessons (choose 1–2 exact IDs if relevant):
 ${scenarioCatalogText}
 
-Available 3D Cage Bats (pick best match if relevant, else "goods-2026"):
+Available 3D Cage Bats (pick best match ID, else goods-2026):
 ${batCatalogText}
 
-Coaching Guidelines:
-- Speak in plain, friendly, beginner-accessible English—translate any baseball jargon briefly in 4–6 words so beginners never feel lost, while still giving sharp, concrete mechanical fixes for players with flaws.
-- Structure reply tightly (3–5 short sentences): (1) validate what's happening and why, (2) give 1 clear mental feel cue to try on their very next rep.
-- In actionableTips, provide 2–4 short 10-minute drills anyone can do on a tee, with a partner, or in the 3D Stadium.
-- Put 1–2 relevant clinic IDs in recommendedClinicIds so the player can jump straight into our Training Lab and curated YouTube coaching videos.`;
+Reply using these exact labeled lines so the DiamondIQ UI can format your response cleanly:
+REPLY: 3–5 tight, crystal-clear sentences addressing the question, beginner context or flaw diagnosis, and 1 feel cue for the very next rep. Briefly explain any baseball term in parentheses.
+TIPS:
+- Short 10-minute actionable drill #1
+- Short 10-minute actionable drill #2
+- Short 10-minute actionable drill #3
+CLINICS: comma-separated valid clinic IDs (e.g. rolling-over, bat-drag)
+SCENARIOS: comma-separated valid scenario IDs (e.g. launch-angle-exit-velo)
+BAT: single valid bat ID (e.g. goods-2026)
+YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
 
   const ai = new GoogleGenAI({
     apiKey,
@@ -942,41 +1226,17 @@ Coaching Guidelines:
         contents: promptText,
         config: {
           systemInstruction:
-            'You are Coach Jax at DiamondIQ, a warm, crystal-clear baseball hitting, fielding, rules, and gear coach for beginners and players fixing flaws. Never fabricate URLs; select clinicIds and scenarioIds strictly from the allowed enum values.',
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              reply: { type: Type.STRING },
-              actionableTips: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              recommendedClinicIds: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              recommendedScenarioIds: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              youtubeTopics: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              recommendedBatId: { type: Type.STRING }
-            },
-            required: ['reply', 'actionableTips', 'recommendedClinicIds', 'recommendedScenarioIds', 'youtubeTopics', 'recommendedBatId']
-          }
+            'You are Coach Jax at DiamondIQ, a warm, crystal-clear baseball hitting, fielding, rules, and gear coach. Use Google Search grounding when live facts, current bats, parks, or MLB rules help. Never fabricate URLs.',
+          tools: [{ googleSearch: {} }]
         }
       },
-      12000
+      16000
     );
 
-    const parsed = JSON.parse(response.text || '{}');
-    const chosenBatId = VALID_BATS[parsed.recommendedBatId] ? parsed.recommendedBatId : 'goods-2026';
+    const parsed = parseDelimitedJaxResponse(response.text || '');
+    const chosenBatId = VALID_BATS[parsed.batId] ? parsed.batId : 'goods-2026';
 
-    const clinicIds = (Array.isArray(parsed.recommendedClinicIds) ? parsed.recommendedClinicIds : [])
+    const clinicIds = parsed.clinicTokens
       .filter((id, idx, arr) => VALID_CLINICS[id] && arr.indexOf(id) === idx)
       .slice(0, 2);
 
@@ -987,7 +1247,7 @@ Coaching Guidelines:
       url: `training.html?clinic=${encodeURIComponent(id)}#video-clinic-section`
     }));
 
-    const recommendedScenarios = (Array.isArray(parsed.recommendedScenarioIds) ? parsed.recommendedScenarioIds : [])
+    const recommendedScenarios = parsed.scenarioTokens
       .filter((id, idx, arr) => VALID_SCENARIOS[id] && arr.indexOf(id) === idx)
       .slice(0, 2)
       .map((id) => ({
@@ -1000,8 +1260,7 @@ Coaching Guidelines:
       .map((id) => VALID_CLINICS[id].youtube)
       .filter(Boolean);
 
-    const searchYts = (Array.isArray(parsed.youtubeTopics) ? parsed.youtubeTopics : [])
-      .filter((t) => typeof t === 'string' && t.trim().length > 2)
+    const searchYts = parsed.ytTopics
       .slice(0, 1)
       .map((topic) => {
         const cleanTopic = topic.trim().slice(0, 80);
@@ -1013,16 +1272,28 @@ Coaching Guidelines:
 
     const youtubeLinks = [...curatedYts, ...searchYts].slice(0, 3);
 
+    const groundingChunks =
+      response?.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const seenUrls = new Set();
+    const webSources = [];
+    for (const chunk of groundingChunks) {
+      const uri = chunk && chunk.web && typeof chunk.web.uri === 'string' ? chunk.web.uri.trim() : '';
+      const title = chunk && chunk.web && typeof chunk.web.title === 'string' ? chunk.web.title.trim() : '';
+      if (uri && uri.startsWith('https://') && !seenUrls.has(uri)) {
+        seenUrls.add(uri);
+        webSources.push({ title: title || uri.replace(/^https?:\/\//, '').split('/')[0], url: uri });
+        if (webSources.length >= 4) break;
+      }
+    }
+
     return res.json({
       coach: 'Jax',
-      reply: String(parsed.reply || '').trim(),
-      actionableTips: (Array.isArray(parsed.actionableTips) ? parsed.actionableTips : [])
-        .map((t) => String(t).trim())
-        .filter(Boolean)
-        .slice(0, 4),
+      reply: parsed.reply,
+      actionableTips: parsed.tips,
       videoLinks,
       recommendedScenarios,
       youtubeLinks,
+      webSources,
       recommendedBatId: chosenBatId,
       recommendedBatName: VALID_BATS[chosenBatId]
     });

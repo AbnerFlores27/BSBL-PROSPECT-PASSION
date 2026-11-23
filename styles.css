@@ -558,26 +558,26 @@ a:hover {
    ========================================================= */
 .hero-compact {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
-  gap: 1.35rem;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 0.95fr);
+  gap: 1.15rem;
+  align-items: center;
 }
 
 .hero-compact-copy {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
 .hero-compact-copy h1 {
-  font-size: clamp(1.75rem, 3vw, 2.35rem);
-  margin-bottom: 0.25rem;
+  font-size: clamp(1.58rem, 2.65vw, 2.08rem);
+  margin-bottom: 0.2rem;
 }
 
 .hero-lead--compact {
-  font-size: 0.96rem;
-  margin-bottom: 0.65rem;
+  font-size: 0.93rem;
+  margin-bottom: 0.55rem;
   max-width: 58ch;
 }
 
@@ -776,30 +776,30 @@ a:hover {
 }
 
 .studio-topbar {
-  padding: 1.15rem 1.5rem;
+  padding: 0.85rem 1.35rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   background: rgb(18, 28, 46);
 }
 
 .studio-topbar h2 {
   color: var(--text-primary);
-  margin-bottom: 0.2rem;
-  font-size: 1.5rem;
+  margin-bottom: 0.15rem;
+  font-size: 1.36rem;
 }
 
 .studio-topbar p {
   color: var(--text-secondary);
-  font-size: 0.92rem;
+  font-size: 0.87rem;
   margin-bottom: 0;
 }
 
 .studio-body {
-  padding: 1.4rem 1.5rem 1.5rem;
+  padding: 0.95rem 1.35rem 1.35rem;
 }
 
 .hitlab-grid {
@@ -866,13 +866,22 @@ a:hover {
 .studio-command-dock {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  margin-bottom: 0.75rem;
-  padding: 0.6rem 0.85rem;
+  gap: 0.42rem;
+  margin-bottom: 0.7rem;
+  padding: 0.55rem 0.78rem;
   border-radius: var(--radius-md);
   background: var(--bg-surface);
   border: 1px solid var(--border);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.studio-command-dock .venue-group {
+  gap: 0.36rem;
+}
+
+.studio-command-dock .segmented-btn {
+  padding: 0.25rem 0.54rem;
+  font-size: 0.77rem;
 }
 
 .command-dock-row {
@@ -880,11 +889,11 @@ a:hover {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.45rem 0.95rem;
+  gap: 0.4rem 0.68rem;
 }
 
 .command-dock-row + .command-dock-row {
-  padding-top: 0.45rem;
+  padding-top: 0.42rem;
   border-top: 1px solid var(--border);
 }
 
@@ -2908,6 +2917,23 @@ textarea:focus {
     border-bottom: 0;
     padding-bottom: 0;
   }
+
+  .studio-command-dock .venue-group {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .studio-command-dock .venue-label {
+    min-width: 68px;
+    padding-top: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .studio-command-dock .segmented-group {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 /* Interactive Enhancements & Sleek Motion */
@@ -3592,6 +3618,49 @@ textarea:focus {
 .jax-link-card:hover {
   background: var(--accent);
   color: var(--accent-text-on);
+}
+
+.auth-google-note {
+  margin: 0.45rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.jax-sources-box {
+  margin-top: 0.55rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.jax-sources-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.jax-source-link {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+
+.jax-source-link:hover {
+  color: var(--text-primary);
 }
 
 .jax-input-row {

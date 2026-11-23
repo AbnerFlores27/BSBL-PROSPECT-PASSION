@@ -111,11 +111,18 @@
         // Center/RF bleachers
         { startPhi: -0.23, endPhi: 0.78, dOff: 12, dSpan: 56, y0: 9.0, y1: 32.0, steps: 8, isSeat: true }
       ];
-    } else if (id === 'dodger') {
+    } else if (id === 'petco') {
       tiers = [
-        { startPhi: -0.78, endPhi: -0.21, dOff: 12, dSpan: 52, y0: 11.0, y1: 34.0, steps: 8, isSeat: true },
-        { startPhi: -0.19, endPhi: 0.19, dOff: 10, dSpan: 24, y0: 26.0, y1: 30.0, steps: 2, isSeat: false },
-        { startPhi: 0.21, endPhi: 0.78, dOff: 12, dSpan: 52, y0: 11.0, y1: 34.0, steps: 8, isSeat: true }
+        // Western Metal Supply brick building in LF corner + LF/RF Petco seating sections; CF Park at the Park stays open lawn!
+        { startPhi: -0.78, endPhi: -0.58, dOff: 6, dSpan: 34, y0: 42.0, y1: 48.0, steps: 2, isSeat: false },
+        { startPhi: -0.56, endPhi: -0.22, dOff: 12, dSpan: 48, y0: 10.0, y1: 31.0, steps: 7, isSeat: true },
+        { startPhi: 0.22, endPhi: 0.78, dOff: 12, dSpan: 48, y0: 10.0, y1: 31.0, steps: 7, isSeat: true }
+      ];
+    } else if (id === 'coors') {
+      tiers = [
+        { startPhi: -0.78, endPhi: -0.21, dOff: 12, dSpan: 52, y0: 10.0, y1: 34.0, steps: 8, isSeat: true },
+        { startPhi: -0.17, endPhi: 0.17, dOff: 14, dSpan: 22, y0: 22.0, y1: 26.0, steps: 2, isSeat: false },
+        { startPhi: 0.21, endPhi: 0.78, dOff: 12, dSpan: 52, y0: 10.0, y1: 34.0, steps: 8, isSeat: true }
       ];
     } else if (id === 'oracle') {
       tiers = [
@@ -138,36 +145,33 @@
       ];
     } else if (id === 'omaha') {
       tiers = [
-        { startPhi: -0.78, endPhi: -0.22, dOff: 12, dSpan: 46, y0: 9.0, y1: 27.0, steps: 7, isSeat: true },
+        { startPhi: -0.78, endPhi: -0.56, dOff: 10, dSpan: 42, y0: 9.0, y1: 25.0, steps: 6, isSeat: true },
         { startPhi: -0.18, endPhi: 0.18, dOff: 14, dSpan: 22, y0: 24.0, y1: 27.0, steps: 2, isSeat: false },
-        { startPhi: 0.22, endPhi: 0.78, dOff: 12, dSpan: 46, y0: 9.0, y1: 27.0, steps: 7, isSeat: true }
+        { startPhi: 0.56, endPhi: 0.78, dOff: 10, dSpan: 42, y0: 9.0, y1: 25.0, steps: 6, isSeat: true }
       ];
     } else if (id === 'lsu') {
       tiers = [
-        { startPhi: -0.78, endPhi: -0.20, dOff: 12, dSpan: 44, y0: 10.0, y1: 28.0, steps: 7, isSeat: true },
         { startPhi: -0.17, endPhi: 0.17, dOff: 12, dSpan: 20, y0: 24.0, y1: 27.0, steps: 2, isSeat: false },
-        { startPhi: 0.20, endPhi: 0.78, dOff: 12, dSpan: 44, y0: 10.0, y1: 28.0, steps: 7, isSeat: true }
+        { startPhi: 0.24, endPhi: 0.78, dOff: 10, dSpan: 44, y0: 10.0, y1: 28.0, steps: 7, isSeat: true }
       ];
-    } else if (id === 'missst') {
+    } else if (id === 'pk-park') {
+      // Oregon PK Park: Open grass bullpen berms + LF video board; Autzen stadium stands far beyond RF (~180+ ft past wall)
       tiers = [
-        { startPhi: -0.78, endPhi: -0.18, dOff: 10, dSpan: 42, y0: 12.0, y1: 29.0, steps: 6, isSeat: true },
-        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 20, y0: 23.0, y1: 26.0, steps: 2, isSeat: false },
-        { startPhi: 0.18, endPhi: 0.78, dOff: 10, dSpan: 42, y0: 10.0, y1: 27.0, steps: 6, isSeat: true }
+        { startPhi: -0.17, endPhi: 0.17, dOff: 12, dSpan: 18, y0: 22.0, y1: 26.0, steps: 2, isSeat: false }
       ];
-    } else if (id === 'vandy') {
+    } else if (id === 'stanford' || id === 'ucsb') {
+      // Sunken Diamond & Caesar Uyesaka: Natural open sunken grass berms around outfield -> ball settles cleanly on turf!
       tiers = [
-        { startPhi: -0.78, endPhi: -0.25, dOff: 6, dSpan: 22, y0: 36.0, y1: 41.0, steps: 4, isSeat: true },
-        { startPhi: -0.18, endPhi: 0.18, dOff: 12, dSpan: 18, y0: 23.0, y1: 26.0, steps: 2, isSeat: false },
-        { startPhi: 0.22, endPhi: 0.78, dOff: 12, dSpan: 42, y0: 9.0, y1: 25.0, steps: 6, isSeat: true }
+        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 16, y0: 20.0, y1: 24.0, steps: 2, isSeat: false }
       ];
-    } else if (id === 'texas') {
+    } else if (id === 'cal-poly') {
+      // Baggett Stadium: Compact LF/RF hill terrace bleachers + CF Batter's Eye
       tiers = [
-        { startPhi: -0.78, endPhi: -0.20, dOff: 12, dSpan: 44, y0: 9.5, y1: 27.5, steps: 7, isSeat: true },
-        { startPhi: -0.17, endPhi: 0.17, dOff: 12, dSpan: 20, y0: 24.0, y1: 27.0, steps: 2, isSeat: false },
-        { startPhi: 0.20, endPhi: 0.78, dOff: 12, dSpan: 44, y0: 9.5, y1: 27.5, steps: 7, isSeat: true }
+        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 16, y0: 20.0, y1: 24.0, steps: 2, isSeat: false },
+        { startPhi: 0.34, endPhi: 0.76, dOff: 10, dSpan: 28, y0: 8.0, y1: 18.0, steps: 4, isSeat: true }
       ];
     } else if (st.tier === 'hs') {
-      // High School parks have NO outfield multi-deck stands — only a modest CF Batter's Eye wall/screen directly in dead CF
+      // High School parks (Corona, RB, Torrey Pines, Cathedral Catholic, Eastlake): NO outfield multi-deck stands — only compact CF Batter's Eye screen
       tiers = [
         { startPhi: -0.16, endPhi: 0.16, dOff: 10, dSpan: 10, y0: 16.0, y1: 18.0, steps: 1, isSeat: false }
       ];
@@ -921,111 +925,110 @@
     const isGoods26 = kind === 'goods-2026';
     const isCombatBlue = kind === 'combat-blue';
 
-    const baseDur = isWood ? 0.058 : isGoods22 ? 0.25 : isGoods26 ? 0.19 : isCombatBlue ? 0.22 : 0.21;
-    const durSec = isGlance ? 0.046 : isJam ? (isWood ? 0.065 : 0.145) : baseDur;
+    const baseDur = isWood ? 0.052 : isGoods22 ? 0.26 : isGoods26 ? 0.21 : isCombatBlue ? 0.23 : 0.22;
+    const durSec = isGlance ? 0.044 : isJam ? (isWood ? 0.064 : 0.15) : baseDur;
     const len = Math.floor(sr * durSec);
     const ch = new Float32Array(len);
     const zoneSeed = isGlance ? 401 : isEndcap ? 271 : isJam ? 99 : 42;
     const rnd = makeSeededRand(kind.length * 9137 + zoneSeed);
 
-    const fScale = isEndcap ? 1.14 : isJam ? 0.86 : isGlance ? 1.28 : 1.0;
+    const fScale = isEndcap ? 1.16 : isJam ? 0.85 : isGlance ? 1.28 : 1.0;
 
-    const bpThump = makeBiquadBP(isJam ? 210 : isEndcap ? 420 : isGlance ? 640 : isWood ? 380 : 290, 0.72, sr);
-    const bpCrackMid = makeBiquadBP(isJam ? 920 : isEndcap ? 1850 : isGlance ? 2500 : isWood ? 1580 : 1380, 0.7, sr);
-    const bpCrackHi = makeBiquadBP(isJam ? 1950 : isEndcap ? 4100 : isGlance ? 5600 : isWood ? 3100 : 3450, 0.65, sr);
-    const lpAir = makeBiquadLP(isJam ? 3200 : isGlance ? 9000 : isWood ? 6200 : 7800, 0.7, sr);
+    const bpThump = makeBiquadBP(isJam ? 200 : isEndcap ? 420 : isGlance ? 640 : isWood ? 360 : 280, 0.72, sr);
+    const bpCrackMid = makeBiquadBP(isJam ? 880 : isEndcap ? 1850 : isGlance ? 2500 : isWood ? 1680 : 1420, 0.72, sr);
+    const bpCrackHi = makeBiquadBP(isJam ? 1900 : isEndcap ? 4150 : isGlance ? 5600 : isWood ? 3350 : 3580, 0.65, sr);
+    const lpAir = makeBiquadLP(isJam ? 3100 : isGlance ? 9000 : isWood ? 6400 : 8200, 0.7, sr);
 
     for (let i = 0; i < len; i++) {
       const t = i / sr;
 
       // 1. Sub-millisecond ball-on-barrel compression impulse
       let hertz = 0;
-      const hAmp = isGlance ? 0.55 : isJam ? 0.72 : isEndcap ? 0.92 : isWood ? 1.35 : 0.98;
-      if (t < 0.00042) {
-        hertz = Math.sin((t / 0.00042) * Math.PI) * hAmp;
-      } else if (t < 0.0009) {
-        hertz = -Math.sin(((t - 0.00042) / 0.00048) * Math.PI) * (hAmp * 0.34);
+      const hAmp = isGlance ? 0.54 : isJam ? 0.72 : isEndcap ? 0.92 : isWood ? 1.52 : 1.02;
+      if (t < 0.00038) {
+        hertz = Math.sin((t / 0.00038) * Math.PI) * hAmp;
+      } else if (t < 0.00084) {
+        hertz = -Math.sin(((t - 0.00038) / 0.00046) * Math.PI) * (hAmp * 0.36);
       }
-      if (isGlance && t >= 0.0024 && t < 0.0031) {
-        hertz += Math.sin(((t - 0.0024) / 0.0007) * Math.PI) * 0.55;
+      if (isGlance && t >= 0.0022 && t < 0.0029) {
+        hertz += Math.sin(((t - 0.0022) / 0.0007) * Math.PI) * 0.56;
       }
 
       // 2. Percussive cowhide crack & wood grain vs metal impact body
       const raw = rnd();
-      const thump = bpThump(raw) * Math.exp(-t * (isGlance ? 340 : 175));
-      const crackMid = bpCrackMid(raw) * Math.exp(-t * (isWood || isGlance ? 235 : 210));
-      const crackHi = bpCrackHi(raw) * Math.exp(-t * (isGlance ? 210 : isWood ? 290 : 280));
-      const grainFloor = lpAir(raw) * Math.exp(-t * (isGlance ? 460 : isWood ? 350 : 340)) * 0.32;
+      const thump = bpThump(raw) * Math.exp(-t * (isGlance ? 340 : isWood ? 210 : 175));
+      const crackMid = bpCrackMid(raw) * Math.exp(-t * (isWood || isGlance ? 250 : 210));
+      const crackHi = bpCrackHi(raw) * Math.exp(-t * (isGlance ? 215 : isWood ? 310 : 285));
+      const grainFloor = lpAir(raw) * Math.exp(-t * (isGlance ? 460 : isWood ? 375 : 340)) * 0.34;
 
-      const thumpW = isGlance ? 0.35 : isJam ? 1.8 : isEndcap ? 0.82 : isWood ? 1.4 : 1.05;
-      const midW = isGlance ? 1.05 : isJam ? 0.95 : isEndcap ? 1.55 : isWood ? 2.45 : 1.4;
-      const hiW = isGlance ? 2.45 : isJam ? 0.55 : isEndcap ? 1.75 : isWood ? 2.1 : 1.5;
+      const thumpW = isGlance ? 0.35 : isJam ? 1.85 : isEndcap ? 0.82 : isWood ? 1.55 : 1.05;
+      const midW = isGlance ? 1.05 : isJam ? 0.92 : isEndcap ? 1.55 : isWood ? 2.65 : 1.42;
+      const hiW = isGlance ? 2.45 : isJam ? 0.52 : isEndcap ? 1.75 : isWood ? 2.25 : 1.52;
       const leatherCrack = hertz + thump * thumpW + crackMid * midW + crackHi * hiW + grainFloor;
-      const modeIn = 1 - Math.exp(-t * 2800);
+      const modeIn = 1 - Math.exp(-t * 3100);
 
       let sample = 0;
       if (isGlance) {
-        // Grazing cowhide skim off top/bottom edge: sharp brief tick/zip with light metal whisper on BBCOR bats
         const glancePing = !isWood
-          ? Math.sin(2 * Math.PI * (3450 * (isGoods26 ? 1.12 : 1.0)) * t) * Math.exp(-t * 125) * 0.22
-          : Math.sin(2 * Math.PI * 1650 * t) * Math.exp(-t * 230) * 0.08;
+          ? Math.sin(2 * Math.PI * (3650 * (isGoods26 ? 1.12 : 1.0)) * t) * Math.exp(-t * 125) * 0.24
+          : Math.sin(2 * Math.PI * 1650 * t) * Math.exp(-t * 240) * 0.07;
         sample = leatherCrack + glancePing;
       } else if (isWood) {
-        // ICONIC REAL WOOD CRACK (Baum Bat Gold): ZERO metallic ping — pure crisp dense maple snap + grain body!
+        // BAUM BAT GOLD: Unmistakable dry pro maple/PermaWood CRACK — zero metal ping!
         if (isJam) {
           const jamThud =
-            Math.sin(2 * Math.PI * 162 * t) * Math.exp(-t * 105) * 0.42 +
-            Math.sin(2 * Math.PI * 435 * t) * Math.exp(-t * 135) * 0.24;
-          sample = leatherCrack * 0.9 + jamThud;
+            Math.sin(2 * Math.PI * 155 * t) * Math.exp(-t * 112) * 0.45 +
+            Math.sin(2 * Math.PI * 415 * t) * Math.exp(-t * 145) * 0.24;
+          sample = leatherCrack * 0.92 + jamThud;
         } else if (isEndcap) {
           const cupKnock =
-            Math.sin(2 * Math.PI * 695 * t) * Math.exp(-t * 175) * 0.32 +
-            Math.sin(2 * Math.PI * 1310 * t) * Math.exp(-t * 215) * 0.16;
-          sample = leatherCrack * 1.05 + cupKnock;
+            Math.sin(2 * Math.PI * 680 * t) * Math.exp(-t * 185) * 0.32 +
+            Math.sin(2 * Math.PI * 1280 * t) * Math.exp(-t * 225) * 0.15;
+          sample = leatherCrack * 1.08 + cupKnock;
         } else {
-          // Iconic pro wood crack: solid 440Hz maple knock + crisp dry transient snap
           const woodBody =
-            Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 155) * 0.36 +
-            Math.sin(2 * Math.PI * 890 * t) * Math.exp(-t * 195) * 0.18;
-          sample = leatherCrack * 1.15 + woodBody;
+            Math.sin(2 * Math.PI * 412 * t) * Math.exp(-t * 165) * 0.38 +
+            Math.sin(2 * Math.PI * 865 * t) * Math.exp(-t * 215) * 0.18 +
+            Math.sin(2 * Math.PI * 1420 * t) * Math.exp(-t * 270) * 0.11;
+          sample = leatherCrack * 1.2 + woodBody;
         }
       } else if (isGoods26) {
-        // 2026 THE GOODS: Unmistakable high-pitch X14 Alloy PING! (2840 Hz + 3960 Hz + 5120 Hz)
-        const amp = isJam ? 0.16 : isEndcap ? 1.18 : 1.0;
-        const dec = isJam ? 2.8 : isEndcap ? 1.15 : 1.0;
+        // 2026 THE GOODS: Unmistakable crisp high-pitch X14 Alloy PING! (2920 Hz + 4080 Hz + 5280 Hz)
+        const amp = isJam ? 0.17 : isEndcap ? 1.22 : 1.08;
+        const dec = isJam ? 2.7 : isEndcap ? 1.12 : 0.98;
         const ping =
-          Math.sin(2 * Math.PI * (2840 * fScale) * t) * Math.exp(-t * 21 * dec) * (0.62 * amp) +
-          Math.sin(2 * Math.PI * (3960 * fScale) * t) * Math.exp(-t * 26 * dec) * (0.42 * amp) +
-          Math.sin(2 * Math.PI * (5120 * fScale) * t) * Math.exp(-t * 36 * dec) * (0.20 * amp);
-        sample = leatherCrack * 0.65 + modeIn * ping;
+          Math.sin(2 * Math.PI * (2920 * fScale) * t) * Math.exp(-t * 19.5 * dec) * (0.68 * amp) +
+          Math.sin(2 * Math.PI * (4080 * fScale) * t) * Math.exp(-t * 24.5 * dec) * (0.46 * amp) +
+          Math.sin(2 * Math.PI * (5280 * fScale) * t) * Math.exp(-t * 33 * dec) * (0.24 * amp);
+        sample = leatherCrack * 0.62 + modeIn * ping;
       } else if (isGoods22) {
-        // 2022 THE GOODS: Legendary NCAA dual-mode shimmering X14 high-pitched RING (2380/2406 Hz + 3520 Hz)
-        const amp = isJam ? 0.16 : isEndcap ? 1.16 : 1.0;
-        const dec = isJam ? 2.7 : isEndcap ? 1.1 : 1.0;
+        // 2022 THE GOODS: Iconic NCAA Chrome X14 dual-mode shimmering high PING (2420 / 2450 Hz + 3620 Hz)
+        const amp = isJam ? 0.17 : isEndcap ? 1.2 : 1.08;
+        const dec = isJam ? 2.6 : isEndcap ? 1.08 : 0.94;
         const ping =
-          Math.sin(2 * Math.PI * (2380 * fScale) * t) * Math.exp(-t * 16.5 * dec) * (0.52 * amp) +
-          Math.sin(2 * Math.PI * (2406 * fScale) * t) * Math.exp(-t * 17.2 * dec) * (0.36 * amp) +
-          Math.sin(2 * Math.PI * (3520 * fScale) * t) * Math.exp(-t * 23 * dec) * (0.34 * amp);
-        sample = leatherCrack * 0.65 + modeIn * ping;
+          Math.sin(2 * Math.PI * (2420 * fScale) * t) * Math.exp(-t * 16.0 * dec) * (0.56 * amp) +
+          Math.sin(2 * Math.PI * (2450 * fScale) * t) * Math.exp(-t * 16.8 * dec) * (0.38 * amp) +
+          Math.sin(2 * Math.PI * (3620 * fScale) * t) * Math.exp(-t * 22 * dec) * (0.38 * amp);
+        sample = leatherCrack * 0.62 + modeIn * ping;
       } else {
-        // COMBAT SPEC-A1 (Rodeo & Members Blue): Crisp 1-piece SFX high-alloy PING!
-        const mul = isCombatBlue ? 1.06 : 1.0;
-        const amp = isJam ? 0.22 : isEndcap ? 1.2 : 1.0;
-        const dec = isJam ? 2.6 : isEndcap ? 1.12 : 1.0;
+        // COMBAT SPEC-A1 (Rodeo & Members Blue): Explosive 1-piece SFX high-alloy CRACK-PING!
+        const mul = isCombatBlue ? 1.065 : 1.0;
+        const amp = isJam ? 0.24 : isEndcap ? 1.24 : 1.1;
+        const dec = isJam ? 2.5 : isEndcap ? 1.08 : 0.96;
         const ping =
-          Math.sin(2 * Math.PI * (2540 * mul * fScale) * t) * Math.exp(-t * 19.5 * dec) * (0.56 * amp) +
-          Math.sin(2 * Math.PI * (3620 * mul * fScale) * t) * Math.exp(-t * 24 * dec) * (0.38 * amp) +
-          Math.sin(2 * Math.PI * (1680 * mul * fScale) * t) * Math.exp(-t * 26 * dec) * (0.24 * amp);
-        sample = leatherCrack * 0.7 + modeIn * ping;
+          Math.sin(2 * Math.PI * (2620 * mul * fScale) * t) * Math.exp(-t * 18.2 * dec) * (0.62 * amp) +
+          Math.sin(2 * Math.PI * (3740 * mul * fScale) * t) * Math.exp(-t * 22.8 * dec) * (0.44 * amp) +
+          Math.sin(2 * Math.PI * (1760 * mul * fScale) * t) * Math.exp(-t * 25.0 * dec) * (0.25 * amp);
+        sample = leatherCrack * 0.68 + modeIn * ping;
       }
 
       if (isJam && !isWood) {
         const isOnePc = !isGoods26 && !isGoods22;
         sample +=
-          Math.sin(2 * Math.PI * 178 * t) * Math.exp(-t * 68) * (isOnePc ? 0.56 : 0.34) +
-          Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 95) * (isOnePc ? 0.32 : 0.14);
+          Math.sin(2 * Math.PI * 176 * t) * Math.exp(-t * 70) * (isOnePc ? 0.56 : 0.34) +
+          Math.sin(2 * Math.PI * 435 * t) * Math.exp(-t * 96) * (isOnePc ? 0.32 : 0.14);
       } else if (isEndcap && !isWood) {
-        sample += Math.sin(2 * Math.PI * (4250 * (isGoods26 ? 1.08 : 1.0)) * t) * Math.exp(-t * 48) * 0.24;
+        sample += Math.sin(2 * Math.PI * (4380 * (isGoods26 ? 1.08 : 1.0)) * t) * Math.exp(-t * 46) * 0.26;
       }
 
       ch[i] = sample;
@@ -1036,7 +1039,7 @@
       const a = Math.abs(ch[i]);
       if (a > peak) peak = a;
     }
-    const targetPeak = isGlance ? 0.68 : isJam ? 0.84 : isEndcap ? 0.88 : 0.94;
+    const targetPeak = isGlance ? 0.68 : isJam ? 0.84 : isEndcap ? 0.9 : 0.95;
     const norm = peak > 0 ? targetPeak / peak : 1;
     for (let i = 0; i < len; i++) {
       ch[i] *= norm;

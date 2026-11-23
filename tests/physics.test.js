@@ -17,17 +17,20 @@ function makeStadium(id, tier, lf, cf, rf, h = 8) {
 }
 
 test('No mid-air invisible bounce over HS outfields, CF bays, or open lawns', () => {
-  const hs = makeStadium('hs-coastal', 'hs', 320, 385, 320, 6);
-  // Over left-center at HS Coastal (phi = -0.35), 40 ft past fence -> must be null!
+  const hs = makeStadium('hs-tp', 'hs', 318, 392, 318, 6);
+  // Over left-center at Torrey Pines (phi = -0.35), 40 ft past fence -> must be null!
   assert.equal(Physics.getParkStructureSurface(hs, -0.35, 40), null);
 
   const oracle = makeStadium('oracle', 'pro', 339, 399, 309, 24);
   // Over RF fence into McCovey Cove (phi = 0.52) -> must be null!
   assert.equal(Physics.getParkStructureSurface(oracle, 0.52, 25), null);
 
+  const pkPark = makeStadium('pk-park', 'college', 335, 400, 325, 8);
+  assert.equal(Physics.getParkStructureSurface(pkPark, -0.45, 32), null);
+
   const omaha = makeStadium('omaha', 'college', 335, 408, 335, 8.5);
   // Past seats (>70ft) -> must be null!
-  assert.equal(Physics.getParkStructureSurface(omaha, 0.45, 78), null);
+  assert.equal(Physics.getParkStructureSurface(omaha, 0.65, 78), null);
 
   // Full RK4 flight over HS outfield lands smoothly at z = 0.14 (ground) with zero mid-air deflection
   const hsFlight = Physics.simulateBattedBallRK4({
@@ -42,6 +45,15 @@ test('No mid-air invisible bounce over HS outfields, CF bays, or open lawns', ()
   assert.equal(hsFlight.seatHitTime, null);
   const lastPt = hsFlight.points[hsFlight.points.length - 1];
   assert.ok(lastPt.z <= 0.2, `Expected ball to reach ground (<= 0.2ft), got ${lastPt.z}`);
+
+  // Coors Field altitude (0.84 airDensity) carries noticeably farther than Petco Park marine air (1.01)
+  const coors = makeStadium('coors', 'pro', 347, 415, 350, 8);
+  coors.airDensity = 0.84;
+  const petco = makeStadium('petco', 'pro', 336, 396, 322, 8);
+  petco.airDensity = 1.01;
+  const coorsFly = Physics.simulateBattedBallRK4({ stadium: coors, exitVelo: 103, launchDeg: 28, sprayDeg: 0, backspinRpm: 2100 });
+  const petcoFly = Physics.simulateBattedBallRK4({ stadium: petco, exitVelo: 103, launchDeg: 28, sprayDeg: 0, backspinRpm: 2100 });
+  assert.ok(coorsFly.carryDist > petcoFly.carryDist + 14, `Expected Coors (${coorsFly.carryDist}ft) > Petco (${petcoFly.carryDist}ft)`);
 });
 
 test('Calibrated bat physics avoids constant 500-ft HRs on clean barrels', () => {

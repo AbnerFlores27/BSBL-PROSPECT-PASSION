@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiamondIQ — Home</title>
-<meta name="description" content="Baseball rules and stats explained in plain English by five experts for beginners.">
+<meta name="description" content="Interactive 3D baseball simulator, biomechanical drill video clinic, 5-expert play breakdowns, and AI player diagnostic quiz.">
 <script>
 (function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
@@ -65,7 +65,7 @@
     <div class="hero-compact-copy">
       <div class="kicker-line">MLB The Show Camera Views · 120Hz Wind &amp; Roll Physics · Coach Jax AI</div>
       <h1>Step into the box. Own every pitch &amp; play.</h1>
-      <p class="hero-lead hero-lead--compact">15 distinct Pro, College &amp; HS ballparks, authentic Baum Wood, Goods &amp; Combat bat audio, real wind aerodynamics, and curated YouTube training.</p>
+      <p class="hero-lead hero-lead--compact">17 distinct Pro, College &amp; San Diego/CA HS ballparks, authentic Baum Wood, Goods &amp; Combat bat audio, real wind aerodynamics, and Coach Jax Web Scouting.</p>
       <div class="hero-actions">
         <a class="btn btn-primary btn-sm" href="#gameday-studio" id="hero-open-hitlab">Step Into 3D Studio</a>
         <button type="button" class="btn btn-secondary btn-sm" data-open-jax data-jax-prompt="Give me a quick 3-step hitting & fielding checkup to start today's session.">Ask Coach Jax</button>
@@ -115,7 +115,7 @@
     <div class="studio-topbar">
       <div>
         <h2 id="studio-heading">Gameday 3D Broadcast Studio · Rapsodo &amp; HitTrax</h2>
-        <p>15 unique Pro, College &amp; HS ballparks + D1 Cage · Authentic maple &amp; BBCOR acoustics · Real ground roll &amp; MLB The Show views.</p>
+        <p>17 unique Pro, College &amp; CA/San Diego HS ballparks + D1 Cage · Authentic maple &amp; BBCOR acoustics · Real ground roll &amp; MLB The Show views.</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;">
         <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
@@ -133,8 +133,8 @@
             <div class="venue-group">
               <span class="venue-label">Tier</span>
               <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
-                <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (5)</button>
-                <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (5)</button>
+                <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (6)</button>
+                <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (6)</button>
                 <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (5)</button>
                 <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
               </div>
@@ -145,9 +145,10 @@
               <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose stadium or cage">
                 <button type="button" class="segmented-btn" data-stadium="omaha" aria-pressed="true">Omaha CWS</button>
                 <button type="button" class="segmented-btn" data-stadium="lsu" aria-pressed="false">LSU Alex Box</button>
-                <button type="button" class="segmented-btn" data-stadium="missst" aria-pressed="false">Miss St Noble</button>
-                <button type="button" class="segmented-btn" data-stadium="vandy" aria-pressed="false">Vandy Hawkins</button>
-                <button type="button" class="segmented-btn" data-stadium="texas" aria-pressed="false">Texas Disch-Falk</button>
+                <button type="button" class="segmented-btn" data-stadium="pk-park" aria-pressed="false">Oregon PK Park</button>
+                <button type="button" class="segmented-btn" data-stadium="stanford" aria-pressed="false">Stanford</button>
+                <button type="button" class="segmented-btn" data-stadium="ucsb" aria-pressed="false">UC Santa Barbara</button>
+                <button type="button" class="segmented-btn" data-stadium="cal-poly" aria-pressed="false">Cal Poly</button>
               </div>
             </div>
 
@@ -180,6 +181,15 @@
                 <button type="button" class="segmented-btn" data-pitch="slider" aria-pressed="false">Slider</button>
                 <button type="button" class="segmented-btn" data-pitch="curve" aria-pressed="false">Curve</button>
                 <button type="button" class="segmented-btn" data-pitch="changeup" aria-pressed="false">Change</button>
+              </div>
+            </div>
+
+            <div class="venue-group">
+              <span class="venue-label">Speed</span>
+              <div class="segmented-group" id="pitch-speed-tabs" role="group" aria-label="Choose pitch velocity tier">
+                <button type="button" class="segmented-btn" data-pspeed="rookie" aria-pressed="false">Rookie</button>
+                <button type="button" class="segmented-btn" data-pspeed="varsity" aria-pressed="false">Varsity</button>
+                <button type="button" class="segmented-btn" data-pspeed="pro" aria-pressed="true">Pro</button>
               </div>
             </div>
 

@@ -843,9 +843,9 @@
     };
 
     const STADIUM_TIERS = {
-      pro: ['fenway', 'dodger', 'oracle', 'wrigley', 'yankee'],
-      college: ['omaha', 'lsu', 'missst', 'vandy', 'texas'],
-      hs: ['hs-central', 'hs-oakridge', 'hs-coastal', 'hs-valley', 'hs-metro'],
+      pro: ['fenway', 'petco', 'coors', 'oracle', 'wrigley', 'yankee'],
+      college: ['omaha', 'lsu', 'pk-park', 'stanford', 'ucsb', 'cal-poly'],
+      hs: ['hs-corona', 'hs-rb', 'hs-tp', 'hs-cchs', 'hs-eastlake'],
       cage: ['cage']
     };
 
@@ -873,25 +873,50 @@
           return phi <= -0.25 ? 37 : phi <= 0.1 ? 17 : 5;
         }
       },
-      dodger: {
-        id: 'dodger',
+      petco: {
+        id: 'petco',
         tier: 'pro',
-        shortName: 'Dodger Stadium',
-        name: 'Dodger Stadium (LA)',
-        dimsLabel: 'Dodger Stadium · 330 LF · 395 CF · 330 RF',
-        skyTop: '#0b1834',
-        skyMid: '#233b6e',
-        skyLow: '#6e4c6b',
-        wallColor: '#005a9c',
-        wallCap: '#facc15',
-        subBanner: 'CHAVEZ RAVINE',
-        subBanner2: '395 CENTER FIELD',
-        airDensity: 0.985,
+        shortName: 'Petco Park',
+        name: 'Petco Park (San Diego)',
+        dimsLabel: 'Petco Park · 336 LF · 396 CF · 322 RF',
+        skyTop: '#061529',
+        skyMid: '#13355c',
+        skyLow: '#2b618c',
+        wallColor: '#2f241d',
+        wallCap: '#ffc425',
+        subBanner: 'WESTERN METAL · GASLAMP',
+        subBanner2: 'SAN DIEGO · 396 CF',
+        airDensity: 1.01,
         wallDist(phi) {
-          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+          return phi < 0
+            ? 336 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60
+            : 322 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 74;
         },
-        wallHeight() {
-          return 8;
+        wallHeight(phi) {
+          return phi < -0.35 ? 10 : 8;
+        }
+      },
+      coors: {
+        id: 'coors',
+        tier: 'pro',
+        shortName: 'Coors Field',
+        name: 'Coors Field (Denver)',
+        dimsLabel: 'Coors Field · 347 LF · 415 CF · 350 RF',
+        skyTop: '#0b1838',
+        skyMid: '#1e3a6e',
+        skyLow: '#5c4b6e',
+        wallColor: '#163c29',
+        wallCap: '#c4b5fd',
+        subBanner: 'MILE HIGH · ROCKIES',
+        subBanner2: '5,280 FT ALTITUDE',
+        airDensity: 0.84,
+        wallDist(phi) {
+          return phi < 0
+            ? 347 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 68
+            : 350 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+        },
+        wallHeight(phi) {
+          return phi > 0.25 ? 14 : 8;
         }
       },
       oracle: {
@@ -1005,176 +1030,195 @@
           return 10;
         }
       },
-      missst: {
-        id: 'missst',
+      'pk-park': {
+        id: 'pk-park',
         tier: 'college',
-        shortName: 'Miss St Noble',
-        name: 'Dude Noble Field (Miss. State)',
-        dimsLabel: 'Dude Noble (MSU) · 330 LF · 390 CF · 330 RF',
-        skyTop: '#0b182c',
-        skyMid: '#242947',
-        skyLow: '#4f3b49',
-        wallColor: '#5c1424',
-        wallCap: '#e2e8f0',
-        subBanner: 'LEFT FIELD LOUNGE',
-        subBanner2: 'STARKVILLE · SEC',
-        airDensity: 0.992,
-        wallDist(phi) {
-          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
-        },
-        wallHeight() {
-          return 9;
-        }
-      },
-      vandy: {
-        id: 'vandy',
-        tier: 'college',
-        shortName: 'Vandy Hawkins',
-        name: 'Hawkins Field (Vanderbilt)',
-        dimsLabel: 'Hawkins Field · 310 LF · 400 CF · 330 RF',
-        skyTop: '#0a1426',
-        skyMid: '#1f2b42',
-        skyLow: '#3a465c',
-        wallColor: '#1c1917',
-        wallCap: '#cfb87c',
-        subBanner: 'NASHVILLE MONSTER · 35 FT',
-        subBanner2: 'VANDERBILT · SEC',
-        airDensity: 0.995,
+        shortName: 'Oregon PK Park',
+        name: 'PK Park (Oregon)',
+        dimsLabel: 'PK Park (Oregon) · 335 LF · 400 CF · 325 RF',
+        skyTop: '#071b16',
+        skyMid: '#113a2d',
+        skyLow: '#2a5e4a',
+        wallColor: '#154733',
+        wallCap: '#fee123',
+        subBanner: 'EUGENE · OREGON DUCKS',
+        subBanner2: 'AUTZEN CORRIDOR · 400 CF',
+        airDensity: 0.99,
         wallDist(phi) {
           return phi < 0
-            ? 310 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 90
-            : 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
-        },
-        wallHeight(phi) {
-          return phi <= -0.25 ? 35 : 8;
-        }
-      },
-      texas: {
-        id: 'texas',
-        tier: 'college',
-        shortName: 'Texas Disch-Falk',
-        name: 'UFCU Disch-Falk (Texas)',
-        dimsLabel: 'Disch-Falk · 340 LF · 400 CF · 325 RF',
-        skyTop: '#161124',
-        skyMid: '#3d243b',
-        skyLow: '#6e3a32',
-        wallColor: '#8c3b0b',
-        wallCap: '#f8fafc',
-        subBanner: 'AUSTIN · LONGHORNS',
-        subBanner2: 'DISCH-FALK FIELD',
-        airDensity: 0.982,
-        wallDist(phi) {
-          return phi < 0
-            ? 340 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60
+            ? 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65
             : 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
         },
         wallHeight() {
           return 8;
         }
       },
-      'hs-central': {
-        id: 'hs-central',
-        tier: 'hs',
-        shortName: 'Central High',
-        name: 'Central High Field',
-        dimsLabel: 'Central High · 315 LF · 375 CF · 315 RF',
-        skyTop: '#0b1e36',
-        skyMid: '#1d456b',
-        skyLow: '#3b739c',
-        wallColor: '#1e3a5f',
-        wallCap: '#facc15',
-        subBanner: 'VARSITY DIAMOND',
-        subBanner2: '375 CENTER',
+      stanford: {
+        id: 'stanford',
+        tier: 'college',
+        shortName: 'Stanford',
+        name: 'Klein Field at Sunken Diamond (Stanford)',
+        dimsLabel: 'Stanford Sunken Diamond · 335 LF · 400 CF · 335 RF',
+        skyTop: '#12182b',
+        skyMid: '#243454',
+        skyLow: '#485b7a',
+        wallColor: '#8c1515',
+        wallCap: '#f8fafc',
+        subBanner: 'SUNKEN DIAMOND · PALO ALTO',
+        subBanner2: 'HOOVER TOWER · CARDINAL',
         airDensity: 1.0,
         wallDist(phi) {
-          return 315 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
+          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
         },
         wallHeight() {
-          return 6;
+          return 8;
         }
       },
-      'hs-oakridge': {
-        id: 'hs-oakridge',
-        tier: 'hs',
-        shortName: 'Oak Ridge Prep',
-        name: 'Oak Ridge Prep Field',
-        dimsLabel: 'Oak Ridge Prep · 310 LF · 370 CF · 310 RF',
-        skyTop: '#0b2230',
-        skyMid: '#1b4754',
-        skyLow: '#3d746e',
-        wallColor: '#14532d',
-        wallCap: '#fbbf24',
-        subBanner: 'OAK RIDGE PREP',
-        subBanner2: '370 CENTER',
-        airDensity: 0.995,
-        wallDist(phi) {
-          return 310 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
-        },
-        wallHeight() {
-          return 6;
-        }
-      },
-      'hs-coastal': {
-        id: 'hs-coastal',
-        tier: 'hs',
-        shortName: 'Coastal Pines',
-        name: 'Coastal Pines Complex',
-        dimsLabel: 'Coastal Pines · 320 LF · 385 CF · 320 RF',
-        skyTop: '#071c34',
-        skyMid: '#124670',
-        skyLow: '#35799e',
-        wallColor: '#0369a1',
-        wallCap: '#fde047',
-        subBanner: 'COASTAL PINES',
-        subBanner2: 'SHOWCASE FIELD',
+      ucsb: {
+        id: 'ucsb',
+        tier: 'college',
+        shortName: 'UC Santa Barbara',
+        name: 'Caesar Uyesaka Stadium (UCSB)',
+        dimsLabel: 'Caesar Uyesaka (UCSB) · 335 LF · 400 CF · 335 RF',
+        skyTop: '#071d36',
+        skyMid: '#13406e',
+        skyLow: '#2d6c99',
+        wallColor: '#003660',
+        wallCap: '#febc11',
+        subBanner: 'GAUCHOS · SANTA BARBARA',
+        subBanner2: 'SANTA YNEZ MOUNTAINS',
         airDensity: 1.012,
         wallDist(phi) {
-          return 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
         },
         wallHeight() {
-          return 6;
+          return 8;
         }
       },
-      'hs-valley': {
-        id: 'hs-valley',
-        tier: 'hs',
-        shortName: 'Valley View',
-        name: 'Valley View HS Diamond',
-        dimsLabel: 'Valley View · 305 LF · 365 CF · 305 RF',
-        skyTop: '#14152e',
-        skyMid: '#3b2954',
-        skyLow: '#70445e',
-        wallColor: '#7c2d12',
-        wallCap: '#fbbf24',
-        subBanner: 'HIGH DESERT',
-        subBanner2: '365 CENTER',
-        airDensity: 0.955,
+      'cal-poly': {
+        id: 'cal-poly',
+        tier: 'college',
+        shortName: 'Cal Poly',
+        name: 'Baggett Stadium (Cal Poly)',
+        dimsLabel: 'Baggett Stadium (Cal Poly) · 335 LF · 405 CF · 335 RF',
+        skyTop: '#081b19',
+        skyMid: '#153d35',
+        skyLow: '#346353',
+        wallColor: '#154734',
+        wallCap: '#bd8b13',
+        subBanner: 'MUSTANGS · SAN LUIS OBISPO',
+        subBanner2: 'BISHOP PEAK · 405 CF',
+        airDensity: 0.995,
         wallDist(phi) {
-          return 305 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60;
+          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
         },
         wallHeight() {
-          return 6;
+          return 8;
         }
       },
-      'hs-metro': {
-        id: 'hs-metro',
+      'hs-corona': {
+        id: 'hs-corona',
         tier: 'hs',
-        shortName: 'Metro Varsity',
-        name: 'Metro Varsity Park',
-        dimsLabel: 'Metro Varsity · 312 LF · 378 CF · 312 RF',
-        skyTop: '#091529',
-        skyMid: '#193159',
-        skyLow: '#2e5185',
-        wallColor: '#312e81',
-        wallCap: '#f8fafc',
-        subBanner: 'METRO VARSITY',
-        subBanner2: '378 CENTER',
+        shortName: 'Corona HS',
+        name: 'Corona High School (CA)',
+        dimsLabel: 'Corona Panthers (CA) · 315 LF · 380 CF · 315 RF',
+        skyTop: '#161124',
+        skyMid: '#36213f',
+        skyLow: '#663c48',
+        wallColor: '#991b1b',
+        wallCap: '#facc15',
+        subBanner: 'CORONA PANTHERS · CA',
+        subBanner2: 'CLEVELAND NATL FOREST',
+        airDensity: 0.985,
+        wallDist(phi) {
+          return 315 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      'hs-rb': {
+        id: 'hs-rb',
+        tier: 'hs',
+        shortName: 'Rancho Bernardo',
+        name: 'Rancho Bernardo HS (San Diego)',
+        dimsLabel: 'Rancho Bernardo Broncos (SD) · 315 LF · 385 CF · 315 RF',
+        skyTop: '#091d36',
+        skyMid: '#163c63',
+        skyLow: '#326a8f',
+        wallColor: '#0f294a',
+        wallCap: '#e2e8f0',
+        subBanner: 'RANCHO BERNARDO · SD',
+        subBanner2: 'BRONCOS · 385 CF',
         airDensity: 1.0,
         wallDist(phi) {
-          return 312 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 66;
+          return 315 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
         },
         wallHeight() {
-          return 6;
+          return 7;
+        }
+      },
+      'hs-tp': {
+        id: 'hs-tp',
+        tier: 'hs',
+        shortName: 'Torrey Pines',
+        name: 'Torrey Pines HS (San Diego)',
+        dimsLabel: 'Torrey Pines Falcons (SD) · 318 LF · 392 CF · 318 RF',
+        skyTop: '#071f33',
+        skyMid: '#134669',
+        skyLow: '#347594',
+        wallColor: '#991b1b',
+        wallCap: '#fde047',
+        subBanner: 'TORREY PINES · DEL MAR',
+        subBanner2: 'COASTAL BLUFF · 392 CF',
+        airDensity: 1.012,
+        wallDist(phi) {
+          return 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 74;
+        },
+        wallHeight() {
+          return 7;
+        }
+      },
+      'hs-cchs': {
+        id: 'hs-cchs',
+        tier: 'hs',
+        shortName: 'Cathedral Catholic',
+        name: 'Cathedral Catholic HS (San Diego)',
+        dimsLabel: 'Cathedral Catholic Dons (SD) · 320 LF · 390 CF · 320 RF',
+        skyTop: '#0a182d',
+        skyMid: '#1b3559',
+        skyLow: '#385d82',
+        wallColor: '#7f1d1d',
+        wallCap: '#eab308',
+        subBanner: 'MANCHESTER FIELD · SD',
+        subBanner2: 'DONS · 390 CF',
+        airDensity: 1.008,
+        wallDist(phi) {
+          return 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      'hs-eastlake': {
+        id: 'hs-eastlake',
+        tier: 'hs',
+        shortName: 'Eastlake HS',
+        name: 'Eastlake High School (San Diego)',
+        dimsLabel: 'Eastlake Titans (SD) · 312 LF · 380 CF · 312 RF',
+        skyTop: '#081b33',
+        skyMid: '#173e69',
+        skyLow: '#346d91',
+        wallColor: '#1e40af',
+        wallCap: '#22c55e',
+        subBanner: 'EASTLAKE TITANS · CHULA VISTA',
+        subBanner2: 'OTAY MESA · 380 CF',
+        airDensity: 1.004,
+        wallDist(phi) {
+          return 312 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 68;
+        },
+        wallHeight() {
+          return 7;
         }
       },
       cage: {
@@ -1257,6 +1301,12 @@
       }
     };
 
+    const PITCH_SPEED_LEVELS = {
+      rookie: { label: 'Rookie (60–70 mph)', scale: 0.72 },
+      varsity: { label: 'Varsity (74–84 mph)', scale: 0.87 },
+      pro: { label: 'Pro (86–95 mph)', scale: 1.0 }
+    };
+
     const cageCanvas = document.getElementById('cage-canvas');
     const sprayCanvas = document.getElementById('hittrax-spray-canvas');
     const rapsodoViewTabs = document.getElementById('rapsodo-view-tabs');
@@ -1265,6 +1315,7 @@
     const stadiumTabs = document.getElementById('stadium-tabs');
     const deliveryTabs = document.getElementById('delivery-tabs');
     const pitchTabs = document.getElementById('pitch-tabs');
+    const pitchSpeedTabs = document.getElementById('pitch-speed-tabs');
     const windTabs = document.getElementById('wind-tabs');
     const batterHandTabs = document.getElementById('batter-hand-tabs');
     const pitcherHandTabs = document.getElementById('pitcher-hand-tabs');
@@ -1430,6 +1481,7 @@
       let activeStadiumTier = (STADIUMS[activeStadiumId] && STADIUMS[activeStadiumId].tier) || 'college';
       let activeTelemetryView = 'spray'; // 'spray' | 'arc' | 'zone'
       let selectedPitchType = 'mix';
+      let activePitchSpeed = 'pro'; // 'rookie' | 'varsity' | 'pro'
       let activeWindId = 'calm';
       let activeContactZone = 'sweet';
       let batterHand = savedUserPrefs.battingHand === 'L' ? 'L' : 'R'; // 'R' | 'L'
@@ -2371,9 +2423,10 @@
             ? keys[Math.floor(Math.random() * keys.length)]
             : selectedPitchType;
         const spec = PITCH_TYPES[chosenKey] || PITCH_TYPES.fastball;
+        const speedSpec = PITCH_SPEED_LEVELS[activePitchSpeed] || PITCH_SPEED_LEVELS.pro;
         const mph = isDemoHr
           ? 89
-          : Math.round(spec.mphMin + Math.random() * (spec.mphMax - spec.mphMin));
+          : Math.round((spec.mphMin + Math.random() * (spec.mphMax - spec.mphMin)) * speedSpec.scale);
         const pitchRpm = Math.round(spec.rpmMin + Math.random() * (spec.rpmMax - spec.rpmMin));
 
         const aimX = isDemoHr ? 0.03 : (Math.random() - 0.5) * 1.72;
@@ -3232,6 +3285,21 @@
         };
       }
 
+      if (pitchSpeedTabs) {
+        pitchSpeedTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-pspeed]');
+          if (!btn) return;
+          cageEngaged = true;
+          const nextSpeed = btn.dataset.pspeed;
+          if (!PITCH_SPEED_LEVELS[nextSpeed]) return;
+          activePitchSpeed = nextSpeed;
+          pitchSpeedTabs.querySelectorAll('[data-pspeed]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (pitchNote) {
+            pitchNote.textContent = `Pitch velocity tier: ${PITCH_SPEED_LEVELS[activePitchSpeed].label}`;
+          }
+        };
+      }
+
       if (windTabs) {
         windTabs.onclick = (e) => {
           const btn = e.target.closest('[data-wind]');
@@ -3369,6 +3437,17 @@
           drawTelemetryCanvas();
         };
       }
+
+      window.__diamondiqCageContext = () => {
+        const batName = BATS[activeBatId] ? BATS[activeBatId].name : activeBatId;
+        const stSpec = STADIUMS[activeStadiumId] ? STADIUMS[activeStadiumId].dimsLabel : activeStadiumId;
+        const wLabel = WIND_PRESETS[activeWindId] ? WIND_PRESETS[activeWindId].label : activeWindId;
+        const spLabel = PITCH_SPEED_LEVELS[activePitchSpeed] ? PITCH_SPEED_LEVELS[activePitchSpeed].label : 'Pro';
+        const hitStr = session.lastHit
+          ? `${session.lastHit.exitVelo} mph EV, ${session.lastHit.launchAngle}° LA, ${session.lastHit.dist} ft (${session.lastHit.outcome})`
+          : 'No batted ball yet';
+        return `Bat: ${batName} | Ballpark: ${stSpec} | Wind: ${wLabel} | Speed: ${spLabel} | Last hit: ${hitStr}`;
+      };
 
       renderStadiumButtonsForTier(activeStadiumTier, activeStadiumId);
       setActiveContactZone('sweet');
@@ -4313,9 +4392,9 @@
         const email = pEmailEl ? pEmailEl.value.trim() : undefined;
         const chosenStadium = pStadiumEl ? pStadiumEl.value : 'omaha';
         const tierMap = {
-          fenway: 'pro', dodger: 'pro', oracle: 'pro', wrigley: 'pro', yankee: 'pro',
-          omaha: 'college', lsu: 'college', missst: 'college', vandy: 'college', texas: 'college',
-          'hs-central': 'hs', 'hs-oakridge': 'hs', 'hs-coastal': 'hs', 'hs-valley': 'hs', 'hs-metro': 'hs',
+          fenway: 'pro', petco: 'pro', coors: 'pro', oracle: 'pro', wrigley: 'pro', yankee: 'pro',
+          omaha: 'college', lsu: 'college', 'pk-park': 'college', stanford: 'college', ucsb: 'college', 'cal-poly': 'college',
+          'hs-corona': 'hs', 'hs-rb': 'hs', 'hs-tp': 'hs', 'hs-cchs': 'hs', 'hs-eastlake': 'hs',
           cage: 'cage'
         };
         const preferences = {
@@ -4364,6 +4443,89 @@
   function initAuthForms() {
     const pageParams = new URLSearchParams(window.location.search);
     const nextUrl = safeNextUrl(pageParams.get('next'));
+
+    // One-tap Google OAuth Popup Flow
+    (function initGoogleAuthButton() {
+      const gBtn = document.getElementById('google-auth-btn');
+      const gNote = document.getElementById('google-auth-note');
+      if (!gBtn) return;
+
+      let googleConfigured = false;
+      fetch('/api/auth/google/status')
+        .then((r) => (r.ok ? r.json() : { configured: false }))
+        .then((st) => {
+          googleConfigured = Boolean(st && st.configured);
+        })
+        .catch(() => {});
+
+      const isAllowedOrigin = (origin) => {
+        if (!origin) return false;
+        if (origin === window.location.origin) return true;
+        return (
+          origin.endsWith('.run.app') ||
+          origin.endsWith('.replit.app') ||
+          origin.endsWith('.repl.co') ||
+          origin.endsWith('.replit.dev') ||
+          origin.includes('localhost') ||
+          origin.includes('127.0.0.1')
+        );
+      };
+
+      window.addEventListener('message', (event) => {
+        if (!isAllowedOrigin(event.origin)) return;
+        const msg = event.data;
+        if (!msg || msg.type !== 'OAUTH_AUTH_SUCCESS') return;
+        showToast('Signed in with Google!');
+        if (nextUrl) {
+          window.location.href = nextUrl;
+        } else if (msg.needsOnboarding) {
+          window.location.href = 'onboarding.html?welcome=1';
+        } else {
+          window.location.href = 'playbook.html';
+        }
+      });
+
+      gBtn.addEventListener('click', async () => {
+        if (gNote) {
+          gNote.hidden = true;
+          gNote.textContent = '';
+        }
+        gBtn.disabled = true;
+        try {
+          const resp = await fetch('/api/auth/google/url');
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok || !data.url) {
+            if (gNote) {
+              gNote.hidden = false;
+              gNote.textContent =
+                data.error ||
+                'Google Sign-In is not configured yet (add GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET in environment settings).';
+            }
+            return;
+          }
+          const w = 520;
+          const h = 640;
+          const left = Math.max(0, Math.round((window.screen.width - w) / 2));
+          const top = Math.max(0, Math.round((window.screen.height - h) / 2));
+          const popup = window.open(
+            data.url,
+            'diamondiq_google_oauth',
+            `width=${w},height=${h},left=${left},top=${top},noopener=no`
+          );
+          if (!popup && gNote) {
+            gNote.hidden = false;
+            gNote.textContent = 'Please allow popups for this site so Google Sign-In can open.';
+          }
+        } catch {
+          if (gNote) {
+            gNote.hidden = false;
+            gNote.textContent = 'Could not reach Google Sign-In right now. Use username/email login below.';
+          }
+        } finally {
+          gBtn.disabled = false;
+        }
+      });
+    })();
 
     // Password visibility toggle buttons
     document.querySelectorAll('[data-toggle-pw]').forEach((btn) => {
@@ -4864,6 +5026,28 @@
         wrap.appendChild(linkRow);
       }
 
+      if (Array.isArray(msg.webSources) && msg.webSources.length) {
+        const validSources = msg.webSources.filter((s) => s && typeof s.url === 'string' && /^https:\/\//i.test(s.url));
+        if (validSources.length) {
+          const srcBox = document.createElement('div');
+          srcBox.className = 'jax-sources-box';
+          const srcTitle = document.createElement('div');
+          srcTitle.className = 'jax-sources-title';
+          srcTitle.textContent = 'Verified Web Scouting Sources';
+          srcBox.appendChild(srcTitle);
+          validSources.slice(0, 4).forEach((src) => {
+            const a = document.createElement('a');
+            a.className = 'jax-source-link';
+            a.href = src.url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = src.title || src.url.replace(/^https?:\/\//i, '').slice(0, 56);
+            srcBox.appendChild(a);
+          });
+          wrap.appendChild(srcBox);
+        }
+      }
+
       messagesEl.appendChild(wrap);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -4921,11 +5105,33 @@
       messagesEl.appendChild(typingEl);
       messagesEl.scrollTop = messagesEl.scrollHeight;
 
+      let baselineContext = '';
+      try {
+        const diagRaw = localStorage.getItem('diamondiq_diag_report');
+        if (diagRaw) {
+          const diag = JSON.parse(diagRaw);
+          if (diag && diag.summary) {
+            baselineContext = `${diag.summary.headline || ''} (${diag.summary.archetype || ''} · Level: ${diag.summary.levelLabel || ''})`;
+          }
+        } else {
+          const focusRaw = localStorage.getItem('diamondiq_auth_focus');
+          if (focusRaw) {
+            const af = JSON.parse(focusRaw);
+            if (af && af.focus) baselineContext = `Focus: ${af.focus} · Level: ${af.level || ''}`;
+          }
+        }
+      } catch {
+        baselineContext = '';
+      }
+      const cageContext = typeof window.__diamondiqCageContext === 'function' ? window.__diamondiqCageContext() : '';
+
       try {
         const res = await api('/api/ai/jax', {
           method: 'POST',
           body: JSON.stringify({
             message: clean,
+            baselineContext,
+            cageContext,
             history: chatHistory.slice(-10).map((m) => ({ role: m.role, text: m.text }))
           })
         });
@@ -4938,7 +5144,8 @@
           recommendedScenarios: res.recommendedScenarios || [],
           youtubeLinks: res.youtubeLinks || [],
           recommendedBatId: res.recommendedBatId || '',
-          recommendedBatName: res.recommendedBatName || ''
+          recommendedBatName: res.recommendedBatName || '',
+          webSources: res.webSources || []
         };
         chatHistory.push({ role: 'jax', text: jaxMsg.text });
         appendMessageBubble(jaxMsg);
