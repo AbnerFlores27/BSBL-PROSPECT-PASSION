@@ -6,11 +6,11 @@
 <title>DiamondIQ — Scenario Library</title>
 <meta name="description" content="Search, filter, and explore all 8 baseball rules and Statcast scenarios.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -37,8 +37,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -50,17 +50,22 @@
   <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
+<section class="subpage-banner" aria-label="Scenario Library Overview">
+  <img class="subpage-banner-bg" src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg" alt="Baserunner sliding into second base as the shortstop leaps to fire a relay throw" referrerpolicy="no-referrer">
+  <div class="subpage-banner-scrim" aria-hidden="true"></div>
+  <div class="subpage-banner-inner">
+    <div class="subpage-banner-copy">
+      <div class="hero-eyebrow">Playbook Library · <span id="scenario-count" class="tabular-nums">8 plays</span></div>
+      <h1 class="subpage-banner-title">
+        <span class="hero-line-white">Baseball Playbook</span>
+        <span class="hero-line-gold">Scenario Library</span>
+      </h1>
+      <p class="subpage-banner-lead">Search by keyword, filter Fundamentals vs. Statcast Analytics, save your favorites, and open any play for its interactive field diagram and 5-expert breakdown.</p>
+    </div>
+  </div>
+</section>
+
 <main id="library" class="container">
-  <section class="subpage-masthead">
-    <div>
-      <div class="kicker-line">Playbook Library · <span id="scenario-count" class="tabular-nums">8 plays</span></div>
-      <h1>Scenario Library</h1>
-      <p class="page-lead">Search by keyword, filter Fundamentals vs. Statcast Analytics, save your favorites, and open any play for its interactive field diagram and 5-expert breakdown.</p>
-    </div>
-    <div class="subpage-masthead-media">
-      <img src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg" alt="Baserunner sliding into second base as the shortstop leaps to fire a relay throw" referrerpolicy="no-referrer">
-    </div>
-  </section>
 
   <form class="toolbar" onsubmit="return false;" aria-label="Filter and sort scenarios">
     <div class="search-wrap">

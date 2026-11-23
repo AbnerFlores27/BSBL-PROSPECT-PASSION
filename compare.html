@@ -6,11 +6,11 @@
 <title>DiamondIQ — Compare Plays</title>
 <meta name="description" content="Compare any two baseball plays side by side on difficulty, risk, and impact.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -37,8 +37,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -50,17 +50,22 @@
   <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
+<section class="subpage-banner" aria-label="Play Comparison Overview">
+  <img class="subpage-banner-bg" src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg" alt="Wide view of a baseball diamond seen from behind home plate" referrerpolicy="no-referrer">
+  <div class="subpage-banner-scrim" aria-hidden="true"></div>
+  <div class="subpage-banner-inner">
+    <div class="subpage-banner-copy">
+      <div class="hero-eyebrow">Head-to-Head Matchup · Side-by-Side Analysis</div>
+      <h1 class="subpage-banner-title">
+        <span class="hero-line-white">Play &amp; Stat</span>
+        <span class="hero-line-gold">Head-to-Head Compare</span>
+      </h1>
+      <p class="subpage-banner-lead">Pick any two plays from the 8-play library to compare execution difficulty, tactical risk, and scoring impact side by side.</p>
+    </div>
+  </div>
+</section>
+
 <main id="compare" class="container">
-  <section class="subpage-masthead">
-    <div>
-      <div class="kicker-line">Head-to-Head Matchup</div>
-      <h1>Play &amp; Stat Comparison</h1>
-      <p class="page-lead">Pick any two plays from the 8-play library to compare execution difficulty, tactical risk, and scoring impact side by side.</p>
-    </div>
-    <div class="subpage-masthead-media">
-      <img src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg" alt="Wide view of a baseball diamond seen from behind home plate" referrerpolicy="no-referrer">
-    </div>
-  </section>
 
   <form class="card card-led-top" onsubmit="return false;" aria-label="Select plays to compare" style="margin-bottom:1.35rem;">
     <div class="rgb-led-rail" aria-hidden="true"></div>

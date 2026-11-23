@@ -6,11 +6,11 @@
 <title>DiamondIQ — Home</title>
 <meta name="description" content="Interactive 3D baseball simulator, biomechanical drill video clinic, 5-expert play breakdowns, and AI player diagnostic quiz.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script type="importmap">
 {
@@ -47,8 +47,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -60,56 +60,67 @@
   <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
-<main id="home" class="container container--home">
-  <section class="hero-compact" aria-label="Welcome and Quick Scoreboard">
-    <div class="hero-compact-copy">
-      <div class="kicker-line">MLB The Show Camera Views · 120Hz Wind &amp; Roll Physics · Coach Jax AI</div>
-      <h1>Step into the box. Own every pitch &amp; play.</h1>
-      <p class="hero-lead hero-lead--compact">17 distinct Pro, College &amp; San Diego/CA HS ballparks, authentic Baum Wood, Goods &amp; Combat bat audio, real wind aerodynamics, and Coach Jax Web Scouting.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-sm" href="#gameday-studio" id="hero-open-hitlab">Step Into 3D Studio</a>
-        <button type="button" class="btn btn-secondary btn-sm" data-open-jax data-jax-prompt="Give me a quick 3-step hitting & fielding checkup to start today's session.">Ask Coach Jax</button>
-        <a class="btn btn-secondary btn-sm" href="training.html">YouTube Drills &amp; 28-Q Quiz</a>
-        <a class="btn btn-ghost btn-sm" href="scenarios.html">All 8 Game Plays</a>
+<section class="hero-facility" aria-label="DiamondIQ 3D Stadium & Coaching Showcase">
+  <img
+    class="hero-facility-bg"
+    src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg"
+    alt="Twilight baseball stadium diamond lit for batting practice and infield reps"
+    referrerpolicy="no-referrer"
+  >
+  <div class="hero-facility-scrim" aria-hidden="true"></div>
+  <div class="hero-facility-inner">
+    <div class="hero-facility-copy">
+      <div class="hero-eyebrow">17 Pro, College &amp; San Diego HS Ballparks · 120Hz Physics · Coach Jax AI</div>
+      <h1 class="hero-title-stacked">
+        <span class="hero-line-white">Step Into The Box.</span>
+        <span class="hero-line-gold">Own Every Pitch &amp; Play.</span>
+      </h1>
+      <p class="hero-lead-facility">Authentic Baum Wood, Goods &amp; Combat bat acoustics, Rapsodo flight &amp; roll telemetry, MLB The Show camera angles, and Coach Jax live web scouting.</p>
+      <div class="hero-facility-actions">
+        <a class="btn btn-primary btn-pill" href="#gameday-studio" id="hero-open-hitlab">Launch 3D Studio</a>
+        <button type="button" class="btn btn-outline-light btn-pill" data-open-jax data-jax-prompt="Give me a quick 3-step hitting & fielding checkup to start today's session.">Ask Coach Jax</button>
       </div>
     </div>
+  </div>
+</section>
 
-    <aside class="hero-scoreboard-card" aria-label="DiamondIQ Live Scoreboard">
-      <div class="rgb-led-rail" aria-hidden="true"></div>
-      <div class="hero-scoreboard-inner">
-        <div class="hero-scoreboard-grid">
-          <div class="hero-metric hero-metric--compact">
-            <div class="score-label">Plays</div>
-            <div class="score-value">8</div>
-            <p class="score-note">Rules &amp; Statcast</p>
-          </div>
-          <div class="hero-metric hero-metric--compact">
-            <div class="score-label">Opening Day</div>
-            <div class="score-value" id="kpi-countdown">--</div>
-            <p class="score-note">2027 opener</p>
-          </div>
-          <div class="hero-metric hero-metric--compact">
-            <div class="score-label">Mastered</div>
-            <div class="score-value" id="kpi-mastered">0 / 8</div>
-            <p class="score-note">Trivia checks</p>
-          </div>
-          <div class="hero-metric hero-metric--compact">
-            <div class="score-label">Saved &amp; Notes</div>
-            <div class="score-value" id="kpi-saved-notes">0</div>
-            <p class="score-note" id="kpi-saved-sub"><a href="login.html">Log in</a> or <a href="register.html">Sign up</a></p>
-          </div>
-        </div>
-        <div class="hero-scoreboard-foot">
-          <span>Featured Play: <strong>Force Out vs. Tag Out</strong></span>
-          <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
-            <a class="btn btn-secondary btn-sm" href="#gameday-studio" id="hero-open-featured">Play Diagram</a>
-            <a class="btn btn-primary btn-sm" href="onboarding.html">AI Checkup</a>
-          </div>
-        </div>
+<section class="hero-kpi-strip" aria-label="DiamondIQ Live Scoreboard">
+  <div class="hero-kpi-inner">
+    <div class="hero-kpi-grid">
+      <div class="kpi-strip-item">
+        <div class="score-label">Playbook Scenarios</div>
+        <div class="score-value">8</div>
+        <p class="score-note">Rules &amp; Statcast</p>
       </div>
-    </aside>
-  </section>
+      <div class="kpi-strip-item">
+        <div class="score-label">Opening Day</div>
+        <div class="score-value" id="kpi-countdown">--</div>
+        <p class="score-note">2027 opener</p>
+      </div>
+      <div class="kpi-strip-item">
+        <div class="score-label">Mastered</div>
+        <div class="score-value" id="kpi-mastered">0 / 8</div>
+        <p class="score-note">Trivia checks</p>
+      </div>
+      <div class="kpi-strip-item">
+        <div class="score-label">Saved &amp; Notes</div>
+        <div class="score-value" id="kpi-saved-notes">0</div>
+        <p class="score-note" id="kpi-saved-sub"><a href="login.html">Log in</a> · <a href="register.html">Sign up</a></p>
+      </div>
+    </div>
+    <div class="kpi-strip-foot">
+      <span>Featured Play: <strong>Force Out vs. Tag Out</strong></span>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <a class="btn btn-secondary btn-sm" href="#gameday-studio" id="hero-open-featured">Play Diagram</a>
+        <a class="btn btn-secondary btn-sm" href="training.html">YouTube &amp; 28-Q Quiz</a>
+        <a class="btn btn-ghost btn-sm" href="scenarios.html">All 8 Plays</a>
+        <a class="btn btn-primary btn-sm" href="onboarding.html">AI Checkup</a>
+      </div>
+    </div>
+  </div>
+</section>
 
+<main id="home" class="container container--home">
   <section id="gameday-studio" class="section-block section-block--studio-top gameday-studio" aria-labelledby="studio-heading">
     <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
     <div class="studio-topbar">
@@ -130,92 +141,104 @@
       <div id="studio-panel-hitlab">
         <div class="studio-command-dock" aria-label="Ballpark, Pitch, Wind, Matchup, and Camera Controls">
           <div class="command-dock-row">
-            <div class="venue-group">
-              <span class="venue-label">Tier</span>
-              <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
-                <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (6)</button>
-                <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (6)</button>
-                <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (5)</button>
-                <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
+            <span class="dock-row-tag">01 Venue</span>
+            <div class="dock-row-controls">
+              <div class="venue-group">
+                <span class="venue-label">Tier</span>
+                <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
+                  <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (6)</button>
+                  <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (6)</button>
+                  <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (5)</button>
+                  <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
+                </div>
               </div>
-            </div>
 
-            <div class="venue-group">
-              <span class="venue-label">Ballpark</span>
-              <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose stadium or cage">
-                <button type="button" class="segmented-btn" data-stadium="omaha" aria-pressed="true">Omaha CWS</button>
-                <button type="button" class="segmented-btn" data-stadium="lsu" aria-pressed="false">LSU Alex Box</button>
-                <button type="button" class="segmented-btn" data-stadium="pk-park" aria-pressed="false">Oregon PK Park</button>
-                <button type="button" class="segmented-btn" data-stadium="stanford" aria-pressed="false">Stanford</button>
-                <button type="button" class="segmented-btn" data-stadium="ucsb" aria-pressed="false">UC Santa Barbara</button>
-                <button type="button" class="segmented-btn" data-stadium="cal-poly" aria-pressed="false">Cal Poly</button>
+              <div class="venue-group">
+                <span class="venue-label">Ballpark</span>
+                <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose stadium or cage">
+                  <button type="button" class="segmented-btn" data-stadium="sdsu" aria-pressed="true">SDSU Tony Gwynn</button>
+                  <button type="button" class="segmented-btn" data-stadium="usc" aria-pressed="false">USC Dedeaux</button>
+                  <button type="button" class="segmented-btn" data-stadium="pk-park" aria-pressed="false">Oregon PK Park</button>
+                  <button type="button" class="segmented-btn" data-stadium="stanford" aria-pressed="false">Stanford</button>
+                  <button type="button" class="segmented-btn" data-stadium="ucsb" aria-pressed="false">UC Santa Barbara</button>
+                  <button type="button" class="segmented-btn" data-stadium="cal-poly" aria-pressed="false">Cal Poly</button>
+                </div>
               </div>
-            </div>
 
-            <div class="venue-group">
-              <span class="venue-label">Wind</span>
-              <div class="segmented-group" id="wind-tabs" role="group" aria-label="Choose stadium wind">
-                <button type="button" class="segmented-btn" data-wind="calm" aria-pressed="true">Calm</button>
-                <button type="button" class="segmented-btn" data-wind="out10" aria-pressed="false">10 Out</button>
-                <button type="button" class="segmented-btn" data-wind="in12" aria-pressed="false">12 In</button>
-                <button type="button" class="segmented-btn" data-wind="cross8" aria-pressed="false">8 L&rarr;R</button>
-                <button type="button" class="segmented-btn" data-wind="cross12r" aria-pressed="false">12 R&rarr;L</button>
+              <div class="venue-group">
+                <span class="venue-label">Wind</span>
+                <div class="segmented-group" id="wind-tabs" role="group" aria-label="Choose stadium wind">
+                  <button type="button" class="segmented-btn" data-wind="calm" aria-pressed="true">Calm</button>
+                  <button type="button" class="segmented-btn" data-wind="out10" aria-pressed="false">10 Out</button>
+                  <button type="button" class="segmented-btn" data-wind="in12" aria-pressed="false">12 In</button>
+                  <button type="button" class="segmented-btn" data-wind="cross8" aria-pressed="false">8 L&rarr;R</button>
+                  <button type="button" class="segmented-btn" data-wind="cross12r" aria-pressed="false">12 R&rarr;L</button>
+                </div>
               </div>
             </div>
           </div>
 
           <div class="command-dock-row">
-            <div class="venue-group">
-              <span class="venue-label">Delivery</span>
-              <div class="segmented-group" id="delivery-tabs" role="group" aria-label="Choose pitcher or pitching machine">
-                <button type="button" class="segmented-btn" data-delivery="pitcher" aria-pressed="true">Pitcher</button>
-                <button type="button" class="segmented-btn" data-delivery="machine" aria-pressed="false">Machine</button>
-              </div>
-            </div>
-
-            <div class="venue-group">
-              <span class="venue-label">Pitch</span>
-              <div class="segmented-group" id="pitch-tabs" role="group" aria-label="Choose pitch type">
-                <button type="button" class="segmented-btn" data-pitch="mix" aria-pressed="true">Mix</button>
-                <button type="button" class="segmented-btn" data-pitch="fastball" aria-pressed="false">Fastball</button>
-                <button type="button" class="segmented-btn" data-pitch="slider" aria-pressed="false">Slider</button>
-                <button type="button" class="segmented-btn" data-pitch="curve" aria-pressed="false">Curve</button>
-                <button type="button" class="segmented-btn" data-pitch="changeup" aria-pressed="false">Change</button>
-              </div>
-            </div>
-
-            <div class="venue-group">
-              <span class="venue-label">Speed</span>
-              <div class="segmented-group" id="pitch-speed-tabs" role="group" aria-label="Choose pitch velocity tier">
-                <button type="button" class="segmented-btn" data-pspeed="rookie" aria-pressed="false">Rookie</button>
-                <button type="button" class="segmented-btn" data-pspeed="varsity" aria-pressed="false">Varsity</button>
-                <button type="button" class="segmented-btn" data-pspeed="pro" aria-pressed="true">Pro</button>
-              </div>
-            </div>
-
-            <div class="venue-group">
-              <span class="venue-label">Matchup</span>
-              <div style="display:flex;gap:0.35rem;align-items:center;">
-                <div class="segmented-group" id="batter-hand-tabs" role="group" aria-label="Choose batter handedness">
-                  <button type="button" class="segmented-btn" data-bhand="R" aria-pressed="true">RHB</button>
-                  <button type="button" class="segmented-btn" data-bhand="L" aria-pressed="false">LHB</button>
-                </div>
-                <div class="segmented-group" id="pitcher-hand-tabs" role="group" aria-label="Choose pitcher handedness">
-                  <button type="button" class="segmented-btn" data-phand="R" aria-pressed="true">RHP</button>
-                  <button type="button" class="segmented-btn" data-phand="L" aria-pressed="false">LHP</button>
+            <span class="dock-row-tag">02 Matchup</span>
+            <div class="dock-row-controls">
+              <div class="venue-group">
+                <span class="venue-label">Delivery</span>
+                <div class="segmented-group" id="delivery-tabs" role="group" aria-label="Choose pitcher or pitching machine">
+                  <button type="button" class="segmented-btn" data-delivery="pitcher" aria-pressed="true">Pitcher</button>
+                  <button type="button" class="segmented-btn" data-delivery="machine" aria-pressed="false">Machine</button>
                 </div>
               </div>
-            </div>
 
-            <div class="venue-group">
-              <span class="venue-label">Camera</span>
-              <div class="segmented-group" id="camera-tabs" role="group" aria-label="Choose 3D camera view">
-                <button type="button" class="segmented-btn" data-cam="strike-zone" aria-pressed="true">Strike Zone</button>
-                <button type="button" class="segmented-btn" data-cam="fish-eye" aria-pressed="false">Fish Eye</button>
-                <button type="button" class="segmented-btn" data-cam="show-15" aria-pressed="false">Show 15</button>
-                <button type="button" class="segmented-btn" data-cam="broadcast" aria-pressed="false">Broadcast</button>
-                <button type="button" class="segmented-btn" data-cam="swing-lab" aria-pressed="false">Swing Lab</button>
+              <div class="venue-group">
+                <span class="venue-label">Pitch</span>
+                <div class="segmented-group" id="pitch-tabs" role="group" aria-label="Choose pitch type">
+                  <button type="button" class="segmented-btn" data-pitch="mix" aria-pressed="true">Mix</button>
+                  <button type="button" class="segmented-btn" data-pitch="fastball" aria-pressed="false">Fastball</button>
+                  <button type="button" class="segmented-btn" data-pitch="slider" aria-pressed="false">Slider</button>
+                  <button type="button" class="segmented-btn" data-pitch="curve" aria-pressed="false">Curve</button>
+                  <button type="button" class="segmented-btn" data-pitch="changeup" aria-pressed="false">Change</button>
+                </div>
               </div>
+
+              <div class="venue-group">
+                <span class="venue-label">Speed</span>
+                <div class="segmented-group" id="pitch-speed-tabs" role="group" aria-label="Choose pitch velocity tier">
+                  <button type="button" class="segmented-btn" data-pspeed="rookie" aria-pressed="false">Rookie</button>
+                  <button type="button" class="segmented-btn" data-pspeed="varsity" aria-pressed="false">Varsity</button>
+                  <button type="button" class="segmented-btn" data-pspeed="pro" aria-pressed="true">Pro</button>
+                </div>
+              </div>
+
+              <div class="venue-group">
+                <span class="venue-label">Hand</span>
+                <div style="display:flex;gap:0.35rem;align-items:center;">
+                  <div class="segmented-group" id="batter-hand-tabs" role="group" aria-label="Choose batter handedness">
+                    <button type="button" class="segmented-btn" data-bhand="R" aria-pressed="true">RHB</button>
+                    <button type="button" class="segmented-btn" data-bhand="L" aria-pressed="false">LHB</button>
+                  </div>
+                  <div class="segmented-group" id="pitcher-hand-tabs" role="group" aria-label="Choose pitcher handedness">
+                    <button type="button" class="segmented-btn" data-phand="R" aria-pressed="true">RHP</button>
+                    <button type="button" class="segmented-btn" data-phand="L" aria-pressed="false">LHP</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="command-dock-row">
+            <span class="dock-row-tag">03 Camera</span>
+            <div class="dock-row-controls" style="justify-content:space-between;width:100%;">
+              <div class="venue-group">
+                <span class="venue-label">Angle</span>
+                <div class="segmented-group" id="camera-tabs" role="group" aria-label="Choose 3D camera view">
+                  <button type="button" class="segmented-btn" data-cam="strike-zone" aria-pressed="true">Strike Zone</button>
+                  <button type="button" class="segmented-btn" data-cam="fish-eye" aria-pressed="false">Fish Eye</button>
+                  <button type="button" class="segmented-btn" data-cam="show-15" aria-pressed="false">Show 15</button>
+                  <button type="button" class="segmented-btn" data-cam="broadcast" aria-pressed="false">Broadcast</button>
+                  <button type="button" class="segmented-btn" data-cam="swing-lab" aria-pressed="false">Swing Lab</button>
+                </div>
+              </div>
+              <span class="venue-label" style="color:var(--text-secondary);">Space = Pitch &amp; Swing · Mouse / WASD = Aim PCI</span>
             </div>
           </div>
         </div>
@@ -339,6 +362,14 @@
                   </span>
                   <span class="bat-btn-meta">Sky Blue/Royal Club 1-Pc · -3</span>
                 </button>
+
+                <button type="button" class="bat-btn" data-bat="marucci-catx2" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#111827 28%,#e2e8f0 34%,#f8fafc 64%,#dc2626 76%,#e2e8f0 94%);"></span>
+                    <span class="bat-btn-name">Marucci CATX2 Alloy</span>
+                  </span>
+                  <span class="bat-btn-meta">AZR Silver/Red 1-Pc · -3</span>
+                </button>
               </div>
             </div>
 
@@ -367,7 +398,7 @@
               <div class="spray-head">
                 <div>
                   <div class="kicker-line" style="margin-bottom:0.1rem;">Rapsodo / HitTrax Console</div>
-                  <div id="spray-stadium-label" class="tabular-nums" style="font-size:0.8rem;color:var(--text-secondary);">Omaha CWS · 335 LF · 408 CF · 335 RF</div>
+                  <div id="spray-stadium-label" class="tabular-nums" style="font-size:0.8rem;color:var(--text-secondary);">SDSU Tony Gwynn · 340 LF · 410 CF · 340 RF</div>
                 </div>
                 <div style="text-align:right;">
                   <div id="session-count-pill" class="tabular-nums" style="font-size:0.82rem;font-weight:700;color:var(--accent);">0 HR · 0 Hits</div>

@@ -6,11 +6,11 @@
 <title>DiamondIQ — Log In</title>
 <meta name="description" content="Log in to your DiamondIQ account.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -37,8 +37,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -55,7 +55,7 @@
     <div class="auth-showcase">
       <img src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg" alt="Twilight baseball stadium diamond under bright field lights before first pitch" referrerpolicy="no-referrer">
       <div class="editorial-banner-scrim">
-        <div class="kicker-line" style="color:#93c5fd;margin-bottom:0.3rem;">Member Dugout · Sync Preferences &amp; AI Coaching</div>
+        <div class="kicker-line" style="color:#D8C55C;margin-bottom:0.3rem;">Member Dugout · Sync Preferences &amp; AI Coaching</div>
         <h2>Step back into the diamond</h2>
         <p style="margin-bottom:0;">Save your batting stance, preferred stadiums across Pro, College &amp; High School tiers, and custom coaching notes with Coach Jax.</p>
       </div>

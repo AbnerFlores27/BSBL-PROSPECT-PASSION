@@ -1,97 +1,102 @@
-/* DiamondIQ — Clean Ballpark Editorial + Gameday Broadcast Studio + Moving RGB LED Rail */
+/* DiamondIQ — Obsidian Charcoal + Matte Graphite + Championship Gold Facility System */
 
 :root {
-  --bg-canvas: rgb(246, 248, 252);
+  /* Warm Limestone Day Mode (Reversible via #theme-toggle) */
+  --bg-canvas: rgb(244, 243, 238);
   --bg-surface: rgb(255, 255, 255);
-  --bg-subtle: rgb(238, 243, 250);
-  --bg-muted: rgb(222, 231, 242);
-  --text-primary: rgb(15, 25, 42);
-  --text-secondary: rgb(58, 74, 98);
-  --text-muted: rgb(92, 109, 134);
-  --border: rgb(214, 224, 236);
-  --border-strong: rgb(180, 195, 214);
+  --bg-subtle: rgb(236, 234, 226);
+  --bg-muted: rgb(219, 216, 206);
+  --text-primary: rgb(17, 19, 22);
+  --text-secondary: rgb(64, 68, 76);
+  --text-muted: rgb(104, 108, 118);
+  --border: rgb(212, 209, 200);
+  --border-strong: rgb(178, 174, 162);
 
-  /* Classic MLB Royal Blue, Turf Green & Seam Red */
-  --accent: rgb(24, 78, 158);
-  --accent-hover: rgb(17, 58, 120);
+  /* Championship Brass Gold, Turf & Stitch */
+  --accent: rgb(154, 128, 18);
+  --accent-hover: rgb(125, 103, 12);
   --accent-text-on: rgb(255, 255, 255);
-  --accent-soft: rgb(234, 242, 253);
-  --accent-border: rgb(168, 197, 238);
+  --accent-soft: rgba(154, 128, 18, 0.11);
+  --accent-border: rgba(154, 128, 18, 0.38);
 
-  --turf: rgb(21, 128, 61);
-  --stitch: rgb(206, 36, 52);
-  --gold: rgb(184, 98, 8);
+  --turf: rgb(22, 118, 60);
+  --stitch: rgb(196, 40, 48);
+  --gold: rgb(166, 136, 20);
+  --danger: rgb(185, 28, 28);
 
   /* Semantic States */
-  --success-bg: rgb(232, 248, 239);
-  --success-border: rgb(146, 214, 174);
+  --success-bg: rgb(232, 246, 237);
+  --success-border: rgb(146, 208, 170);
   --success-text: rgb(15, 92, 46);
-  --warning-bg: rgb(254, 246, 229);
-  --warning-border: rgb(238, 198, 122);
-  --warning-text: rgb(130, 74, 8);
-  --danger-bg: rgb(253, 236, 238);
-  --danger-border: rgb(236, 158, 166);
-  --danger-text: rgb(156, 24, 38);
+  --warning-bg: rgb(253, 246, 226);
+  --warning-border: rgb(222, 190, 106);
+  --warning-text: rgb(120, 82, 8);
+  --danger-bg: rgb(252, 235, 237);
+  --danger-border: rgb(230, 154, 162);
+  --danger-text: rgb(152, 24, 34);
 
-  /* Tactical Field Diagram Tokens (Light Cards) */
+  /* Tactical Field Diagram Tokens */
   --field-turf: rgb(216, 238, 223);
   --field-dirt: rgb(236, 214, 184);
   --field-line: rgb(255, 255, 255);
   --field-ink: rgb(16, 40, 28);
 
-  --shadow-sm: 0 1px 3px rgba(15, 25, 42, 0.05), 0 4px 14px rgba(15, 25, 42, 0.04);
-  --shadow-md: 0 12px 32px rgba(15, 25, 42, 0.12);
+  --shadow-sm: 0 1px 3px rgba(11, 12, 14, 0.06), 0 4px 14px rgba(11, 12, 14, 0.04);
+  --shadow-md: 0 14px 36px rgba(11, 12, 14, 0.14);
+  --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-display: 'Barlow Condensed', system-ui, -apple-system, sans-serif;
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --header-h: 66px;
+  --header-h: 72px;
 }
 
-/* Night Mode */
+/* Default Obsidian Dark Facility Mode */
 [data-theme="dark"] {
-  --bg-canvas: rgb(14, 20, 32);
-  --bg-surface: rgb(22, 31, 48);
-  --bg-subtle: rgb(29, 41, 62);
-  --bg-muted: rgb(42, 57, 84);
-  --text-primary: rgb(241, 245, 251);
-  --text-secondary: rgb(188, 202, 222);
-  --text-muted: rgb(146, 163, 188);
-  --border: rgb(46, 62, 88);
-  --border-strong: rgb(68, 89, 122);
+  --bg-canvas: #0B0C0E;
+  --bg-surface: #131518;
+  --bg-subtle: #1A1D22;
+  --bg-muted: #242830;
+  --text-primary: #F7F8FA;
+  --text-secondary: #B4BAC4;
+  --text-muted: #848C98;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.2);
 
-  --accent: rgb(88, 166, 255);
-  --accent-hover: rgb(138, 195, 255);
-  --accent-text-on: rgb(10, 20, 36);
-  --accent-soft: rgb(26, 46, 76);
-  --accent-border: rgb(60, 96, 150);
+  /* Championship Gold Primary Accent */
+  --accent: #D8C55C;
+  --accent-hover: #E6D574;
+  --accent-text-on: #0D0F12;
+  --accent-soft: rgba(216, 197, 92, 0.12);
+  --accent-border: rgba(216, 197, 92, 0.42);
 
-  --turf: rgb(74, 222, 128);
-  --stitch: rgb(248, 113, 113);
-  --gold: rgb(251, 191, 36);
+  --turf: #4ADE80;
+  --stitch: #D8C55C;
+  --gold: #D8C55C;
+  --danger: #F87171;
 
-  --success-bg: rgb(18, 49, 36);
-  --success-border: rgb(40, 108, 77);
-  --success-text: rgb(126, 232, 179);
-  --warning-bg: rgb(54, 39, 16);
-  --warning-border: rgb(124, 86, 28);
-  --warning-text: rgb(252, 211, 125);
-  --danger-bg: rgb(58, 24, 29);
-  --danger-border: rgb(135, 45, 55);
-  --danger-text: rgb(252, 165, 165);
+  --success-bg: rgba(22, 101, 52, 0.28);
+  --success-border: rgba(74, 222, 128, 0.42);
+  --success-text: #86EFAC;
+  --warning-bg: rgba(120, 92, 18, 0.28);
+  --warning-border: rgba(216, 197, 92, 0.44);
+  --warning-text: #F2E28B;
+  --danger-bg: rgba(127, 29, 29, 0.32);
+  --danger-border: rgba(248, 113, 113, 0.44);
+  --danger-text: #FCA5A5;
 
-  --field-turf: rgb(20, 68, 46);
+  --field-turf: rgb(20, 62, 42);
   --field-dirt: rgb(108, 82, 54);
   --field-line: rgb(232, 241, 237);
   --field-ink: rgb(226, 248, 235);
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.28);
-  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.42);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.56);
 }
 
 *,
@@ -128,28 +133,32 @@ body {
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  line-height: 1.12;
-  letter-spacing: -0.02em;
+  line-height: 1.04;
+  letter-spacing: 0.01em;
   margin-top: 0;
   color: var(--text-primary);
   text-wrap: balance;
 }
 
 h1 {
-  font-size: clamp(2.1rem, 4vw, 3.15rem);
-  font-weight: 700;
-  margin-bottom: 0.7rem;
+  font-size: clamp(2.25rem, 4.2vw, 3.25rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.015em;
+  margin-bottom: 0.55rem;
 }
 
 h2 {
-  font-size: clamp(1.4rem, 2.3vw, 1.85rem);
+  font-size: clamp(1.45rem, 2.5vw, 1.95rem);
   font-weight: 700;
-  margin-bottom: 0.45rem;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.4rem;
 }
 
 h3 {
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   margin-bottom: 0.3rem;
 }
 
@@ -207,56 +216,20 @@ a:hover {
 }
 
 /* =========================================================
-   Seamless Moving Rainbow RGB LED Lightbar (GPU Composited)
+   Subtle Championship Gold Architectural Hairline Divider
    ========================================================= */
 .rgb-led-rail {
   position: relative;
   width: 100%;
-  height: 3px;
+  height: 1px;
   overflow: hidden;
-  background: rgb(18, 24, 38);
+  background: linear-gradient(90deg, transparent 0%, var(--accent-border) 30%, var(--accent) 50%, var(--accent-border) 70%, transparent 100%);
+  opacity: 0.85;
   flex-shrink: 0;
 }
 
-.rgb-led-rail::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgb(255, 42, 85) 0%,
-    rgb(255, 138, 0) 8%,
-    rgb(255, 208, 0) 16%,
-    rgb(34, 197, 94) 25%,
-    rgb(6, 182, 212) 33%,
-    rgb(59, 130, 246) 42%,
-    rgb(168, 85, 247) 46%,
-    rgb(255, 42, 85) 50%,
-    rgb(255, 138, 0) 58%,
-    rgb(255, 208, 0) 66%,
-    rgb(34, 197, 94) 75%,
-    rgb(6, 182, 212) 83%,
-    rgb(59, 130, 246) 92%,
-    rgb(168, 85, 247) 96%,
-    rgb(255, 42, 85) 100%
-  );
-  animation: led-flow 4.5s linear infinite;
-  will-change: transform;
-}
-
 .rgb-led-rail--studio {
-  height: 4px;
-}
-
-@keyframes led-flow {
-  0% {
-    transform: translate3d(-50%, 0, 0);
-  }
-  100% {
-    transform: translate3d(0%, 0, 0);
-  }
+  height: 2px;
 }
 
 .card-led-top {
@@ -270,25 +243,30 @@ a:hover {
 }
 
 /* =========================================================
-   Top Bar Contract — 3 Clean Zones + Moving LED Trim
+   Top Bar — Clean Obsidian / Limestone Facility Header
    ========================================================= */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
   background: var(--bg-surface);
-  box-shadow: 0 1px 0 var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-theme="dark"] .site-header {
+  background: rgba(11, 12, 14, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 .header-inner {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
   min-height: var(--header-h);
-  padding: 0.6rem 1.25rem;
+  padding: 0.65rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .brand {
@@ -296,9 +274,11 @@ a:hover {
   align-items: center;
   gap: 0.55rem;
   font-family: var(--font-display);
-  font-size: 1.38rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.68rem;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-primary);
   text-decoration: none;
   white-space: nowrap;
@@ -319,29 +299,53 @@ a:hover {
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.25rem;
 }
 
 .site-nav a {
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  padding: 0.45rem 0.1rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.78rem;
+  border-radius: 6px;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: color 150ms var(--ease), border-color 150ms var(--ease);
+  transition: color 150ms var(--ease), background-color 150ms var(--ease), border-color 150ms var(--ease);
 }
 
 .site-nav a:hover {
   color: var(--text-primary);
-  border-bottom-color: var(--accent-border);
+  background: var(--bg-subtle);
 }
 
 .site-nav a[aria-current="page"] {
   color: var(--accent);
   border-bottom-color: var(--accent);
+}
+
+.site-nav a[href="login.html"],
+#nav-logout-btn {
+  margin-left: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  padding: 0.42rem 1.05rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.07em;
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.site-nav a[href="login.html"]:hover,
+.site-nav a[href="login.html"][aria-current="page"],
+#nav-logout-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .header-actions {
@@ -355,24 +359,27 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.48rem 0.9rem;
-  min-height: 40px;
-  border-radius: var(--radius-sm);
+  padding: 0.44rem 0.95rem;
+  min-height: 38px;
+  border-radius: 999px;
   border: 1px solid var(--border-strong);
-  background: var(--bg-subtle);
+  background: transparent;
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background-color 150ms var(--ease), border-color 150ms var(--ease);
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), color 150ms var(--ease);
 }
 
 .theme-toggle:hover {
   background: var(--accent-soft);
   border-color: var(--accent);
+  color: var(--accent);
 }
 
 .nav-toggle {
@@ -393,22 +400,22 @@ a:hover {
    ========================================================= */
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 3.5rem;
+  padding: 2rem 1.5rem 3.5rem;
   flex: 1;
 }
 
 .container--home {
-  padding-top: 1.25rem;
+  padding-top: 2rem;
 }
 
 .section-block {
-  margin-top: 3rem;
+  margin-top: 3.25rem;
 }
 
 .section-block--studio-top {
-  margin-top: 1.25rem;
+  margin-top: 0.5rem;
 }
 
 .section-head {
@@ -417,12 +424,14 @@ a:hover {
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 1.15rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-subtitle {
   color: var(--text-secondary);
-  font-size: 0.96rem;
+  font-size: 0.95rem;
   margin-bottom: 0;
 }
 
@@ -456,16 +465,24 @@ a:hover {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.45rem;
-  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
   margin-bottom: 0.45rem;
 }
 
 .kicker-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--stitch);
   margin-bottom: 0.35rem;
 }
@@ -546,6 +563,24 @@ a:hover {
   font-size: 0.84rem;
 }
 
+.btn-pill {
+  border-radius: 999px;
+  padding: 0.72rem 1.65rem;
+  font-weight: 700;
+}
+
+.btn-outline-light {
+  background: rgba(11, 12, 14, 0.42);
+  color: #F7F8FA;
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+}
+
+.btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #FFFFFF;
+  color: #FFFFFF;
+}
+
 .btn-fav.is-saved {
   background: var(--accent-soft);
   border-color: var(--accent);
@@ -553,61 +588,211 @@ a:hover {
 }
 
 /* =========================================================
-   HOME SECTION 1: Asymmetric Sports Editorial Hero
-   (Open typography + Hairline KPI strip on left, Framed stadium visual on right)
+   HOME SECTION 1: Full-Bleed Stadium Facility Hero + KPI Strip
    ========================================================= */
-.hero-compact {
-  display: grid;
-  grid-template-columns: minmax(0, 1.32fr) minmax(0, 0.95fr);
-  gap: 1.15rem;
+.hero-facility {
+  position: relative;
+  width: 100%;
+  min-height: clamp(500px, 68vh, 640px);
+  display: flex;
   align-items: center;
+  overflow: hidden;
+  background: #0B0C0E;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.hero-compact-copy {
+.hero-facility-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+}
+
+.hero-facility-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(11, 12, 14, 0.94) 0%, rgba(11, 12, 14, 0.80) 42%, rgba(11, 12, 14, 0.34) 76%, rgba(11, 12, 14, 0.22) 100%),
+    linear-gradient(180deg, rgba(11, 12, 14, 0.35) 0%, transparent 25%, rgba(11, 12, 14, 0.88) 100%);
+  pointer-events: none;
+}
+
+.hero-facility-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 4.25rem;
+}
+
+.hero-facility-copy {
+  max-width: 660px;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #D8C55C;
+  margin-bottom: 0.85rem;
+}
+
+.hero-title-stacked {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6.4vw, 5.25rem);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  margin: 0 0 1.25rem;
+}
+
+.hero-line-white {
+  color: #FFFFFF;
+}
+
+.hero-line-gold {
+  color: #D8C55C;
+}
+
+.hero-lead-facility {
+  color: #D1D6DF;
+  font-size: 1.06rem;
+  line-height: 1.6;
+  max-width: 52ch;
+  margin: 0 0 1.75rem;
+}
+
+.hero-facility-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+/* Full-Width 4-Column Scoreboard KPI Strip */
+.hero-kpi-strip {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-kpi-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.hero-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.kpi-strip-item {
+  padding: 0.95rem 1.15rem;
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.35rem;
 }
 
-.hero-compact-copy h1 {
-  font-size: clamp(1.58rem, 2.65vw, 2.08rem);
+.kpi-strip-item:last-child {
+  border-right: 0;
+}
+
+.kpi-strip-item .score-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
   margin-bottom: 0.2rem;
 }
 
-.hero-lead--compact {
-  font-size: 0.93rem;
-  margin-bottom: 0.55rem;
-  max-width: 58ch;
+.kpi-strip-item .score-value {
+  font-size: 1.55rem;
+  color: var(--accent);
 }
 
-.hero-scoreboard-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
+.kpi-strip-foot {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.kpi-strip-foot strong {
+  color: var(--text-primary);
+}
+
+.scorebug-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.42rem 0.95rem;
+  background: #131518;
+  color: #F7F8FA;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.scorebug-tag {
+  color: #D8C55C;
 }
 
 .hero-scoreboard-inner {
-  padding: 0.95rem 1.15rem;
+  padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.7rem;
   flex: 1;
 }
 
 .hero-scoreboard-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.55rem;
+}
+
+.hero-metric--compact {
+  padding: 0.5rem 0.55rem;
+  border-radius: 7px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.hero-metric--compact:last-child {
+  padding-right: 0.55rem;
+  border-right: 1px solid var(--border);
 }
 
 .hero-metric--compact .score-value {
-  font-size: 1.35rem;
+  font-size: 1.32rem;
 }
 
 .hero-scoreboard-foot {
@@ -743,63 +928,65 @@ a:hover {
 
 /* =========================================================
    HOME & DETAIL SECTION 2: Gameday Broadcast Console
-   (High-contrast dark scoreboard bezel + flowing RGB LED top strip)
+   (High-contrast Obsidian Charcoal console + Championship Gold accents)
    ========================================================= */
 .gameday-studio {
   scroll-margin-top: 76px;
-  --bg-surface: rgb(21, 31, 50);
-  --bg-subtle: rgb(14, 22, 36);
-  --bg-muted: rgb(38, 53, 80);
-  --text-primary: rgb(243, 247, 252);
-  --text-secondary: rgb(186, 201, 222);
-  --text-muted: rgb(144, 162, 188);
-  --border: rgb(42, 58, 86);
-  --border-strong: rgb(62, 83, 118);
-  --accent: rgb(56, 189, 248);
-  --accent-hover: rgb(125, 211, 252);
-  --accent-text-on: rgb(10, 19, 34);
-  --accent-soft: rgb(24, 52, 82);
-  --accent-border: rgb(56, 112, 168);
-  --gold: rgb(251, 191, 36);
-  --stitch: rgb(248, 113, 113);
-  --field-turf: rgb(18, 68, 44);
+  --bg-surface: #131518;
+  --bg-subtle: #1A1D22;
+  --bg-muted: #262A31;
+  --text-primary: #F7F8FA;
+  --text-secondary: #B4BAC4;
+  --text-muted: #848C98;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --accent: #D8C55C;
+  --accent-hover: #E6D574;
+  --accent-text-on: #0D0F12;
+  --accent-soft: rgba(216, 197, 92, 0.14);
+  --accent-border: rgba(216, 197, 92, 0.42);
+  --gold: #D8C55C;
+  --stitch: #D8C55C;
+  --field-turf: rgb(18, 62, 42);
   --field-dirt: rgb(116, 86, 56);
   --field-line: rgb(236, 246, 240);
   --field-ink: rgb(236, 253, 245);
 
-  background: rgb(15, 23, 38);
+  background: #0E1013;
   color: var(--text-primary);
-  border: 1px solid rgb(42, 58, 86);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
 }
 
 .studio-topbar {
-  padding: 0.85rem 1.35rem;
+  padding: 1rem 1.35rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  background: rgb(18, 28, 46);
+  background: linear-gradient(90deg, #16191D, #101216);
 }
 
 .studio-topbar h2 {
   color: var(--text-primary);
-  margin-bottom: 0.15rem;
-  font-size: 1.36rem;
+  margin-bottom: 0.12rem;
+  font-size: 1.55rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .studio-topbar p {
   color: var(--text-secondary);
-  font-size: 0.87rem;
+  font-size: 0.86rem;
   margin-bottom: 0;
 }
 
 .studio-body {
-  padding: 0.95rem 1.35rem 1.35rem;
+  padding: 1rem 1.35rem 1.35rem;
 }
 
 .hitlab-grid {
@@ -823,8 +1010,8 @@ a:hover {
 .hitlab-readout {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  padding-top: 0.85rem;
+  gap: 0.55rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--border);
 }
 
@@ -836,12 +1023,20 @@ a:hover {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.hitlab-readout--six > div {
+  padding: 0.5rem 0.65rem;
+  border-radius: 7px;
+  background: #14171B;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid rgba(216, 197, 92, 0.6);
+}
+
 .cage-canvas-wrap {
   position: relative;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  border: 1px solid var(--border);
-  background: rgb(9, 15, 26);
+  border: 1px solid var(--border-strong);
+  background: #090A0C;
   aspect-ratio: 16 / 9;
   cursor: crosshair;
   touch-action: none;
@@ -866,9 +1061,9 @@ a:hover {
 .studio-command-dock {
   display: flex;
   flex-direction: column;
-  gap: 0.42rem;
-  margin-bottom: 0.7rem;
-  padding: 0.55rem 0.78rem;
+  gap: 0.45rem;
+  margin-bottom: 0.78rem;
+  padding: 0.68rem 0.88rem;
   border-radius: var(--radius-md);
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -876,35 +1071,57 @@ a:hover {
 }
 
 .studio-command-dock .venue-group {
-  gap: 0.36rem;
+  gap: 0.4rem;
 }
 
 .studio-command-dock .segmented-btn {
-  padding: 0.25rem 0.54rem;
-  font-size: 0.77rem;
+  padding: 0.28rem 0.58rem;
+  font-size: 0.78rem;
+  min-height: 30px;
 }
 
 .command-dock-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem 0.68rem;
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  align-items: start;
+  gap: 0.45rem 0.85rem;
 }
 
 .command-dock-row + .command-dock-row {
-  padding-top: 0.42rem;
+  padding-top: 0.5rem;
   border-top: 1px solid var(--border);
+}
+
+.dock-row-tag {
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+  padding: 0.24rem 0.5rem;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  text-align: center;
+  margin-top: 0.14rem;
+}
+
+.dock-row-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.85rem;
 }
 
 .hitlab-stage--wide {
   padding: 0.9rem 1rem;
-  gap: 0.7rem;
+  gap: 0.72rem;
 }
 
 .hitlab-stage--wide .cage-canvas-wrap {
   width: 100%;
-  max-height: 495px;
+  max-height: 505px;
   box-shadow: 0 14px 36px rgba(4, 9, 18, 0.55);
 }
 
@@ -923,8 +1140,8 @@ a:hover {
 }
 
 #cage-track-btn[aria-pressed="false"] {
-  border-color: rgba(251, 191, 36, 0.55);
-  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(216, 197, 92, 0.55);
+  background: rgba(216, 197, 92, 0.12);
   color: var(--gold);
 }
 
@@ -950,11 +1167,11 @@ a:hover {
 
 .venue-label {
   font-family: var(--font-mono);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .cage-action-row {
@@ -963,11 +1180,15 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: 0.65rem;
+  padding: 0.5rem 0.72rem;
+  border-radius: var(--radius-sm);
+  background: #14171B;
+  border: 1px solid var(--border);
 }
 
 .bat-rack {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
   margin-bottom: 1.1rem;
 }
@@ -976,10 +1197,6 @@ a:hover {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
   margin-bottom: 0.95rem;
-}
-
-.bat-rack--locker .bat-btn:last-child {
-  grid-column: 1 / -1;
 }
 
 .bat-btn {
@@ -999,7 +1216,7 @@ a:hover {
 
 .bat-btn:hover {
   border-color: var(--accent-border);
-  background: rgb(26, 40, 64);
+  background: #1F2329;
 }
 
 .bat-btn[aria-pressed="true"] {
@@ -1024,9 +1241,10 @@ a:hover {
 
 .bat-btn-name {
   font-family: var(--font-display);
-  font-size: 0.92rem;
+  font-size: 1.04rem;
   font-weight: 700;
-  line-height: 1.2;
+  letter-spacing: 0.015em;
+  line-height: 1.15;
 }
 
 .bat-btn-meta {
@@ -1062,7 +1280,7 @@ a:hover {
   padding: 0.35rem 0.25rem;
   margin: 0.25rem 0 0.45rem;
   border-radius: 6px;
-  background: rgba(9, 15, 26, 0.72);
+  background: #0E1013;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1117,8 +1335,8 @@ a:hover {
   height: auto;
   display: block;
   border-radius: 6px;
-  background: rgb(11, 20, 34);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0D0F13;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 960px) {
@@ -1138,14 +1356,18 @@ a:hover {
 }
 
 .hitlab-stat-label {
-  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
+  margin-bottom: 0.14rem;
 }
 
 .hitlab-stat-val {
   font-family: var(--font-mono);
-  font-size: 1.15rem;
+  font-size: 1.06rem;
   font-weight: 700;
   color: var(--accent);
 }
@@ -1382,23 +1604,96 @@ input[type="range"] {
 }
 
 /* =========================================================
-   Subpages: Asymmetric Editorial Masthead (Replaces cloned banners)
+   Subpages: Full-Bleed Scrim Banner & Clean Header
    ========================================================= */
+.subpage-banner {
+  position: relative;
+  width: 100%;
+  min-height: 290px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #0B0C0E;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.subpage-banner-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  display: block;
+}
+
+.subpage-banner-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(11, 12, 14, 0.94) 0%, rgba(11, 12, 14, 0.80) 48%, rgba(11, 12, 14, 0.42) 100%),
+    linear-gradient(180deg, rgba(11, 12, 14, 0.25) 0%, rgba(11, 12, 14, 0.85) 100%);
+  pointer-events: none;
+}
+
+.subpage-banner-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 2.85rem 1.5rem;
+}
+
+.subpage-banner-copy {
+  max-width: 680px;
+}
+
+.subpage-banner-title {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4.6vw, 3.8rem);
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  margin: 0 0 0.85rem;
+}
+
+.subpage-banner-lead {
+  color: #D1D6DF;
+  font-size: 1rem;
+  line-height: 1.58;
+  max-width: 56ch;
+  margin: 0;
+}
+
+.subpage-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.25rem;
+}
+
 .subpage-masthead {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.75fr);
   gap: 1.5rem;
   align-items: center;
-  padding-bottom: 1.5rem;
+  padding: 1.25rem 1.45rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .subpage-masthead-media {
   position: relative;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   aspect-ratio: 16 / 9;
   background: var(--bg-subtle);
   box-shadow: var(--shadow-sm);
@@ -1413,7 +1708,7 @@ input[type="range"] {
 
 .page-lead {
   color: var(--text-secondary);
-  font-size: 1.03rem;
+  font-size: 1.02rem;
   max-width: 62ch;
   margin-bottom: 0;
 }
@@ -1425,8 +1720,11 @@ input[type="range"] {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
+  padding: 1.15rem 1.35rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 /* =========================================================
@@ -1438,7 +1736,7 @@ input[type="range"] {
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem;
-  padding: 0.95rem 1.15rem;
+  padding: 0.9rem 1.15rem;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1561,8 +1859,9 @@ input[type="range"] {
 }
 
 .scenario-card h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.4rem;
+  font-size: 1.35rem;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.35rem;
 }
 
 .scenario-card h2 a {
@@ -1840,10 +2139,13 @@ input[type="range"] {
 
 .compare-table thead th {
   border-top: 0;
+  border-bottom: 2px solid var(--accent);
   background: var(--bg-subtle);
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .compare-table tbody th {
@@ -2813,8 +3115,17 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .hero-scoreboard-grid {
+  .hero-scoreboard-grid,
+  .hero-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kpi-strip-item:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .kpi-strip-item:nth-child(-n+2) {
+    border-bottom: 1px solid var(--border);
   }
 
   .report-pillars-grid,
@@ -2885,11 +3196,43 @@ textarea:focus {
     border-radius: var(--radius-sm);
   }
 
+  .site-nav a[href="login.html"],
+  #nav-logout-btn {
+    margin-left: 0;
+    margin-top: 0.35rem;
+    text-align: center;
+  }
+
   .site-nav a[aria-current="page"] {
     background: var(--accent-soft);
   }
 
+  .hero-facility {
+    min-height: 440px;
+  }
+
+  .hero-facility-inner {
+    padding: 2.75rem 1.25rem 3rem;
+  }
+
+  .subpage-banner {
+    min-height: 230px;
+  }
+
+  .subpage-banner-inner {
+    padding: 2.15rem 1.25rem;
+  }
+
   .hero-scoreboard-grid,
+  .hero-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scorebug-banner {
+    font-size: 0.62rem;
+    padding: 0.38rem 0.75rem;
+  }
+
   .hero-metrics,
   .hitlab-readout,
   .hitlab-readout--five,
@@ -2916,6 +3259,15 @@ textarea:focus {
   .hero-metric:last-child {
     border-bottom: 0;
     padding-bottom: 0;
+  }
+
+  .command-dock-row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .dock-row-tag {
+    justify-self: start;
   }
 
   .studio-command-dock .venue-group {
@@ -3058,7 +3410,7 @@ textarea:focus {
 .password-toggle-btn:focus-visible {
   color: var(--text-primary);
   border-color: var(--accent);
-  background: var(--surface);
+  background: var(--bg-surface);
 }
 
 .pw-strength-wrap {
@@ -3084,7 +3436,7 @@ textarea:focus {
 }
 
 .pw-strength-fill[data-tier="weak"] {
-  background-color: var(--danger);
+  background-color: var(--stitch);
 }
 
 .pw-strength-fill[data-tier="fair"] {
@@ -3096,7 +3448,7 @@ textarea:focus {
 }
 
 .pw-strength-fill[data-tier="strong"] {
-  background-color: var(--success);
+  background-color: var(--turf);
 }
 
 .pw-strength-label {
@@ -3171,10 +3523,17 @@ textarea:focus {
 .rapsodo-substrip {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.65rem;
-  padding: 0.65rem 0.8rem;
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
+  gap: 0.55rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+}
+
+.rapsodo-substrip > div {
+  padding: 0.45rem 0.62rem;
+  border-radius: 7px;
+  background: #14171B;
   border: 1px solid var(--border);
 }
 
@@ -3544,7 +3903,7 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
-  background: var(--bg-page);
+  background: var(--bg-canvas);
 }
 
 .jax-msg {

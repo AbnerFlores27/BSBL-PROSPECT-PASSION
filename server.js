@@ -34,7 +34,8 @@ try {
   /* ignore optional .env read errors */
 }
 
-const GEMINI_MODEL = 'gemini-3.1-flash-lite';
+const GEMINI_MODEL = 'gemini-4-hydrogen';
+const GEMINI_FALLBACK_MODEL = 'gemini-3.1-flash-lite';
 
 function getGeminiApiKey() {
   const k = (process.env.GEMINI_API_KEY || '').trim();
@@ -61,6 +62,7 @@ async function callWithTimeout(ai, params, timeoutMs) {
 }
 
 async function generateWithRetry(ai, params, timeoutMs = 20000) {
+  const chosenModel = params.model || GEMINI_MODEL;
   let lastErr;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -68,7 +70,7 @@ async function generateWithRetry(ai, params, timeoutMs = 20000) {
         ai,
         {
           ...params,
-          model: GEMINI_MODEL
+          model: chosenModel
         },
         timeoutMs
       );
@@ -81,10 +83,11 @@ async function generateWithRetry(ai, params, timeoutMs = 20000) {
         status === 401 ||
         status === 403 ||
         status === 404 ||
-        /API_KEY|PERMISSION_DENIED|NOT_FOUND|unauthorized/i.test(msg);
-      console.warn(`Gemini attempt ${attempt + 1} (${GEMINI_MODEL}) failed:`, status || '', msg);
+        status === 429 ||
+        /API_KEY|PERMISSION_DENIED|NOT_FOUND|unauthorized|RESOURCE_EXHAUSTED|quota/i.test(msg);
+      console.warn(`Gemini attempt ${attempt + 1} (${chosenModel}) failed:`, status || '', msg);
       if (attempt === 0 && !isNonRetryable) {
-        await new Promise((r) => setTimeout(r, 600));
+        await new Promise((r) => setTimeout(r, 450));
         continue;
       }
       throw err;
@@ -179,10 +182,11 @@ const VALID_CLINICS = {
 
 const VALID_BATS = {
   'baum-gold': 'Baum Bat Gold (PermaWood Composite -3)',
-  'goods-2026': '2026 DeMarini The Goods (Black/Red/Teal Hybrid -3)',
-  'goods-2022': '2022 DeMarini The Goods (Chrome Silver/Red Hybrid -3)',
+  'goods-2026': '2026 DeMarini The Goods (Ice Blue/Black/Red Hybrid -3)',
+  'goods-2022': '2022 DeMarini The Goods (Chrome Silver/Black Hybrid -3)',
   'combat-rodeo': 'Combat MFG Spec-A1 Rodeo (Cream/Maroon 1-Pc Alloy -3)',
-  'combat-blue': 'Combat Spec-A1 Members Club Blue (Powder Blue 1-Pc Alloy -3)'
+  'combat-blue': 'Combat Spec-A1 Members Club Blue (Powder Blue 1-Pc Alloy -3)',
+  'marucci-catx2': 'Marucci CATX2 Alloy (Silver/Red AZR 1-Pc Liquid-Gel -3)'
 };
 
 const VALID_SCENARIOS = {
@@ -1219,19 +1223,41 @@ YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
   });
 
   try {
-    const response = await generateWithRetry(
-      ai,
+    const sysInstruction =
+      'You are Coach Jax at DiamondIQ, a warm, crystal-clear baseball hitting, fielding, rules, and gear coach. Use Google Search grounding when live facts, current bats, parks, or MLB rules help. Never fabricate URLs.';
+    const jaxAttempts = [
       {
         model: GEMINI_MODEL,
         contents: promptText,
-        config: {
-          systemInstruction:
-            'You are Coach Jax at DiamondIQ, a warm, crystal-clear baseball hitting, fielding, rules, and gear coach. Use Google Search grounding when live facts, current bats, parks, or MLB rules help. Never fabricate URLs.',
-          tools: [{ googleSearch: {} }]
-        }
+        config: { systemInstruction: sysInstruction, tools: [{ googleSearch: {} }] }
       },
-      16000
-    );
+      {
+        model: GEMINI_MODEL,
+        contents: promptText,
+        config: { systemInstruction: sysInstruction }
+      },
+      {
+        model: GEMINI_FALLBACK_MODEL,
+        contents: promptText,
+        config: { systemInstruction: sysInstruction }
+      }
+    ];
+
+    let response = null;
+    let lastJaxErr = null;
+    for (const attemptCfg of jaxAttempts) {
+      try {
+        response = await generateWithRetry(ai, attemptCfg, 16000);
+        if (response && response.text) break;
+      } catch (innerErr) {
+        lastJaxErr = innerErr;
+        const status = Number(innerErr && (innerErr.status || innerErr.statusCode)) || 0;
+        const msg = String(innerErr && innerErr.message ? innerErr.message : innerErr || '');
+        const authFatal = status === 401 || status === 403 || /API_KEY_INVALID|PERMISSION_DENIED/i.test(msg);
+        if (authFatal) throw innerErr;
+      }
+    }
+    if (!response) throw lastJaxErr || new Error('Coach Jax request did not receive a response.');
 
     const parsed = parseDelimitedJaxResponse(response.text || '');
     const chosenBatId = VALID_BATS[parsed.batId] ? parsed.batId : 'goods-2026';

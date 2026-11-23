@@ -6,11 +6,11 @@
 <title>DiamondIQ — My Playbook</title>
 <meta name="description" content="Create, edit, and organize your personal baseball strategy notes and favorite plays.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -37,8 +37,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -50,17 +50,22 @@
   <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
+<section class="subpage-banner" aria-label="My Playbook Workspace">
+  <img class="subpage-banner-bg" src="/src/assets/images/baseball_dugout_playbook_1794855949938.jpg" alt="Leather baseball glove, stitched baseball, and coach's tactical playbook notebook on a dugout bench" referrerpolicy="no-referrer">
+  <div class="subpage-banner-scrim" aria-hidden="true"></div>
+  <div class="subpage-banner-inner">
+    <div class="subpage-banner-copy">
+      <div class="hero-eyebrow">Dugout Workspace <span id="playbook-user-badge" class="tabular-nums" style="margin-left:0.5rem;color:#F7F8FA;" hidden></span></div>
+      <h1 class="subpage-banner-title">
+        <span class="hero-line-white">Personal Dugout</span>
+        <span class="hero-line-gold">My Playbook</span>
+      </h1>
+      <p class="subpage-banner-lead">Keep your own game-day notes, practice drills, 3D cage defaults, and favorite plays saved directly to your account.</p>
+    </div>
+  </div>
+</section>
+
 <main id="playbook" class="container">
-  <section class="subpage-masthead">
-    <div>
-      <div class="kicker-line">Dugout Workspace <span id="playbook-user-badge" class="tabular-nums" style="margin-left:0.5rem;color:var(--accent);" hidden></span></div>
-      <h1>My Playbook</h1>
-      <p class="page-lead">Keep your own game-day notes, practice drills, and favorite plays saved directly to your account.</p>
-    </div>
-    <div class="subpage-masthead-media">
-      <img src="/src/assets/images/baseball_dugout_playbook_1794855949938.jpg" alt="Leather baseball glove, stitched baseball, and coach's tactical playbook notebook on a dugout bench" referrerpolicy="no-referrer">
-    </div>
-  </section>
 
   <p id="playbook-login-note" class="feedback-banner is-warning" style="margin-top:0;margin-bottom:1.5rem;">
     Log in or sign up to save plays and notes to your personal playbook.
@@ -130,8 +135,8 @@
             <option value="yankee">Yankee Stadium (NY)</option>
           </optgroup>
           <optgroup label="College Ballparks">
-            <option value="omaha" selected>Charles Schwab Field (Omaha)</option>
-            <option value="lsu">Alex Box Stadium (LSU)</option>
+            <option value="sdsu" selected>Tony Gwynn Stadium (SDSU)</option>
+            <option value="usc">Dedeaux Field (USC)</option>
             <option value="pk-park">PK Park (Oregon)</option>
             <option value="stanford">Klein Field Sunken Diamond (Stanford)</option>
             <option value="ucsb">Caesar Uyesaka Stadium (UC Santa Barbara)</option>
@@ -157,6 +162,7 @@
           <option value="goods-2022">2022 The Goods Chrome (-3)</option>
           <option value="combat-rodeo">Combat Spec-A1 Rodeo (-3)</option>
           <option value="combat-blue">Combat Members Club Blue (-3)</option>
+          <option value="marucci-catx2">Marucci CATX2 Alloy (-3)</option>
         </select>
       </div>
       <div class="pb-prefs-actions">

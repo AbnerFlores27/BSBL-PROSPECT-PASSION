@@ -6,11 +6,11 @@
 <title>DiamondIQ — AI Player Checkup &amp; Onboarding Quiz</title>
 <meta name="description" content="Tell DiamondIQ Coach AI your level, swing feel, and fielding habits to get a custom plan with slow-mo fix videos and bat recommendations.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 <script src="onboarding.js" defer></script>
@@ -38,8 +38,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -51,17 +51,22 @@
   <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
+<section class="subpage-banner" aria-label="AI Player Checkup Overview">
+  <img class="subpage-banner-bg" src="/src/assets/images/baseball_night_batter_swing_1794856804641.jpg" alt="Batter taking a full swing under stadium lights during batting practice" referrerpolicy="no-referrer">
+  <div class="subpage-banner-scrim" aria-hidden="true"></div>
+  <div class="subpage-banner-inner">
+    <div class="subpage-banner-copy">
+      <div class="hero-eyebrow" id="onboarding-kicker">New Player Checkup · AI Scouting Report</div>
+      <h1 class="subpage-banner-title">
+        <span class="hero-line-white">AI Player Checkup</span>
+        <span class="hero-line-gold">Onboarding Diagnostic</span>
+      </h1>
+      <p class="subpage-banner-lead">Answer a quick scouting checkup on your experience, swing feel, fielding habits, and baseball rules. Coach Jax pinpoints what to fix first with clickable slow-mo fix videos and a cage bat match.</p>
+    </div>
+  </div>
+</section>
+
 <main id="onboarding-main" class="container">
-  <section class="subpage-masthead">
-    <div>
-      <div class="kicker-line" id="onboarding-kicker">New Player Checkup · AI Scouting Report</div>
-      <h1>AI Player Checkup Quiz</h1>
-      <p class="page-lead">Answer a quick scouting checkup on your experience, swing feel, fielding habits, and baseball rules. Our AI coach pinpoints what to fix first and gives you clickable slow-mo fix videos and a cage bat match.</p>
-    </div>
-    <div class="subpage-masthead-media">
-      <img src="/src/assets/images/baseball_night_batter_swing_1794856804641.jpg" alt="Batter taking a full swing under stadium lights during batting practice" referrerpolicy="no-referrer">
-    </div>
-  </section>
 
   <p id="onboarding-welcome-note" class="feedback-banner is-success" hidden style="margin-top:0;margin-bottom:1.25rem;">
     Welcome to DiamondIQ! Complete this quick AI checkup so your account unlocks personalized training video links and a custom playbook plan.

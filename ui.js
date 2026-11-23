@@ -248,17 +248,17 @@
         <svg class="diamond-svg" viewBox="0 0 400 250" role="img" aria-label="${escapeHtml(diagram.callout)}">
           <defs>
             <linearGradient id="sky_${uid}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#06101e"/>
-              <stop offset="58%" stop-color="#112848"/>
-              <stop offset="100%" stop-color="#1d4a6e"/>
+              <stop offset="0%" stop-color="#050c17"/>
+              <stop offset="56%" stop-color="#0d223f"/>
+              <stop offset="100%" stop-color="#194163"/>
             </linearGradient>
             <linearGradient id="turf_${uid}" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#14532d"/>
+              <stop offset="0%" stop-color="#134e2a"/>
               <stop offset="50%" stop-color="#22864a"/>
-              <stop offset="100%" stop-color="#14532d"/>
+              <stop offset="100%" stop-color="#134e2a"/>
             </linearGradient>
             <linearGradient id="cone_${uid}" x1="0" y1="1" x2="1" y2="0">
-              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.42"/>
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.48"/>
               <stop offset="100%" stop-color="#22c55e" stop-opacity="0.06"/>
             </linearGradient>
             <linearGradient id="hrGlow_${uid}" x1="0" y1="0" x2="1" y2="0">
@@ -266,30 +266,36 @@
               <stop offset="55%" stop-color="#22d3ee"/>
               <stop offset="100%" stop-color="#fbbf24"/>
             </linearGradient>
+            <filter id="glow_${uid}" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
           </defs>
-          <rect x="0" y="0" width="400" height="250" rx="12" fill="url(#sky_${uid})"/>
+          <rect x="0" y="0" width="400" height="250" rx="10" fill="url(#sky_${uid})"/>
 
-          <!-- Stadium Light Towers & Upper Bleachers Behind Fence -->
-          <line x1="348" y1="138" x2="348" y2="42" stroke="#64748b" stroke-width="3.2"/>
-          <rect x="331" y="34" width="34" height="12" rx="2.5" fill="#e0f2fe" stroke="#93c5fd" stroke-width="1"/>
-          <polygon points="318,168 398,128 398,210 318,210" fill="#17253e" stroke="#334155" stroke-width="1.2"/>
-          <line x1="322" y1="175" x2="396" y2="140" stroke="rgba(148,163,184,0.28)" stroke-width="2"/>
-          <line x1="322" y1="186" x2="396" y2="152" stroke="rgba(148,163,184,0.28)" stroke-width="2"/>
-          <line x1="322" y1="197" x2="396" y2="164" stroke="rgba(148,163,184,0.28)" stroke-width="2"/>
+          <!-- Stadium Light Towers, Skyline Ridge & Outfield Stands -->
+          <line x1="348" y1="138" x2="348" y2="38" stroke="#64748b" stroke-width="3.2"/>
+          <rect x="330" y="30" width="36" height="12" rx="2" fill="#e0f2fe" stroke="#93c5fd" stroke-width="1"/>
+          <polygon points="318,166 398,124 398,210 318,210" fill="#132138" stroke="#334155" stroke-width="1.2"/>
+          <line x1="322" y1="173" x2="396" y2="136" stroke="rgba(148,163,184,0.3)" stroke-width="2"/>
+          <line x1="322" y1="184" x2="396" y2="148" stroke="rgba(148,163,184,0.3)" stroke-width="2"/>
+          <line x1="322" y1="196" x2="396" y2="160" stroke="rgba(148,163,184,0.3)" stroke-width="2"/>
 
           <!-- Mowed Turf & Dirt Batter's Box -->
           <rect x="0" y="206" width="400" height="44" fill="url(#turf_${uid})"/>
-          <rect x="14" y="203" width="58" height="9" rx="3" fill="#b77b47"/>
-          <line x1="12" y1="206" x2="392" y2="206" stroke="rgba(255,255,255,0.65)" stroke-width="1.5"/>
+          <rect x="14" y="203" width="60" height="9" rx="3" fill="#b97b45"/>
+          <line x1="12" y1="206" x2="392" y2="206" stroke="rgba(255,255,255,0.68)" stroke-width="1.5"/>
 
-          <!-- Distance Yardage Markers -->
-          <text x="150" y="222" text-anchor="middle" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.55)">200 FT</text>
-          <text x="235" y="222" text-anchor="middle" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.55)">300 FT</text>
+          <!-- Yardage & Broadcast Grid -->
+          <line x1="150" y1="42" x2="150" y2="206" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 4"/>
+          <line x1="235" y1="42" x2="235" y2="206" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 4"/>
+          <text x="150" y="222" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.65)">200 FT</text>
+          <text x="235" y="222" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.65)">300 FT</text>
 
           <!-- Padded 400ft Outfield Wall -->
-          <rect x="308" y="164" width="12" height="42" rx="2" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.2"/>
-          <rect x="306" y="161" width="16" height="5" rx="2" fill="#facc15"/>
-          <text x="314" y="224" text-anchor="middle" font-size="9" font-weight="800" fill="#fde68a">400 FT WALL</text>
+          <rect x="308" y="162" width="12" height="44" rx="2" fill="#990000" stroke="#f8fafc" stroke-width="1"/>
+          <rect x="306" y="159" width="16" height="5" rx="2" fill="#facc15"/>
+          <text x="314" y="224" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.8" font-weight="800" fill="#fde68a">400 FT</text>
 
           <!-- Batter Swinging at Home Plate -->
           <g transform="translate(36, 174)">
@@ -308,17 +314,18 @@
           <path d="M 54 180 Q 110 34 180 202" fill="none" stroke="rgba(248,113,113,0.78)" stroke-width="2" stroke-dasharray="4 4"/>
           ${
             showBarrel
-              ? `<path class="svg-flow-arc" d="M 54 180 Q 198 22 372 142" fill="none" stroke="url(#hrGlow_${uid})" stroke-width="4.8" stroke-linecap="round"/>
+              ? `<path class="svg-flow-arc" filter="url(#glow_${uid})" d="M 54 180 Q 198 22 372 142" fill="none" stroke="url(#hrGlow_${uid})" stroke-width="4.8" stroke-linecap="round"/>
                  <circle cx="372" cy="142" r="5" fill="#fbbf24"/>
-                 <rect x="148" y="64" width="136" height="20" rx="4" fill="rgba(10,18,32,0.85)" stroke="#38bdf8" stroke-width="1"/>
-                 <text x="216" y="78" text-anchor="middle" font-size="9.5" font-weight="800" fill="#7dd3fc">92 FT APEX · 416 FT HR!</text>`
+                 <rect x="140" y="62" width="148" height="20" rx="3" fill="rgba(8,14,25,0.92)" stroke="#38bdf8" stroke-width="1.2"/>
+                 <text x="214" y="76" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" font-weight="800" fill="#7dd3fc">92 FT APEX · 416 FT HR</text>`
               : ''
           }
           ${showBarrel ? renderBaseballMarkup(252, 88, 7.5) : renderBaseballMarkup(58, 178, 7.5)}
           <text x="145" y="54" text-anchor="start" font-size="9" font-weight="700" fill="#fca5a5">52° Pop-Up</text>
           <text x="278" y="160" text-anchor="end" font-size="9" font-weight="700" fill="#cbd5e1">14° Liner</text>
-          <rect x="12" y="10" width="246" height="26" rx="6" fill="rgba(10,18,32,0.9)" stroke="#38bdf8" stroke-width="1.2"/>
-          <text x="135" y="27" text-anchor="middle" font-size="10.2" font-weight="800" fill="#f8fafc">${showNote ? 'BARREL: 98+ MPH · 26°–30° · OVER WALL' : 'ELEVATED 26°–30° BARREL ZONE'}</text>
+          <rect x="10" y="10" width="268" height="24" rx="4" fill="rgba(8,14,25,0.94)" stroke="#38bdf8" stroke-width="1.2"/>
+          <rect x="10" y="10" width="5" height="24" rx="2" fill="#38bdf8"/>
+          <text x="146" y="26" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.6" font-weight="800" fill="#f8fafc">${showNote ? 'BARREL: 98+ MPH · 26°–30° LA' : 'STATCAST BARREL ZONE · 26°–30°'}</text>
         </svg>`;
     }
 
@@ -328,51 +335,49 @@
         <svg class="diamond-svg" viewBox="0 0 400 250" role="img" aria-label="${escapeHtml(diagram.callout)}">
           <defs>
             <linearGradient id="fg_${uid}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#091526"/>
-              <stop offset="66%" stop-color="#16324f"/>
+              <stop offset="0%" stop-color="#071120"/>
+              <stop offset="66%" stop-color="#132c47"/>
               <stop offset="100%" stop-color="#6b4426"/>
             </linearGradient>
             <marker id="fArr_${uid}" markerWidth="7" markerHeight="7" refX="4" refY="3.5" orient="auto">
               <path d="M0,0 L7,3.5 L0,7 Z" fill="#38bdf8"/>
             </marker>
           </defs>
-          <rect x="0" y="0" width="400" height="250" rx="12" fill="url(#fg_${uid})"/>
-          <!-- Stadium Turf & Mound Distance -->
-          <rect x="0" y="108" width="400" height="74" fill="#14532d" opacity="0.62"/>
-          <ellipse cx="200" cy="118" rx="48" ry="10" fill="#9a6437" opacity="0.72"/>
-          <circle cx="200" cy="100" r="3.5" fill="#e2e8f0" opacity="0.7"/>
-          <rect x="196" y="104" width="8" height="12" rx="2" fill="#1d4ed8" opacity="0.7"/>
+          <rect x="0" y="0" width="400" height="250" rx="10" fill="url(#fg_${uid})"/>
+          <rect x="0" y="108" width="400" height="74" fill="#14532d" opacity="0.68"/>
+          <ellipse cx="200" cy="118" rx="52" ry="10" fill="#9a6437" opacity="0.78"/>
+          <circle cx="200" cy="100" r="3.5" fill="#e2e8f0" opacity="0.75"/>
+          <rect x="196" y="104" width="8" height="12" rx="2" fill="#1d4ed8" opacity="0.75"/>
 
-          <!-- Batter in Stance Left Box -->
           <g opacity="0.38" fill="#cbd5e1">
             <circle cx="88" cy="56" r="11"/>
             <path d="M 74 72 Q 88 68 102 74 L 106 135 L 96 196 L 84 196 L 85 138 L 72 196 L 62 196 Z"/>
             <line x1="98" y1="88" x2="128" y2="46" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
           </g>
-          <!-- Chalk Boxes & Home Plate -->
           <rect x="42" y="196" width="90" height="42" fill="none" stroke="rgba(255,255,255,0.48)" stroke-width="2"/>
           <rect x="268" y="196" width="90" height="42" fill="none" stroke="rgba(255,255,255,0.48)" stroke-width="2"/>
           <polygon points="164,202 236,202 236,214 200,228 164,214" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
 
           <!-- Stitched Rawhide Leather Catcher Mitt -->
           <g transform="translate(200, ${ballY + 8})">
-            <ellipse cx="0" cy="2" rx="34" ry="27" fill="rgba(0,0,0,0.45)"/>
+            <ellipse cx="0" cy="2" rx="34" ry="27" fill="rgba(0,0,0,0.48)"/>
             <ellipse cx="0" cy="0" rx="31" ry="25" fill="#85451d" stroke="#f59e0b" stroke-width="2"/>
             <ellipse cx="-2" cy="-2" rx="18" ry="15" fill="#592a0e" stroke="#b45309" stroke-width="1.2"/>
             <path d="M -20 -9 Q 0 -22 20 -9" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="3 2"/>
           </g>
 
           <!-- Shadow Border + 3x3 Glass Strike Zone -->
-          <rect x="132" y="38" width="136" height="146" rx="10" fill="rgba(56,189,248,0.08)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 4"/>
-          <rect x="148" y="52" width="104" height="118" rx="4" fill="rgba(15,23,42,0.34)" stroke="#f8fafc" stroke-width="2.2"/>
-          <line x1="183" y1="52" x2="183" y2="170" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
-          <line x1="217" y1="52" x2="217" y2="170" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
-          <line x1="148" y1="91" x2="252" y2="91" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
-          <line x1="148" y1="130" x2="252" y2="130" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+          <rect x="132" y="38" width="136" height="146" rx="8" fill="rgba(56,189,248,0.08)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 4"/>
+          <rect x="148" y="52" width="104" height="118" rx="4" fill="rgba(10,18,32,0.42)" stroke="#f8fafc" stroke-width="2.2"/>
+          <line x1="183" y1="52" x2="183" y2="170" stroke="rgba(255,255,255,0.34)" stroke-width="1"/>
+          <line x1="217" y1="52" x2="217" y2="170" stroke="rgba(255,255,255,0.34)" stroke-width="1"/>
+          <line x1="148" y1="91" x2="252" y2="91" stroke="rgba(255,255,255,0.34)" stroke-width="1"/>
+          <line x1="148" y1="130" x2="252" y2="130" stroke="rgba(255,255,255,0.34)" stroke-width="1"/>
           ${renderBaseballMarkup(200, ballY, 9)}
           ${step >= 1 ? `<path class="svg-flow-arc" d="M 200 176 L 200 138" stroke="#38bdf8" stroke-width="3.2" marker-end="url(#fArr_${uid})"/>` : ''}
-          <rect x="65" y="10" width="270" height="22" rx="5" fill="rgba(10,18,32,0.9)" stroke="#38bdf8" stroke-width="1"/>
-          <text x="200" y="25" text-anchor="middle" font-size="10.2" font-weight="800" fill="#f8fafc">${step === 2 ? 'HOLD QUIET TARGET IN SHADOW ZONE' : 'PULL BORDERLINE PITCH UP INTO ZONE'}</text>
+          <rect x="46" y="10" width="308" height="22" rx="4" fill="rgba(8,14,25,0.94)" stroke="#38bdf8" stroke-width="1.2"/>
+          <rect x="46" y="10" width="5" height="22" rx="2" fill="#38bdf8"/>
+          <text x="202" y="25" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="800" fill="#f8fafc">${step === 2 ? 'HOLD QUIET TARGET IN SHADOW ZONE' : 'PRESENT BORDERLINE PITCH INTO ZONE'}</text>
         </svg>`;
     }
 
@@ -388,40 +393,41 @@
               <stop offset="100%" stop-color="#ef4444"/>
             </linearGradient>
           </defs>
-          <rect x="0" y="0" width="400" height="250" rx="12" fill="#0c1729"/>
-          <rect x="14" y="14" width="372" height="222" rx="10" fill="#13223a" stroke="#2d4368" stroke-width="1.5"/>
-          <text x="200" y="38" text-anchor="middle" font-size="13" font-weight="800" fill="#f8fafc">Same Barrel Contact · Different Fielder Luck</text>
+          <rect x="0" y="0" width="400" height="250" rx="10" fill="#08111f"/>
+          <rect x="12" y="12" width="376" height="226" rx="8" fill="#101f36" stroke="#2d4368" stroke-width="1.4"/>
+          <rect x="12" y="12" width="376" height="30" rx="8" fill="#0b1628"/>
+          <text x="200" y="32" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="800" fill="#f8fafc">SAME CONTACT QUALITY · ZERO FIELDER LUCK</text>
 
           <!-- Left Mini Diamond: Lineout -->
-          <rect x="28" y="48" width="164" height="68" rx="7" fill="#0d1829" stroke="#334155"/>
-          <path d="M 110 108 L 80 76 Q 110 56 140 76 Z" fill="#14532d"/>
-          <line class="svg-flow-arc" x1="110" y1="106" x2="96" y2="75" stroke="#f87171" stroke-width="2.2"/>
-          <circle cx="96" cy="75" r="4" fill="#ef4444" stroke="#fff" stroke-width="1"/>
-          <text x="110" y="64" text-anchor="middle" font-size="8.8" font-weight="800" fill="#fca5a5">SS LINEOUT · .000 AVG</text>
-          <text x="110" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText} xwOBA</text>
+          <rect x="26" y="50" width="166" height="70" rx="6" fill="#0b1525" stroke="#334155"/>
+          <path d="M 109 110 L 79 78 Q 109 58 139 78 Z" fill="#165c32"/>
+          <line class="svg-flow-arc" x1="109" y1="108" x2="95" y2="77" stroke="#f87171" stroke-width="2.2"/>
+          <circle cx="95" cy="77" r="4" fill="#ef4444" stroke="#fff" stroke-width="1"/>
+          <text x="109" y="65" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.4" font-weight="800" fill="#fca5a5">SS LINEOUT · .000 AVG</text>
+          <text x="109" y="114" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.8" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText}</text>
 
           <!-- Right Mini Diamond: Gap Double -->
-          <rect x="208" y="48" width="164" height="68" rx="7" fill="#0d1829" stroke="#334155"/>
-          <path d="M 290 108 L 260 76 Q 290 56 320 76 Z" fill="#14532d"/>
-          <line class="svg-flow-arc" x1="290" y1="106" x2="314" y2="66" stroke="#4ade80" stroke-width="2.2"/>
-          <circle cx="314" cy="66" r="4" fill="#22c55e" stroke="#fff" stroke-width="1"/>
-          <text x="290" y="64" text-anchor="middle" font-size="8.8" font-weight="800" fill="#86efac">GAP DOUBLE · 1.000 AVG</text>
-          <text x="290" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText} xwOBA</text>
+          <rect x="208" y="50" width="166" height="70" rx="6" fill="#0b1525" stroke="#334155"/>
+          <path d="M 291 110 L 261 78 Q 291 58 321 78 Z" fill="#165c32"/>
+          <line class="svg-flow-arc" x1="291" y1="108" x2="315" y2="68" stroke="#4ade80" stroke-width="2.2"/>
+          <circle cx="315" cy="68" r="4" fill="#22c55e" stroke="#fff" stroke-width="1"/>
+          <text x="291" y="65" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.4" font-weight="800" fill="#86efac">GAP DOUBLE · 1.000 AVG</text>
+          <text x="291" y="114" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.8" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText}</text>
 
-          <rect x="44" y="132" width="312" height="22" rx="11" fill="#091322" stroke="#2d4266"/>
-          <rect x="44" y="132" width="${fillW}" height="22" rx="11" fill="url(#xw_${uid})"/>
-          <circle cx="154" cy="143" r="6" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
-          <circle cx="240" cy="143" r="6" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
-          <circle cx="309" cy="143" r="6" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
-          <text x="154" y="172" text-anchor="middle" font-size="10.2" font-weight="700" fill="#cbd5e1">.320 Avg</text>
-          <text x="240" y="172" text-anchor="middle" font-size="10.2" font-weight="700" fill="#fde68a">.370 Great</text>
-          <text x="309" y="172" text-anchor="middle" font-size="10.2" font-weight="700" fill="#fca5a5">.400+ MVP</text>
-          <rect x="38" y="186" width="324" height="34" rx="6" fill="rgba(10,18,32,0.92)" stroke="#38bdf8" stroke-width="1"/>
-          <text x="200" y="207" text-anchor="middle" font-size="10.2" font-weight="700" fill="#f8fafc">Measures Contact Speed &amp; Angle — Zero Defense Luck</text>
+          <rect x="44" y="136" width="312" height="20" rx="10" fill="#08111e" stroke="#2d4266"/>
+          <rect x="44" y="136" width="${fillW}" height="20" rx="10" fill="url(#xw_${uid})"/>
+          <circle cx="154" cy="146" r="5.5" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
+          <circle cx="240" cy="146" r="5.5" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
+          <circle cx="309" cy="146" r="5.5" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
+          <text x="154" y="174" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="700" fill="#cbd5e1">.320 AVG</text>
+          <text x="240" y="174" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="700" fill="#fde68a">.370 PLUS</text>
+          <text x="309" y="174" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="700" fill="#fca5a5">.400+ MVP</text>
+          <rect x="36" y="188" width="328" height="32" rx="5" fill="rgba(8,14,25,0.92)" stroke="#38bdf8" stroke-width="1"/>
+          <text x="200" y="208" text-anchor="middle" font-size="10" font-weight="700" fill="#f8fafc">Grades True Exit Velo + Launch Angle Quality</text>
         </svg>`;
     }
 
-    // Broadcast Stadium Diamond ViewBox 400 x 250 with 3D Bleacher Wall + Realistic Fielder Silhouettes
+    // Broadcast Stadium Diamond ViewBox 400 x 250 with Crisp Pro Turf Striping, Bullpens & HUD Callouts
     const coords = {
       HOME: [200, 214],
       '1B': [286, 138],
@@ -449,7 +455,7 @@
       return `
         <g>
           ${isHighlight ? `<circle cx="${cx}" cy="${cy}" r="18" fill="rgba(56,189,248,0.28)" stroke="#38bdf8" stroke-width="2"/>` : ''}
-          <rect x="${cx - 7.5}" y="${cy - 5.5}" width="16" height="16" rx="2" transform="rotate(45 ${cx} ${cy + 2})" fill="rgba(0,0,0,0.4)"/>
+          <rect x="${cx - 7.5}" y="${cy - 5.5}" width="16" height="16" rx="2" transform="rotate(45 ${cx} ${cy + 2})" fill="rgba(0,0,0,0.45)"/>
           <rect x="${cx - 8}" y="${cy - 8}" width="16" height="16" rx="2.5" transform="rotate(45 ${cx} ${cy})" fill="${fill}" stroke="#0f172a" stroke-width="1.8"/>
           ${isOccupied ? renderRunnerFigure(cx + (name === '1B' ? 14 : -14), cy - 16, 'RUN') : ''}
         </g>`;
@@ -470,9 +476,9 @@
     if (step >= 1) {
       if (diagram.mode === 'relay-throw') {
         throwPath = `
-          <path d="M ${coords.LF[0]} ${coords.LF[1]} Q 112 72 ${coords.SS[0]} ${coords.SS[1]}" fill="none" stroke="rgba(0,0,0,0.34)" stroke-width="5" transform="translate(0,4)"/>
+          <path d="M ${coords.LF[0]} ${coords.LF[1]} Q 112 72 ${coords.SS[0]} ${coords.SS[1]}" fill="none" stroke="rgba(0,0,0,0.36)" stroke-width="5" transform="translate(0,4)"/>
           <path class="svg-flow-arc" d="M ${coords.LF[0]} ${coords.LF[1]} Q 112 62 ${coords.SS[0]} ${coords.SS[1]}" fill="none" stroke="#38bdf8" stroke-width="3"/>
-          <path d="M ${coords.SS[0]} ${coords.SS[1]} Q 186 146 ${coords.HOME[0]} ${coords.HOME[1]}" fill="none" stroke="rgba(0,0,0,0.34)" stroke-width="5" transform="translate(0,4)"/>
+          <path d="M ${coords.SS[0]} ${coords.SS[1]} Q 186 146 ${coords.HOME[0]} ${coords.HOME[1]}" fill="none" stroke="rgba(0,0,0,0.36)" stroke-width="5" transform="translate(0,4)"/>
           <path class="svg-flow-arc" d="M ${coords.SS[0]} ${coords.SS[1]} Q 186 136 ${coords.HOME[0]} ${coords.HOME[1]}" fill="none" stroke="#38bdf8" stroke-width="3" marker-end="url(#tArr_${uid})"/>
           <rect x="${coords.SS[0] - 13}" y="${coords.SS[1] - 24}" width="26" height="12" rx="3" fill="#0ea5e9" stroke="#e0f2fe" stroke-width="1"/>
           <text x="${coords.SS[0]}" y="${coords.SS[1] - 15}" text-anchor="middle" font-size="7.5" font-weight="800" fill="#ffffff">CUT</text>
@@ -481,7 +487,7 @@
         const mx = (fromPt[0] + toPt[0]) / 2 + (fromPt[0] < toPt[0] ? -12 : 12);
         const my = (fromPt[1] + toPt[1]) / 2 - 18;
         throwPath = `
-          <path d="M ${fromPt[0]} ${fromPt[1]} Q ${mx} ${my + 8} ${toPt[0]} ${toPt[1]}" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="5"/>
+          <path d="M ${fromPt[0]} ${fromPt[1]} Q ${mx} ${my + 8} ${toPt[0]} ${toPt[1]}" fill="none" stroke="rgba(0,0,0,0.32)" stroke-width="5"/>
           <path class="svg-flow-arc" d="M ${fromPt[0]} ${fromPt[1]} Q ${mx} ${my} ${toPt[0]} ${toPt[1]}" fill="none" stroke="#38bdf8" stroke-width="3" marker-end="url(#tArr_${uid})"/>
           ${renderBaseballMarkup(fromPt[0], fromPt[1], 6.5)}`;
       }
@@ -498,19 +504,20 @@
 
     const banner =
       step === 2
-        ? `<rect x="14" y="218" width="372" height="24" rx="5" fill="rgba(10,18,32,0.92)" stroke="#38bdf8" stroke-width="1.2"/>
-           <text x="200" y="234" text-anchor="middle" font-size="9.8" font-weight="800" fill="#f8fafc">${escapeHtml(diagram.callout.slice(0, 56))}</text>`
+        ? `<rect x="12" y="218" width="376" height="24" rx="4" fill="rgba(8,14,25,0.94)" stroke="#38bdf8" stroke-width="1.2"/>
+           <rect x="12" y="218" width="5" height="24" rx="2" fill="#38bdf8"/>
+           <text x="202" y="234" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.4" font-weight="800" fill="#f8fafc">${escapeHtml(diagram.callout.slice(0, 54))}</text>`
         : '';
 
     return `
       <svg class="diamond-svg" viewBox="0 0 400 250" role="img" aria-label="${escapeHtml(diagram.callout)}">
         <defs>
-          <pattern id="mow_${uid}" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <rect width="11" height="22" fill="#175c35"/>
-            <rect x="11" width="11" height="22" fill="#217846"/>
+          <pattern id="mow_${uid}" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="10" height="20" fill="#186338"/>
+            <rect x="10" width="10" height="20" fill="#22854b"/>
           </pattern>
           <radialGradient id="clay_${uid}" cx="50%" cy="55%" r="55%">
-            <stop offset="0%" stop-color="#d4955c"/>
+            <stop offset="0%" stop-color="#d8975d"/>
             <stop offset="100%" stop-color="#9e6231"/>
           </radialGradient>
           <marker id="tArr_${uid}" markerWidth="7" markerHeight="7" refX="4.5" refY="3.5" orient="auto">
@@ -521,22 +528,24 @@
           </marker>
         </defs>
         <!-- Stadium Bleacher Frame, Warning Track & Outfield Wall -->
-        <rect x="0" y="0" width="400" height="250" rx="12" fill="#0b1727"/>
-        <path d="M 4 56 Q 200 -34 396 56 L 396 250 L 4 250 Z" fill="#17253e"/>
+        <rect x="0" y="0" width="400" height="250" rx="10" fill="#08121f"/>
+        <path d="M 4 56 Q 200 -34 396 56 L 396 250 L 4 250 Z" fill="#132138"/>
         <path d="M 10 66 Q 200 -24 390 66 L 390 250 L 10 250 Z" fill="#8f532c"/>
         <path d="M 16 74 Q 200 -10 384 74 L 384 250 L 16 250 Z" fill="url(#mow_${uid})"/>
-        <path d="M 10 66 Q 200 -24 390 66" fill="none" stroke="#1e40af" stroke-width="6"/>
+        <path d="M 10 66 Q 200 -24 390 66" fill="none" stroke="#990000" stroke-width="6"/>
         <path d="M 10 63 Q 200 -27 390 63" fill="none" stroke="#facc15" stroke-width="2"/>
 
         <!-- Infield Clay Apron & Cutout Grass -->
         <path d="M 54 140 Q 200 6 346 140 L 200 242 Z" fill="url(#clay_${uid})" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
         <polygon points="200,76 270,138 200,198 130,138" fill="url(#mow_${uid})"/>
 
-        <!-- Chalk Foul Lines + Dugout Shelters -->
-        <line x1="200" y1="214" x2="18" y2="68" stroke="rgba(255,255,255,0.8)" stroke-width="2.2"/>
-        <line x1="200" y1="214" x2="382" y2="68" stroke="rgba(255,255,255,0.8)" stroke-width="2.2"/>
+        <!-- Chalk Foul Lines + Dugouts + Bullpen Rubbers -->
+        <line x1="200" y1="214" x2="18" y2="68" stroke="rgba(255,255,255,0.85)" stroke-width="2.2"/>
+        <line x1="200" y1="214" x2="382" y2="68" stroke="rgba(255,255,255,0.85)" stroke-width="2.2"/>
         <polygon points="72,172 102,196 95,206 65,182" fill="#0f172a" stroke="#64748b" stroke-width="1.2"/>
         <polygon points="328,172 298,196 305,206 335,182" fill="#0f172a" stroke="#64748b" stroke-width="1.2"/>
+        <rect x="26" y="130" width="12" height="3" rx="1" fill="#e2e8f0" opacity="0.65"/>
+        <rect x="362" y="130" width="12" height="3" rx="1" fill="#e2e8f0" opacity="0.65"/>
 
         <!-- Pitcher's Mound + Rubber -->
         <circle cx="200" cy="142" r="16" fill="url(#clay_${uid})" stroke="rgba(255,255,255,0.4)" stroke-width="1.1"/>
@@ -544,8 +553,8 @@
 
         <!-- Home Plate Dirt Circle & Batter Boxes -->
         <circle cx="200" cy="212" r="22" fill="url(#clay_${uid})" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
-        <rect x="180" y="204" width="10" height="17" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
-        <rect x="210" y="204" width="10" height="17" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        <rect x="180" y="204" width="10" height="17" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="1"/>
+        <rect x="210" y="204" width="10" height="17" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="1"/>
 
         ${fieldersMarkup}
         ${throwPath}
@@ -839,12 +848,39 @@
         capColor: '#1e3a8a',
         knobColor: '#1e3a8a',
         capStyle: 'flared'
+      },
+      'marucci-catx2': {
+        id: 'marucci-catx2',
+        name: 'Marucci CATX2 Alloy',
+        shortLabel: 'CATX2',
+        meta: '1-Piece AZR Alloy · Liquid-Gel Knob · 2 5/8" Barrel',
+        desc: 'Brushed silver AZR alloy barrel with crimson & charcoal rings, Liquid-Gel dampened knob, and crisp, responsive 1-piece alloy ring.',
+        construction: '1pc',
+        weightMod: 1.028,
+        popMod: 1.032,
+        cor: 0.509,
+        moi: 0.94,
+        sweetSpot: 1.08,
+        taperSharpness: 0.87,
+        launchLift: 0.9,
+        soundType: 'catx2',
+        barrelColor: '#cbd5e1',
+        barrelHi: '#ffffff',
+        barrelLo: '#8f99a8',
+        taperColor: '#e2e8f0',
+        handleColor: '#111827',
+        gripColor: '#0f1116',
+        accentColor: '#dc2626',
+        trimColor: '#111827',
+        capColor: '#111827',
+        knobColor: '#dc2626',
+        capStyle: 'dish'
       }
     };
 
     const STADIUM_TIERS = {
       pro: ['fenway', 'petco', 'coors', 'oracle', 'wrigley', 'yankee'],
-      college: ['omaha', 'lsu', 'pk-park', 'stanford', 'ucsb', 'cal-poly'],
+      college: ['sdsu', 'usc', 'pk-park', 'stanford', 'ucsb', 'cal-poly'],
       hs: ['hs-corona', 'hs-rb', 'hs-tp', 'hs-cchs', 'hs-eastlake'],
       cage: ['cage']
     };
@@ -988,46 +1024,48 @@
           return 8;
         }
       },
-      omaha: {
-        id: 'omaha',
+      sdsu: {
+        id: 'sdsu',
         tier: 'college',
-        shortName: 'Omaha CWS',
-        name: 'Charles Schwab Field (Omaha)',
-        dimsLabel: 'Omaha CWS · 335 LF · 408 CF · 335 RF',
-        skyTop: '#08182e',
-        skyMid: '#153257',
-        skyLow: '#2b557c',
-        wallColor: '#0f3f2b',
-        wallCap: '#fbbf24',
-        subBanner: 'COLLEGE WORLD SERIES',
-        subBanner2: 'OMAHA · NEBRASKA',
-        airDensity: 0.965,
-        wallDist(phi) {
-          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 73;
-        },
-        wallHeight() {
-          return 8.5;
-        }
-      },
-      lsu: {
-        id: 'lsu',
-        tier: 'college',
-        shortName: 'LSU Alex Box',
-        name: 'Alex Box Stadium (LSU)',
-        dimsLabel: 'Alex Box (LSU) · 330 LF · 405 CF · 330 RF',
-        skyTop: '#161130',
-        skyMid: '#372357',
-        skyLow: '#6e3b5c',
-        wallColor: '#1a4a33',
-        wallCap: '#facc15',
-        subBanner: 'BATON ROUGE · SEC',
-        subBanner2: 'INTIMIDATOR PILE',
+        shortName: 'SDSU Tony Gwynn',
+        name: 'Tony Gwynn Stadium (SDSU)',
+        dimsLabel: 'SDSU Tony Gwynn · 340 LF · 410 CF · 340 RF',
+        skyTop: '#071528',
+        skyMid: '#132d50',
+        skyLow: '#2b547e',
+        wallColor: '#111827',
+        wallCap: '#a6192e',
+        subBanner: 'AZTEC STADIUM · #19',
+        subBanner2: 'SAN DIEGO STATE · 410 CF',
         airDensity: 1.008,
         wallDist(phi) {
-          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
+          return 340 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
         },
         wallHeight() {
-          return 10;
+          return 9;
+        }
+      },
+      usc: {
+        id: 'usc',
+        tier: 'college',
+        shortName: 'USC Dedeaux',
+        name: 'Dedeaux Field (USC)',
+        dimsLabel: 'USC Dedeaux · 335 LF · 395 CF · 325 RF',
+        skyTop: '#0c162b',
+        skyMid: '#24355a',
+        skyLow: '#524968',
+        wallColor: '#18442f',
+        wallCap: '#ffcc00',
+        subBanner: 'USC TROJANS · 12 TITLES',
+        subBanner2: 'EXPOSITION PARK · LA',
+        airDensity: 1.006,
+        wallDist(phi) {
+          return phi < 0
+            ? 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60
+            : 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight() {
+          return 9.5;
         }
       },
       'pk-park': {
@@ -1358,6 +1396,7 @@
       const isGoods22 = bat.id === 'goods-2022';
       const isRodeo = bat.id === 'combat-rodeo';
       const isBlue = bat.id === 'combat-blue';
+      const isCatx2 = bat.id === 'marucci-catx2';
 
       const cuff =
         bat.construction === '2pc'
@@ -1372,7 +1411,6 @@
            <text x="225" y="23.8" text-anchor="middle" font-size="4.6" font-weight="700" fill="#eab308">.50</text>`
         : '';
 
-      const gripBase = bat.gripColor || bat.handleColor;
       const gripWrap = isRodeo
         ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#991b1b"/>
            <path d="M 28 17 L 36 27 M 40 17 L 48 27 M 52 17 L 60 27 M 64 17 L 72 27 M 76 17 L 84 27 M 88 17 L 96 27" stroke="rgba(254,226,226,0.4)" stroke-width="1.3"/>
@@ -1401,7 +1439,11 @@
                  <rect x="316" y="9.8" width="2" height="24.4" fill="#d4af37"/>
                  <rect x="319" y="9.8" width="2" height="24.4" fill="#1e3a8a"/>
                  <polygon points="292,15 304,15 306,22 298,28 290,22" fill="#1e3a8a" stroke="#eab308" stroke-width="1.1"/>`
-              : '';
+              : isCatx2
+                ? `<rect x="162" y="9.8" width="4" height="24.4" fill="#dc2626"/>
+                   <rect x="168" y="9.8" width="3.5" height="24.4" fill="#111827"/>
+                   <rect x="313" y="9.8" width="3" height="24.4" fill="#dc2626"/>`
+                : '';
 
       const capMarkup =
         bat.capStyle === 'tremor' || bat.capStyle === 'dish'
@@ -1477,7 +1519,7 @@
       let activeStadiumId =
         savedUserPrefs.preferredStadium && STADIUMS[savedUserPrefs.preferredStadium]
           ? savedUserPrefs.preferredStadium
-          : 'omaha';
+          : 'sdsu';
       let activeStadiumTier = (STADIUMS[activeStadiumId] && STADIUMS[activeStadiumId].tier) || 'college';
       let activeTelemetryView = 'spray'; // 'spray' | 'arc' | 'zone'
       let selectedPitchType = 'mix';
@@ -1737,7 +1779,7 @@
             : barrelFactor < 0.62
               ? 'jam'
               : 'sweet';
-        const key = `${kind}:${zone}:v5`;
+        const key = `${kind}:${zone}:v6`;
         if (batSoundCache[key]) return batSoundCache[key];
 
         const sr = ctx.sampleRate;
@@ -2022,7 +2064,7 @@
         const sctx = sprayCanvas.getContext('2d');
         const w = sprayCanvas.width;
         const h = sprayCanvas.height;
-        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.sdsu;
         if (sprayLabel) sprayLabel.textContent = `${st.dimsLabel} · ${pitcherHand}HP v ${batterHand}HB`;
 
         sctx.clearRect(0, 0, w, h);
@@ -2382,11 +2424,11 @@
 
       // True 4th-Order Runge-Kutta (RK4) 120Hz Batted-Ball Flight & Pitch Trajectories (via DiamondPhysics)
       function simulateBallFlight(bat, exitVelo, launchDeg, sprayDeg, backspinRpm = 1900, sidespinRpm = 0, startPos = null) {
-        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.sdsu;
         const wind = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
         return window.DiamondPhysics.simulateBattedBallRK4({
           stadium: st,
-          outdoorFallbackStadium: STADIUMS.omaha,
+          outdoorFallbackStadium: STADIUMS.sdsu,
           wind,
           exitVelo,
           launchDeg,
@@ -2398,7 +2440,7 @@
       }
 
       function precomputePitchTrajectory(mph, typeKey, endX, endY, isDemo, hand = pitcherHand, deliveryMode = activeDeliveryMode) {
-        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.sdsu;
         const spec = PITCH_TYPES[typeKey] || PITCH_TYPES.fastball;
         const wind = WIND_PRESETS[activeWindId] || WIND_PRESETS.calm;
         return window.DiamondPhysics.simulatePitchRK4({
@@ -2755,7 +2797,7 @@
         const desiredCam = sim.phase === 'flight' ? 1 : 0;
         sim.camT += (desiredCam - sim.camT) * Math.min(1, dt * 5.2);
 
-        const st = STADIUMS[activeStadiumId] || STADIUMS.omaha;
+        const st = STADIUMS[activeStadiumId] || STADIUMS.sdsu;
         const bat = BATS[activeBatId] || BATS['goods-2026'];
 
         // Advance State Machine & Compute 3D World Ball Positions
@@ -4390,10 +4432,10 @@
         setBanner(prefsFeedback, '', '');
         const username = pUserEl ? pUserEl.value.trim() : undefined;
         const email = pEmailEl ? pEmailEl.value.trim() : undefined;
-        const chosenStadium = pStadiumEl ? pStadiumEl.value : 'omaha';
+        const chosenStadium = pStadiumEl ? pStadiumEl.value : 'sdsu';
         const tierMap = {
           fenway: 'pro', petco: 'pro', coors: 'pro', oracle: 'pro', wrigley: 'pro', yankee: 'pro',
-          omaha: 'college', lsu: 'college', 'pk-park': 'college', stanford: 'college', ucsb: 'college', 'cal-poly': 'college',
+          sdsu: 'college', usc: 'college', 'pk-park': 'college', stanford: 'college', ucsb: 'college', 'cal-poly': 'college',
           'hs-corona': 'hs', 'hs-rb': 'hs', 'hs-tp': 'hs', 'hs-cchs': 'hs', 'hs-eastlake': 'hs',
           cage: 'cage'
         };
@@ -5183,11 +5225,11 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
-    let saved = 'light';
+    let saved = 'dark';
     try {
-      if (localStorage.getItem(THEME_KEY) === 'dark') saved = 'dark';
+      if (localStorage.getItem(THEME_KEY) === 'light') saved = 'light';
     } catch {
-      saved = 'light';
+      saved = 'dark';
     }
     applyTheme(saved);
 

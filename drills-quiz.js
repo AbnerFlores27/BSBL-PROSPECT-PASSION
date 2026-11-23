@@ -24,6 +24,10 @@
     'combat-blue': {
       name: 'Combat Spec-A1 Members Club Blue (-3)',
       reason: 'Fast, balanced swing weight ideal for catching up to velocity and staying inside the ball.'
+    },
+    'marucci-catx2': {
+      name: 'Marucci CATX2 Alloy (-3)',
+      reason: 'Responsive 1-piece AZR alloy barrel with Liquid-Gel dampened knob and balanced swing speed.'
     }
   };
 

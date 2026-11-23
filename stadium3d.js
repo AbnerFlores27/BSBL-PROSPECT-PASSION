@@ -26,23 +26,23 @@ function makeMowedTurfTexture(maxAniso) {
   c.height = 1024;
   const ctx = c.getContext('2d');
 
-  const bands = 12;
+  const bands = 14;
   const bw = c.width / bands;
   for (let i = 0; i < bands; i++) {
-    ctx.fillStyle = i % 2 === 0 ? '#186335' : '#248548';
+    ctx.fillStyle = i % 2 === 0 ? '#186636' : '#268e4d';
     ctx.fillRect(i * bw, 0, bw, c.height);
   }
-  ctx.globalAlpha = 0.14;
+  ctx.globalAlpha = 0.19;
   for (let y = 0; y < bands; y++) {
-    ctx.fillStyle = y % 2 === 0 ? '#0d3f21' : '#52d681';
+    ctx.fillStyle = y % 2 === 0 ? '#0b381d' : '#4ade80';
     ctx.fillRect(0, y * bw, c.width, bw);
   }
   // Fine Kentucky bluegrass blade micro-grain
-  ctx.globalAlpha = 0.18;
-  for (let i = 0; i < 9500; i++) {
+  ctx.globalAlpha = 0.22;
+  for (let i = 0; i < 11000; i++) {
     const x = (i * 97) % 1024;
     const y = (i * 193) % 1024;
-    ctx.fillStyle = i % 3 === 0 ? '#124927' : i % 3 === 1 ? '#86efac' : '#1e743f';
+    ctx.fillStyle = i % 3 === 0 ? '#0f4222' : i % 3 === 1 ? '#86efac' : '#217c44';
     ctx.fillRect(x, y, 2, 3);
   }
   ctx.globalAlpha = 1;
@@ -56,18 +56,18 @@ function makeMowedTurfTexture(maxAniso) {
   return tex;
 }
 
-function makeDirtTexture(maxAniso, hexA = '#b66e3d', hexB = '#894a21') {
+function makeDirtTexture(maxAniso, hexA = '#bf7440', hexB = '#8e4d23') {
   const c = document.createElement('canvas');
   c.width = 512;
   c.height = 512;
   const ctx = c.getContext('2d');
   ctx.fillStyle = hexA;
   ctx.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 6500; i++) {
+  for (let i = 0; i < 8200; i++) {
     const x = (i * 67) % 512;
     const y = (i * 131) % 512;
-    ctx.fillStyle = i % 4 === 0 ? hexB : i % 4 === 1 ? '#d48d59' : '#9c582b';
-    ctx.globalAlpha = i % 4 === 0 ? 0.36 : 0.18;
+    ctx.fillStyle = i % 4 === 0 ? hexB : i % 4 === 1 ? '#dc955f' : '#a15a2d';
+    ctx.globalAlpha = i % 4 === 0 ? 0.34 : 0.2;
     ctx.fillRect(x, y, 2 + (i % 2), 2);
   }
   ctx.globalAlpha = 1;
@@ -451,26 +451,30 @@ function makeParkWallTexture(stSpec, maxAniso) {
     ctx.font = '900 28px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('CAL POLY MUSTANGS · BAGGETT STADIUM · SLO', 1024, 220);
-  } else if (id === 'lsu') {
-    // LSU Deep Purple & Old Gold Championship Wall Stripes
-    ctx.fillStyle = '#1a4a33';
+  } else if (id === 'usc') {
+    // USC Trojans Cardinal & Gold Dedeaux Field Championship Wall
+    ctx.fillStyle = '#18442f';
     ctx.fillRect(0, 0, 2048, 256);
-    ctx.fillStyle = '#461d7c';
-    ctx.fillRect(0, 165, 2048, 91);
-    ctx.fillStyle = '#fdd023';
-    ctx.fillRect(0, 160, 2048, 10);
-    ctx.fillStyle = '#fdd023';
-    ctx.font = '900 30px sans-serif';
+    ctx.fillStyle = '#990000';
+    ctx.fillRect(0, 166, 2048, 90);
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(0, 160, 2048, 9);
+    ctx.fillStyle = '#ffcc00';
+    ctx.font = '900 28px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('GEAUX TIGERS  ·  BATON ROUGE  ·  SEVEN NATIONAL TITLES', 1024, 218);
-  } else if (id === 'omaha') {
-    // Omaha CWS Forest-Green Wall + Gold Championship Ribbon + Brick Knee Curb
-    ctx.fillStyle = '#0f3f2b';
+    ctx.fillText('USC TROJANS  ·  DEDEAUX FIELD  ·  12 NATIONAL CHAMPIONSHIPS', 1024, 218);
+  } else if (id === 'sdsu') {
+    // SDSU Tony Gwynn Stadium Aztec Scarlet & Matte Black Championship Wall
+    ctx.fillStyle = '#111827';
     ctx.fillRect(0, 0, 2048, 256);
-    ctx.fillStyle = '#7f2f22';
-    ctx.fillRect(0, 206, 2048, 50);
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillRect(0, 198, 2048, 8);
+    ctx.fillStyle = '#a6192e';
+    ctx.fillRect(0, 168, 2048, 88);
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 164, 2048, 5);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SAN DIEGO STATE AZTECS  ·  TONY GWYNN STADIUM  ·  #19 RETIRED', 1024, 220);
   } else {
     ctx.strokeStyle = 'rgba(255,255,255,0.12)';
     ctx.lineWidth = 3;
@@ -902,7 +906,7 @@ function makeBatWrapTexture(batId, maxAniso) {
     ctx.font = 'bold 22px serif';
     ctx.fillText('-3', 0, 152);
     ctx.restore();
-  } else {
+  } else if (batId === 'combat-blue') {
     // Photo 5: Combat MFG Spec-A1 Members Club Blue —
     // Powder sky-blue barrel AND sky-blue handle AND sky-blue perforated grip
     // + Deep Royal/Navy Blue flared knob & end cap + thin gold/navy pinstripes
@@ -974,6 +978,56 @@ function makeBatWrapTexture(batId, maxAniso) {
     ctx.fillText('Swing Easy,', 0, 82);
     ctx.fillText('Hit Hard', 0, 100);
     ctx.restore();
+  } else {
+    // 6th Bat: Marucci CATX2 Alloy (-3) — Brushed AZR Silver/Titanium Alloy Barrel,
+    // Crimson Red & Charcoal Accent Bands, Bold "CATX2" + "MARUCCI" Branding,
+    // Matte Black Grip + Signature Crimson Liquid-Gel Dampening Knob Collar.
+    const azrGrad = ctx.createLinearGradient(0, 0, 512, 0);
+    azrGrad.addColorStop(0, '#94a3b8');
+    azrGrad.addColorStop(0.28, '#f8fafc');
+    azrGrad.addColorStop(0.56, '#cbd5e1');
+    azrGrad.addColorStop(0.84, '#f1f5f9');
+    azrGrad.addColorStop(1, '#94a3b8');
+    ctx.fillStyle = azrGrad;
+    ctx.fillRect(0, 0, 512, 578);
+
+    // Matte White/Silver taper transition -> Crimson/Charcoal accent rings -> Black Grip -> Red Liquid-Gel Knob
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(0, 578, 512, 94);
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 446, 512, 16);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(0, 464, 512, 12);
+    ctx.fillRect(0, 46, 512, 8);
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 0, 512, 34);
+
+    paintSpiralGrip('#0f1116', '#2b303c', 672, 976);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(0, 976, 512, 48);
+
+    [136, 376].forEach((cx, faceIdx) => {
+      ctx.save();
+      ctx.translate(cx, 240);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center';
+      if (faceIdx === 0) {
+        ctx.fillStyle = '#111827';
+        ctx.font = '900 54px sans-serif';
+        ctx.fillText('CATX2', 0, 14);
+        ctx.fillStyle = '#dc2626';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText('AZR ALLOY · RING-FREE', 0, 38);
+      } else {
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '900 44px Georgia, serif';
+        ctx.fillText('MARUCCI', 0, 10);
+        ctx.fillStyle = '#111827';
+        ctx.font = 'bold 13px monospace';
+        ctx.fillText('BBCOR .50 · LIQUID-GEL KNOB', 0, 34);
+      }
+      ctx.restore();
+    });
   }
 
   const tex = new THREE.CanvasTexture(c);
@@ -989,7 +1043,7 @@ function buildCompositeBatGroup(batConfig, tex) {
   const group = new THREE.Group();
   const barrelR = batConfig.id === 'baum-gold' ? 0.168 : 0.184;
   const is2Pc = batConfig.construction === '2pc';
-  const isMetal = batConfig.id === 'goods-2022';
+  const isMetal = batConfig.id === 'goods-2022' || batConfig.id === 'marucci-catx2';
   const isWood = batConfig.id === 'baum-gold';
   const isGloss = batConfig.id === 'combat-rodeo' || batConfig.id === 'combat-blue' || batConfig.id === 'baum-gold';
   const isAnodized = batConfig.id === 'goods-2026';
@@ -1015,10 +1069,10 @@ function buildCompositeBatGroup(batConfig, tex) {
   const mainGeom = new THREE.LatheGeometry(pts, 36);
   const mainMat = new THREE.MeshPhysicalMaterial({
     map: tex,
-    roughness: isMetal ? 0.18 : isAnodized ? 0.28 : isWood ? 0.14 : 0.2,
+    roughness: isMetal ? 0.17 : isAnodized ? 0.26 : isWood ? 0.14 : 0.2,
     metalness: isMetal ? 0.9 : isAnodized ? 0.28 : isWood ? 0.06 : 0.26,
-    clearcoat: isGloss ? 0.92 : isMetal ? 0.52 : 0.32,
-    clearcoatRoughness: isGloss ? 0.08 : 0.2
+    clearcoat: isGloss ? 0.92 : isMetal ? 0.56 : 0.34,
+    clearcoatRoughness: isGloss ? 0.08 : 0.18
   });
 
   const bodyMesh = new THREE.Mesh(mainGeom, mainMat);
@@ -2615,7 +2669,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   );
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.14;
+  renderer.toneMappingExposure = 1.18;
   renderer.shadowMap.enabled = !isSoftwareGl;
   if (!isSoftwareGl) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -2636,10 +2690,10 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   camera.position.set(0.22, 4.9, 14.5);
   camera.lookAt(0, 3.1, -55);
 
-  const hemi = new THREE.HemisphereLight('#bfd9ff', '#1e4228', 0.96);
+  const hemi = new THREE.HemisphereLight('#c8e0ff', '#1e4228', 1.04);
   scene.add(hemi);
 
-  const keyLight = new THREE.DirectionalLight('#fff2dc', 2.45);
+  const keyLight = new THREE.DirectionalLight('#fff4e0', 2.55);
   keyLight.position.set(95, 165, 80);
   keyLight.castShadow = !isSoftwareGl;
   keyLight.shadow.mapSize.set(1024, 1024);
@@ -2651,7 +2705,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   keyLight.shadow.camera.bottom = -120;
   scene.add(keyLight);
 
-  const rimLight = new THREE.DirectionalLight('#7dd3fc', 0.78);
+  const rimLight = new THREE.DirectionalLight('#7dd3fc', 0.85);
   rimLight.position.set(-140, 80, -240);
   scene.add(rimLight);
 
@@ -2684,7 +2738,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     sctx.fillStyle = g;
     sctx.fillRect(0, 0, 4, 256);
     skyTex.needsUpdate = true;
-    scene.fog = new THREE.Fog(lowHex, 520, 1280);
+    scene.fog = new THREE.Fog(lowHex, 580, 1340);
   }
 
   /* =========================================================
@@ -3281,8 +3335,8 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       oracle: '#7c2d23',
       wrigley: '#0c3b2e',
       yankee: '#0d2240',
-      omaha: '#102a4e',
-      lsu: '#3b156b',
+      sdsu: '#a6192e',
+      usc: '#990000',
       'pk-park': '#154733',
       stanford: '#8c1515',
       ucsb: '#003660',
@@ -3300,8 +3354,8 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       oracle: '#c2410c',
       wrigley: '#15803d',
       yankee: '#1e3a8a',
-      omaha: '#1e3a8a',
-      lsu: '#581c87',
+      sdsu: '#18181b',
+      usc: '#990000',
       'pk-park': '#154733',
       stanford: '#8c1515',
       ucsb: '#003660',
@@ -3320,21 +3374,20 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     // Park-Specific Architectural Masonry/Facade Material (Brick, Sandstone, Concrete)
     let masonryTex = null;
     if (
-      id === 'omaha' ||
       id === 'fenway' ||
       id === 'wrigley' ||
       id === 'oracle' ||
-      id === 'lsu' ||
+      id === 'usc' ||
       id === 'petco' ||
       id === 'coors' ||
       id === 'stanford' ||
       id === 'hs-corona' ||
       id === 'hs-cchs'
     ) {
-      const bHex = id === 'lsu' ? '#6d2e29' : id === 'stanford' ? '#8c3b2b' : '#7f2f22';
+      const bHex = id === 'usc' ? '#8c2d23' : id === 'stanford' ? '#8c3b2b' : '#7f2f22';
       masonryTex = makeMasonryTexture(bHex, '#cbbcb0', false, maxAniso);
-    } else if (id === 'yankee') {
-      masonryTex = makeMasonryTexture('#dbd7cc', '#aba290', true, maxAniso);
+    } else if (id === 'yankee' || id === 'sdsu') {
+      masonryTex = makeMasonryTexture(id === 'sdsu' ? '#cbd5e1' : '#dbd7cc', '#8b96a6', true, maxAniso);
     }
     const exteriorMat = masonryTex
       ? new THREE.MeshStandardMaterial({ map: masonryTex, roughness: 0.82, side: THREE.DoubleSide })
@@ -3525,16 +3578,14 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         b1.rotation.y = side * (Math.PI * 0.25);
         grp.add(b1);
       });
-    } else if (id === 'omaha') {
-      // CHARLES SCHWAB (OMAHA): Continuous low brick horseshoe in LF/RF alleys + LUSH GRASS OUTFIELD BERMS in LCF & RCF!
-      addBowlSection(stSpec.wallDist, { startPhi: -0.78, endPhi: -0.56, dOff: 6, dSpan: 44, y0: 9, y1: 25, steps: 6, yBase: 0 });
-      addBowlSection(stSpec.wallDist, { startPhi: 0.56, endPhi: 0.78, dOff: 6, dSpan: 44, y0: 9, y1: 25, steps: 6, yBase: 0 });
-      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 46, 3.5, 18, -0.55, -0.18, 28, grassBermMat, exteriorMat));
-      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 46, 3.5, 18, 0.18, 0.55, 28, grassBermMat, exteriorMat));
-    } else if (id === 'lsu') {
-      // ALEX BOX (LSU): Open Tiger Terrace Grass Berm in LF; Purple-Brick Bleachers in RF; Open Bayou Sky behind CF!
-      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 48, 3.0, 19, -0.76, -0.20, 32, grassBermMat, exteriorMat));
-      addBowlSection(stSpec.wallDist, { startPhi: 0.26, endPhi: 0.78, dOff: 8, dSpan: 48, y0: 10, y1: 28, steps: 7, yBase: 0 });
+    } else if (id === 'sdsu') {
+      // SDSU TONY GWYNN STADIUM: Aztec scarlet/black LF seating pavilion + CF Tony Gwynn Plaza hill + Mission Valley palms!
+      addBowlSection(stSpec.wallDist, { startPhi: -0.77, endPhi: -0.26, dOff: 6, dSpan: 40, y0: 8, y1: 24, steps: 6, yBase: 0 });
+      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 44, 2.8, 17, 0.22, 0.74, 30, grassBermMat, exteriorMat));
+    } else if (id === 'usc') {
+      // USC DEDEAUX FIELD: Red-brick Cardinal & Gold stands in LF/RF alleys overlooking Exposition Park & Coliseum arches!
+      addBowlSection(stSpec.wallDist, { startPhi: -0.76, endPhi: -0.30, dOff: 7, dSpan: 36, y0: 8, y1: 22, steps: 6, yBase: 0 });
+      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 42, 2.5, 15, 0.24, 0.74, 28, grassBermMat, exteriorMat));
     } else if (id === 'pk-park') {
       // OREGON PK PARK: Lush emerald grass berms behind LF/CF + cozy Ducks bullpen terrace!
       grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 44, 3.0, 16, -0.75, -0.20, 28, grassBermMat, concreteMat));
@@ -3721,10 +3772,10 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         );
       } else {
         const canopyColor =
-          id === 'omaha'
-            ? '#f8fafc'
-            : id === 'lsu'
-              ? '#461d7c'
+          id === 'sdsu'
+            ? '#111827'
+            : id === 'usc'
+              ? '#990000'
               : id === 'pk-park'
                 ? '#154733'
                 : id === 'stanford'
@@ -3821,7 +3872,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         beGrp.add(wing);
       });
       if (isHedge) {
-        // Terraced sculpted hedge planters on Dodger Batter's Eye
+        // Terraced sculpted hedge planters on Batter's Eye
         const planter = new THREE.Mesh(new THREE.BoxGeometry(width + 8, 4.2, 12), concreteMat);
         planter.position.set(0, 2.1, 4.5);
         beGrp.add(planter);
@@ -4103,53 +4154,65 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         });
       }
       grp.add(viaductGrp);
-    } else if (id === 'omaha') {
-      [-64, 64].forEach((px) => {
-        const pylon = new THREE.Mesh(
-          new THREE.ExtrudeGeometry(makeRoundedRectShape(14, 14, 1.4), { depth: 72, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments: 2 }),
-          exteriorMat
-        );
-        pylon.rotation.x = -Math.PI / 2;
-        pylon.position.set(px, 0, -(cfDist + 36));
-        const cap = new THREE.Mesh(new THREE.ConeGeometry(11, 8, 4), yellowMat);
-        cap.rotation.y = Math.PI / 4;
-        cap.position.set(px, 76, -(cfDist + 36));
-        grp.add(pylon, cap);
+    } else if (id === 'sdsu') {
+      // SDSU Tony Gwynn Stadium: Iconic Tony Gwynn #19 Plaza Monument, Aztec Scarlet/Black Canopy + Mission Valley Hills & SoCal Palms!
+      const gwynnMon = new THREE.Group();
+      gwynnMon.position.set(-148, 0, -(cfDist + 14));
+      gwynnMon.rotation.y = 0.34;
+      const plinth = new THREE.Mesh(new THREE.BoxGeometry(36, 12, 14), concreteMat);
+      plinth.position.y = 6;
+      const plaqueTex = makeCollegeVideoboardTexture('TONY GWYNN #19', 'MR. PADRE · .338 LIFETIME', 'SAN DIEGO STATE AZTECS', '#111827', '#a6192e', maxAniso);
+      const plaque = new THREE.Mesh(new THREE.PlaneGeometry(32, 18), new THREE.MeshBasicMaterial({ map: plaqueTex }));
+      plaque.position.set(0, 24, 2);
+      const monumentWall = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(makeRoundedRectShape(38, 24, 2), { depth: 4, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 2 }),
+        new THREE.MeshStandardMaterial({ color: '#a6192e', roughness: 0.45 })
+      );
+      monumentWall.position.y = 24;
+      gwynnMon.add(plinth, monumentWall, plaque);
+      grp.add(gwynnMon);
+      grp.add(buildMountainRange({ minDist: 510, depth: 250, maxHeight: 114, phiSpan: 1.18, seed: 2.8, lowHex: '#1f2e22', midHex: '#4b4f3a', peakHex: '#73705a' }));
+      [[-215, -370, 38, 2.8, -1.2], [-100, -(cfDist + 24), 40, -2.1, 1.4], [125, -(cfDist + 22), 36, 2.2, 1.0], [220, -365, 42, -2.8, -1.0]].forEach(([px, pz, ph, cx, cz]) => {
+        const p = buildCaliforniaPalmTree(ph, cx, cz);
+        p.position.set(px, 0, pz);
+        grp.add(p);
       });
-      const towerMat = new THREE.MeshPhysicalMaterial({ color: '#1e293b', roughness: 0.25, metalness: 0.6, clearcoat: 0.5 });
-      [[-240, -560, 46, 145], [-145, -595, 54, 195], [150, -585, 50, 170], [245, -550, 42, 130]].forEach(([tx, tz, tw, th]) => {
+    } else if (id === 'usc') {
+      // USC Dedeaux Field: Iconic LA Memorial Coliseum Peristyle Arches & Olympic Cauldron + Exposition Park Palms + DTLA Skyline!
+      const peristyle = new THREE.Group();
+      peristyle.position.set(160, 0, -(cfDist + 65));
+      peristyle.rotation.y = -0.34;
+      const colBase = new THREE.Mesh(new THREE.BoxGeometry(108, 34, 18), concreteMat);
+      colBase.position.y = 17;
+      for (let ax = -36; ax <= 36; ax += 18) {
+        const archPillar = new THREE.Mesh(new THREE.BoxGeometry(6, 24, 10), new THREE.MeshStandardMaterial({ color: '#e2dcd0', roughness: 0.6 }));
+        archPillar.position.set(ax, 44, 0);
+        peristyle.add(archPillar);
+      }
+      const torchTower = new THREE.Mesh(new THREE.BoxGeometry(14, 70, 14), new THREE.MeshStandardMaterial({ color: '#e2dcd0', roughness: 0.55 }));
+      torchTower.position.set(0, 35, 2);
+      const cauldron = new THREE.Mesh(new THREE.CylinderGeometry(7.5, 4.5, 7, 12), new THREE.MeshStandardMaterial({ color: '#990000', roughness: 0.4 }));
+      cauldron.position.set(0, 72, 2);
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(4.5, 10, 10), new THREE.MeshBasicMaterial({ color: '#fbbf24' }));
+      flame.position.set(0, 79, 2);
+      peristyle.add(colBase, torchTower, cauldron, flame);
+      grp.add(peristyle);
+
+      const dtlaMat = new THREE.MeshPhysicalMaterial({ color: '#1e293b', roughness: 0.28, metalness: 0.55, clearcoat: 0.48 });
+      [[-245, -575, 48, 155], [-160, -610, 56, 205], [70, -620, 52, 180]].forEach(([tx, tz, tw, th]) => {
         const bldg = new THREE.Mesh(
-          new THREE.ExtrudeGeometry(makeRoundedRectShape(tw, tw * 0.75, 4), { depth: th, bevelEnabled: true, bevelThickness: 1.5, bevelSize: 1.5, bevelSegments: 2 }),
-          towerMat
+          new THREE.ExtrudeGeometry(makeRoundedRectShape(tw, tw * 0.78, 3), { depth: th, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 1.2, bevelSegments: 2 }),
+          dtlaMat
         );
         bldg.rotation.x = -Math.PI / 2;
         bldg.position.set(tx, 0, tz);
         grp.add(bldg);
       });
-    } else if (id === 'lsu') {
-      const intimGrp = new THREE.Group();
-      intimGrp.position.set(148, 0, -(cfDist - 6));
-      intimGrp.rotation.y = -0.36;
-      const frame = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(makeRoundedRectShape(58, 44, 2.4), { depth: 4, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments: 2 }),
-        new THREE.MeshStandardMaterial({ color: '#461d7c', roughness: 0.45 })
-      );
-      frame.position.y = 38;
-      const goldTrim = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(makeRoundedRectShape(60, 46, 2.8), { depth: 2.5, bevelEnabled: false }),
-        new THREE.MeshStandardMaterial({ color: '#fdd023', roughness: 0.35 })
-      );
-      goldTrim.position.y = 38;
-      const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.8, 36, 10), steelMat);
-      leg1.position.set(-18, 18, 0);
-      const leg2 = leg1.clone();
-      leg2.position.x = 18;
-      const intimTex = makeCollegeVideoboardTexture('LSU NATIONAL CHAMPIONS', "'91 · '93 · '96 · '97 · '00 · '09 · '23", 'ALEX BOX INTIMIDATOR', '#461d7c', '#fdd023', maxAniso);
-      const intimFace = new THREE.Mesh(new THREE.PlaneGeometry(52, 38), new THREE.MeshBasicMaterial({ map: intimTex }));
-      intimFace.position.set(0, 38, 4.3);
-      intimGrp.add(goldTrim, frame, leg1, leg2, intimFace);
-      grp.add(intimGrp);
-      grp.add(buildNaturalPineOrOakGrove([[-310, -350], [-235, -430], [-145, -475], [165, -468], [250, -425], [320, -340], [-355, -245], [355, -245]], trunkMat, leafMat, false));
+      [[-225, -360, 40, 2.5, -1.2], [-115, -(cfDist + 26), 38, -2.0, 1.4], [240, -355, 42, -2.5, -1.0]].forEach(([px, pz, ph, cx, cz]) => {
+        const p = buildCaliforniaPalmTree(ph, cx, cz);
+        p.position.set(px, 0, pz);
+        grp.add(p);
+      });
     } else if (id === 'pk-park') {
       // Oregon PK Park: Autzen Stadium bowl silhouette beyond RF + Willamette pines + Coburg foothills!
       const autzen = new THREE.Group();
@@ -4260,7 +4323,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
 
   function getOrBuildStadiumGroup(id) {
     if (stadiumGroups[id]) return stadiumGroups[id];
-    const spec = stadiumSpecs[id] || stadiumSpecs.omaha;
+    const spec = stadiumSpecs[id] || stadiumSpecs.sdsu;
     const g = buildStadiumGroup(spec);
     g.visible = false;
     scene.add(g);
@@ -4399,7 +4462,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   }
 
   function setStadium(id) {
-    const resolvedId = stadiumSpecs[id] ? id : 'omaha';
+    const resolvedId = stadiumSpecs[id] ? id : 'sdsu';
     if (curStadiumId === resolvedId && stadiumGroups[resolvedId]) return;
     curStadiumId = resolvedId;
     const activeGrp = getOrBuildStadiumGroup(resolvedId);
@@ -4407,19 +4470,19 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       stadiumGroups[k].visible = k === resolvedId;
     }
     activeGrp.visible = true;
-    const st = stadiumSpecs[resolvedId] || stadiumSpecs.omaha;
+    const st = stadiumSpecs[resolvedId] || stadiumSpecs.sdsu;
     paintSky(st.skyTop, st.skyMid, st.skyLow);
 
-    // Subtle Surface & Dugout Team Trim Character Per Ballpark
+    // Subtle Surface & Dugout Team Trim Character Per Ballpark (bright base tints so textures pop!)
     if (resolvedId === 'coors') {
-      turfMat.color.set('#cde8d2');
-      dirtMat.color.set('#d49e72');
+      turfMat.color.set('#e6f7ea');
+      dirtMat.color.set('#efc29a');
     } else if (resolvedId === 'hs-corona' || resolvedId === 'hs-rb' || resolvedId === 'hs-eastlake') {
-      turfMat.color.set('#cbe0b0');
-      dirtMat.color.set('#c98658');
-    } else if (resolvedId === 'oracle' || resolvedId === 'petco' || resolvedId === 'ucsb') {
-      turfMat.color.set('#bde3cb');
-      dirtMat.color.set('#b88b68');
+      turfMat.color.set('#e2f2d2');
+      dirtMat.color.set('#e3a77d');
+    } else if (resolvedId === 'oracle' || resolvedId === 'petco' || resolvedId === 'ucsb' || resolvedId === 'sdsu') {
+      turfMat.color.set('#ddf7e8');
+      dirtMat.color.set('#dcb08e');
     } else {
       turfMat.color.set('#ffffff');
       dirtMat.color.set('#ffffff');
@@ -4463,7 +4526,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
 
   applyBatterHandLayout();
   applyPitcherHandLayout();
-  setStadium('omaha');
+  setStadium('sdsu');
   setBat('goods-2026');
 
   function resize(width, height) {

@@ -6,11 +6,11 @@
 <title>DiamondIQ — Register</title>
 <meta name="description" content="Create your DiamondIQ account.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -37,8 +37,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -55,9 +55,9 @@
     <div class="auth-showcase">
       <img src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg" alt="Twilight baseball diamond stadium lights glowing over fresh infield dirt and green turf" referrerpolicy="no-referrer">
       <div class="editorial-banner-scrim">
-        <div class="kicker-line" style="color:#93c5fd;margin-bottom:0.3rem;">Free Player Account · Personalized 3D Cage &amp; Coach Jax</div>
+        <div class="kicker-line" style="color:#D8C55C;margin-bottom:0.3rem;">Free Player Account · Personalized 3D Cage &amp; Coach Jax</div>
         <h2>Build your baseball IQ</h2>
-        <p style="margin-bottom:0;">Lock in your handedness, favorite BBCOR/Wood bat, 15+ stadiums, slow-mo video clinics, and direct access to Coach Jax.</p>
+        <p style="margin-bottom:0;">Lock in your handedness, favorite BBCOR/Wood bat, 17+ Pro, College &amp; CA/SD HS ballparks, curated YouTube drill guides, and direct access to Coach Jax.</p>
       </div>
     </div>
 

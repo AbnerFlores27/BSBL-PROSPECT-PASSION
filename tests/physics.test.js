@@ -28,9 +28,13 @@ test('No mid-air invisible bounce over HS outfields, CF bays, or open lawns', ()
   const pkPark = makeStadium('pk-park', 'college', 335, 400, 325, 8);
   assert.equal(Physics.getParkStructureSurface(pkPark, -0.45, 32), null);
 
-  const omaha = makeStadium('omaha', 'college', 335, 408, 335, 8.5);
-  // Past seats (>70ft) -> must be null!
-  assert.equal(Physics.getParkStructureSurface(omaha, 0.65, 78), null);
+  const sdsu = makeStadium('sdsu', 'college', 340, 410, 340, 10);
+  // Past seats (>60ft) -> must be null!
+  assert.equal(Physics.getParkStructureSurface(sdsu, 0.65, 68), null);
+
+  const usc = makeStadium('usc', 'college', 335, 395, 325, 9);
+  // Open Trojan berm in RF (phi = 0.55) -> must be null!
+  assert.equal(Physics.getParkStructureSurface(usc, 0.55, 22), null);
 
   // Full RK4 flight over HS outfield lands smoothly at z = 0.14 (ground) with zero mid-air deflection
   const hsFlight = Physics.simulateBattedBallRK4({
@@ -82,16 +86,16 @@ test('Calibrated bat physics avoids constant 500-ft HRs on clean barrels', () =>
 });
 
 test('Ground balls bounce on ground and roll proportionally to exit velocity', () => {
-  const omaha = makeStadium('omaha', 'college', 335, 408, 335, 8.5);
+  const sdsu = makeStadium('sdsu', 'college', 340, 410, 340, 10);
   const weakGrounder = Physics.simulateBattedBallRK4({
-    stadium: omaha,
+    stadium: sdsu,
     exitVelo: 68,
     launchDeg: 2,
     sprayDeg: -10,
     backspinRpm: -400
   });
   const laserGrounder = Physics.simulateBattedBallRK4({
-    stadium: omaha,
+    stadium: sdsu,
     exitVelo: 102,
     launchDeg: 2,
     sprayDeg: -10,
@@ -137,7 +141,7 @@ test('RK4 Pitch trajectories reach target zone accurately from both pitcher & ma
 
 test('Synthesized bat waveforms have crisp percussive attack & rapid decay (zero plastic/pipe sustain)', () => {
   const sr = 44100;
-  for (const kind of ['baum-gold', 'goods-2026', 'goods-2022', 'combat-rodeo', 'combat-blue']) {
+  for (const kind of ['baum-gold', 'goods-2026', 'goods-2022', 'combat-rodeo', 'combat-blue', 'marucci-catx2']) {
     const ch = Physics.synthesizeBatImpactSamples(kind, 'sweet', sr);
     assert.ok(ch.length > 1000);
     let peakIdx = 0;
@@ -159,7 +163,7 @@ test('Synthesized bat waveforms have crisp percussive attack & rapid decay (zero
 });
 
 test('Wind influences both live pitches and batted-ball carry delta cleanly', () => {
-  const omaha = makeStadium('omaha', 'college', 335, 408, 335, 8.5);
+  const sdsu = makeStadium('sdsu', 'college', 340, 410, 340, 10);
   const spec = { magX: 7.0, magY: 16.5, hbIn: 11, spinAxisDeg: 25, spinAxisClock: '1:00' };
 
   const pitchCalm = Physics.simulatePitchRK4({ mph: 90, spec, endX: 0, endY: 0, hand: 'R', wind: Physics.WIND_PRESETS.calm });
@@ -168,7 +172,7 @@ test('Wind influences both live pitches and batted-ball carry delta cleanly', ()
   assert.ok(pitchCrossR.windDriftInX < -1.0, `Expected measurable negative windDriftInX, got ${pitchCrossR.windDriftInX}`);
 
   const flyOut = Physics.simulateBattedBallRK4({
-    stadium: omaha,
+    stadium: sdsu,
     wind: Physics.WIND_PRESETS.out10,
     exitVelo: 100,
     launchDeg: 28,
@@ -176,7 +180,7 @@ test('Wind influences both live pitches and batted-ball carry delta cleanly', ()
     backspinRpm: 2100
   });
   const flyIn = Physics.simulateBattedBallRK4({
-    stadium: omaha,
+    stadium: sdsu,
     wind: Physics.WIND_PRESETS.in12,
     exitVelo: 100,
     launchDeg: 28,

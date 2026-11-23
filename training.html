@@ -6,11 +6,11 @@
 <title>DiamondIQ — Training Lab &amp; Player Baseline Quiz</title>
 <meta name="description" content="Short, practical baseball drill guides with curated real YouTube coaching videos plus a 28-question player baseline assessment.">
 <script>
-(function(){try{if(localStorage.getItem('diamondiq_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+(function(){try{if(localStorage.getItem('diamondiq_theme')!=='light')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 <script src="drills-quiz.js" defer></script>
@@ -38,8 +38,8 @@
     </nav>
 
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle night mode">
-        <span>Night Mode</span>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Toggle day mode">
+        <span>Day Mode</span>
       </button>
       <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -51,22 +51,27 @@
   <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
-<main id="training-lab" class="container">
-  <section class="subpage-masthead">
-    <div>
-      <div class="kicker-line">Curated YouTube Coaching · 28-Q Player Baseline</div>
-      <h1>Training Lab &amp; Player Baseline Quiz</h1>
-      <p class="page-lead">Short, no-fluff drill guides backed by real coaching videos on YouTube—paired with a 28-question baseline checkup built to understand your game, not test you on right or wrong answers.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:0.65rem;margin-top:1.1rem;">
-        <a class="btn btn-primary btn-sm" href="#video-clinic-section">Browse YouTube Drills</a>
-        <a class="btn btn-secondary btn-sm" href="#diagnostic-quiz-section">Take 28-Q Baseline Quiz</a>
-        <button type="button" class="btn btn-secondary btn-sm" data-open-jax data-jax-prompt="Build me a simple 15-minute tee & fielding routine based on my baseline.">Ask Coach Jax</button>
+<section class="subpage-banner" aria-label="Training Lab Overview">
+  <img class="subpage-banner-bg" src="/src/assets/images/baseball_night_batter_swing_1794856804641.jpg" alt="Baseball batter swinging through the zone under bright stadium floodlights" referrerpolicy="no-referrer">
+  <div class="subpage-banner-scrim" aria-hidden="true"></div>
+  <div class="subpage-banner-inner">
+    <div class="subpage-banner-copy">
+      <div class="hero-eyebrow">Curated YouTube Coaching · 28-Q Player Baseline</div>
+      <h1 class="subpage-banner-title">
+        <span class="hero-line-white">Training Lab &amp;</span>
+        <span class="hero-line-gold">28-Q Baseline Quiz</span>
+      </h1>
+      <p class="subpage-banner-lead">Short, no-fluff drill guides backed by real coaching videos on YouTube—paired with a 28-question baseline checkup built to understand your game, not test you on right or wrong answers.</p>
+      <div class="subpage-banner-actions">
+        <a class="btn btn-primary btn-pill" href="#video-clinic-section">Browse YouTube Drills</a>
+        <a class="btn btn-outline-light btn-pill" href="#diagnostic-quiz-section">Take 28-Q Quiz</a>
+        <button type="button" class="btn btn-outline-light btn-pill" data-open-jax data-jax-prompt="Build me a simple 15-minute tee & fielding routine based on my baseline.">Ask Coach Jax</button>
       </div>
     </div>
-    <div class="subpage-masthead-media">
-      <img src="/src/assets/images/baseball_night_batter_swing_1794856804641.jpg" alt="Baseball batter swinging through the zone under bright stadium floodlights" referrerpolicy="no-referrer">
-    </div>
-  </section>
+  </div>
+</section>
+
+<main id="training-lab" class="container">
 
   <!-- SECTION 1: Short, Focused YouTube Drill Library -->
   <section id="video-clinic-section" class="section-block gameday-studio" aria-labelledby="clinic-heading">

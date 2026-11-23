@@ -28,7 +28,7 @@ function verifyPassword(password, storedHash) {
   return crypto.timingSafeEqual(keyBuf, derivedBuf);
 }
 
-const ALLOWED_BATS = new Set(['baum-gold', 'goods-2026', 'goods-2022', 'combat-rodeo', 'combat-blue']);
+const ALLOWED_BATS = new Set(['baum-gold', 'goods-2026', 'goods-2022', 'combat-rodeo', 'combat-blue', 'marucci-catx2']);
 const ALLOWED_TIERS = new Set(['pro', 'college', 'hs', 'cage']);
 
 function sanitizePreferences(raw) {
