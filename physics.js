@@ -144,36 +144,65 @@
         { startPhi: 0.19, endPhi: 0.78, dOff: 12, dSpan: 54, y0: 9.5, y1: 33.0, steps: 8, isSeat: true }
       ];
     } else if (id === 'sdsu') {
-      // San Diego State Tony Gwynn Stadium: LF Aztec Patio Terrace, CF Tony Gwynn Batter's Eye/Videoboard, RF Bullpen Bleachers
+      // SDSU Tony Gwynn Stadium: LF Aztec Patio Terrace, CF Batter's Eye, RF Bullpen Bleachers
       tiers = [
         { startPhi: -0.78, endPhi: -0.24, dOff: 10, dSpan: 38, y0: 9.0, y1: 23.0, steps: 6, isSeat: true },
-        { startPhi: -0.18, endPhi: 0.18, dOff: 14, dSpan: 22, y0: 24.0, y1: 28.0, steps: 2, isSeat: false },
+        { startPhi: -0.18, endPhi: 0.18, dOff: 12, dSpan: 22, y0: 24.0, y1: 28.0, steps: 2, isSeat: false },
         { startPhi: 0.24, endPhi: 0.78, dOff: 10, dSpan: 38, y0: 9.0, y1: 21.0, steps: 5, isSeat: true }
       ];
-    } else if (id === 'usc') {
-      // USC Dedeaux Field: LF Dedeaux Pavilion Bleachers, CF Batter's Eye, open Trojan berm in RCF/RF
+    } else if (id === 'sc-founders') {
+      // South Carolina Founders Park: LF Garnet Videoboard & Stands, CF Batter's Eye, RF Maroon Stands
       tiers = [
-        { startPhi: -0.78, endPhi: -0.26, dOff: 10, dSpan: 40, y0: 9.0, y1: 24.0, steps: 6, isSeat: true },
-        { startPhi: -0.17, endPhi: 0.17, dOff: 12, dSpan: 20, y0: 22.0, y1: 26.0, steps: 2, isSeat: false }
+        { startPhi: -0.78, endPhi: -0.34, dOff: 10, dSpan: 38, y0: 9.0, y1: 25.0, steps: 6, isSeat: true },
+        { startPhi: -0.17, endPhi: 0.17, dOff: 12, dSpan: 20, y0: 24.0, y1: 28.0, steps: 2, isSeat: false },
+        { startPhi: 0.32, endPhi: 0.78, dOff: 10, dSpan: 34, y0: 8.0, y1: 20.0, steps: 5, isSeat: true }
+      ];
+    } else if (id === 'vandy') {
+      // Vanderbilt Hawkins Field: Iconic 35-ft Left-Field Monster Wall & Hawkins Videoboard, CF Batter's Eye, RCF Stands
+      tiers = [
+        { startPhi: -0.78, endPhi: -0.28, dOff: 8, dSpan: 36, y0: 34.0, y1: 42.0, steps: 4, isSeat: true },
+        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 18, y0: 24.0, y1: 28.0, steps: 2, isSeat: false },
+        { startPhi: 0.24, endPhi: 0.78, dOff: 10, dSpan: 36, y0: 8.0, y1: 22.0, steps: 6, isSeat: true }
+      ];
+    } else if (id === 'usd') {
+      // USD Fowler Park: Open LCF Plaza, CF Batter's Eye, RCF Spanish Mission Dorm facade
+      tiers = [
+        { startPhi: -0.16, endPhi: 0.16, dOff: 10, dSpan: 18, y0: 22.0, y1: 26.0, steps: 2, isSeat: false },
+        { startPhi: 0.26, endPhi: 0.72, dOff: 16, dSpan: 36, y0: 18.0, y1: 32.0, steps: 3, isSeat: false }
+      ];
+    } else if (id === 'tcu') {
+      // TCU Lupton Stadium: Open berm alleys + CF Batter's Eye
+      tiers = [
+        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 18, y0: 22.0, y1: 26.0, steps: 2, isSeat: false }
+      ];
+    } else if (id === 'byu') {
+      // BYU Larry H. Miller Field: Open berms + CF indoor brick fieldhouse beyond CF wall
+      tiers = [
+        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 20, y0: 22.0, y1: 26.0, steps: 2, isSeat: false }
+      ];
+    } else if (id === 'app-state') {
+      // App State Beaver Field: Open Blue Ridge autumn woods + CF Batter's Eye
+      tiers = [
+        { startPhi: -0.15, endPhi: 0.15, dOff: 12, dSpan: 16, y0: 20.0, y1: 24.0, steps: 2, isSeat: false }
+      ];
+    } else if (id === 'ucla') {
+      // UCLA Jackie Robinson Stadium: CF Batter's Eye + 2-tier covered RF batting pavilion
+      tiers = [
+        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 18, y0: 22.0, y1: 26.0, steps: 2, isSeat: false },
+        { startPhi: 0.32, endPhi: 0.74, dOff: 12, dSpan: 28, y0: 14.0, y1: 24.0, steps: 3, isSeat: false }
       ];
     } else if (id === 'pk-park') {
-      // Oregon PK Park: Open grass bullpen berms + LF video board; Autzen stadium stands far beyond RF (~180+ ft past wall)
+      // Oregon PK Park: Open grass bullpen berms + LF video board
       tiers = [
         { startPhi: -0.17, endPhi: 0.17, dOff: 12, dSpan: 18, y0: 22.0, y1: 26.0, steps: 2, isSeat: false }
       ];
-    } else if (id === 'stanford' || id === 'ucsb') {
-      // Sunken Diamond & Caesar Uyesaka: Natural open sunken grass berms around outfield -> ball settles cleanly on turf!
+    } else if (id === 'stanford' || id === 'ucsb' || id === 'cal-poly') {
+      // Stanford Sunken Diamond, UCSB Uyesaka, Cal Poly Pomona Scolinos Field: open outfields + CF Batter's Eye
       tiers = [
         { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 16, y0: 20.0, y1: 24.0, steps: 2, isSeat: false }
       ];
-    } else if (id === 'cal-poly') {
-      // Baggett Stadium: Compact LF/RF hill terrace bleachers + CF Batter's Eye
-      tiers = [
-        { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 16, y0: 20.0, y1: 24.0, steps: 2, isSeat: false },
-        { startPhi: 0.34, endPhi: 0.76, dOff: 10, dSpan: 28, y0: 8.0, y1: 18.0, steps: 4, isSeat: true }
-      ];
     } else if (st.tier === 'hs') {
-      // High School parks (Corona, RB, Torrey Pines, Cathedral Catholic, Eastlake): NO outfield multi-deck stands — only compact CF Batter's Eye screen
+      // High School parks (Eastlake, Corona, Rancho Bernardo): open outfields + compact CF Batter's Eye screen
       tiers = [
         { startPhi: -0.16, endPhi: 0.16, dOff: 10, dSpan: 10, y0: 16.0, y1: 18.0, steps: 1, isSeat: false }
       ];
@@ -923,8 +952,8 @@
     const isCombatBlue = kind === 'combat-blue';
     const isCatx2 = kind === 'marucci-catx2';
 
-    const baseDur = isWood ? 0.072 : isGoods22 ? 0.26 : isGoods26 ? 0.21 : isCatx2 ? 0.20 : isCombatBlue ? 0.23 : 0.22;
-    const durSec = isGlance ? 0.028 : isJam ? (isWood ? 0.056 : 0.088) : baseDur;
+    const baseDur = isWood ? 0.068 : isGoods22 ? 0.27 : isGoods26 ? 0.22 : isCatx2 ? 0.21 : isCombatBlue ? 0.24 : 0.23;
+    const durSec = isGlance ? 0.026 : isJam ? (isWood ? 0.052 : 0.082) : baseDur;
     const len = Math.floor(sr * durSec);
     const ch = new Float32Array(len);
     const zoneSeed = isGlance ? 401 : isEndcap ? 271 : isJam ? 99 : 42;
@@ -933,15 +962,15 @@
     const fScale = isEndcap ? 1.18 : isJam ? 0.84 : 1.0;
 
     // Cascaded resonant filters sculpting authentic cowhide shock & barrel cavity noise
-    const bpPop = makeBiquadBP(isJam ? 170 : isEndcap ? 520 : isGlance ? 1400 : isWood ? 540 : 330, 1.35, sr);
-    const bpWoodSnap = makeBiquadBP(isJam ? 560 : isEndcap ? 1950 : isGlance ? 4400 : isWood ? 1820 : 1560, 0.85, sr);
-    const bpCrackHi = makeBiquadBP(isJam ? 1280 : isEndcap ? 4250 : isGlance ? 6200 : isWood ? 3600 : 3900, 0.72, sr);
+    const bpPop = makeBiquadBP(isJam ? 165 : isEndcap ? 560 : isGlance ? 1480 : isWood ? 585 : 340, isWood ? 2.1 : 1.35, sr);
+    const bpWoodSnap = makeBiquadBP(isJam ? 540 : isEndcap ? 2050 : isGlance ? 4500 : isWood ? 1960 : 1580, 0.92, sr);
+    const bpCrackHi = makeBiquadBP(isJam ? 1240 : isEndcap ? 4300 : isGlance ? 6400 : isWood ? 3850 : 4000, 0.78, sr);
     const bpAlloyTransient = makeBiquadBP(
-      isGoods26 ? 2860 * fScale : isGoods22 ? 2380 * fScale : isCatx2 ? 2680 * fScale : (isCombatBlue ? 2720 : 2540) * fScale,
-      4.2,
+      isGoods26 ? 2860 * fScale : isGoods22 ? 2360 * fScale : isCatx2 ? 2680 * fScale : (isCombatBlue ? 2740 : 2560) * fScale,
+      4.4,
       sr
     );
-    const lpAir = makeBiquadLP(isJam ? 1850 : isGlance ? 8600 : isWood ? 6200 : 8800, 0.7, sr);
+    const lpAir = makeBiquadLP(isJam ? 1750 : isGlance ? 8800 : isWood ? 6400 : 9000, 0.7, sr);
 
     // Phase accumulators for subtle organic barrel frequency chirp in first 3ms
     let p0 = 0;
@@ -956,90 +985,88 @@
 
       // 1. Sub-millisecond ball-on-barrel compression impulse (Zero square clipping)
       let impulse = 0;
-      const impAmp = isGlance ? 0.34 : isJam ? 0.62 : isEndcap ? 0.86 : isWood ? 1.56 : 0.94;
-      if (t < 0.00036) {
-        impulse = Math.sin((t / 0.00036) * Math.PI) * impAmp;
-      } else if (t < 0.00088) {
-        impulse = -Math.sin(((t - 0.00036) / 0.00052) * Math.PI) * (impAmp * 0.38);
+      const impAmp = isGlance ? 0.34 : isJam ? 0.6 : isEndcap ? 0.86 : isWood ? 1.62 : 0.96;
+      if (t < 0.00034) {
+        impulse = Math.sin((t / 0.00034) * Math.PI) * impAmp;
+      } else if (t < 0.00084) {
+        impulse = -Math.sin(((t - 0.00034) / 0.0005) * Math.PI) * (impAmp * 0.36);
       }
 
       // 2. Percussive broadband cowhide leather / maple crack transient
       const raw = rnd();
-      const popBody = bpPop(raw) * Math.exp(-t * (isGlance ? 420 : isJam ? 120 : isWood ? 105 : 165));
-      const midCrack = bpWoodSnap(raw) * Math.exp(-t * (isGlance ? 340 : isJam ? 145 : isWood ? 185 : 220));
-      const hiCrack = bpCrackHi(raw) * Math.exp(-t * (isGlance ? 260 : isJam ? 190 : isWood ? 290 : 300));
-      const airTail = lpAir(raw) * Math.exp(-t * (isGlance ? 480 : isJam ? 160 : isWood ? 310 : 340)) * 0.28;
+      const popBody = bpPop(raw) * Math.exp(-t * (isGlance ? 440 : isJam ? 130 : isWood ? 118 : 170));
+      const midCrack = bpWoodSnap(raw) * Math.exp(-t * (isGlance ? 360 : isJam ? 155 : isWood ? 210 : 230));
+      const hiCrack = bpCrackHi(raw) * Math.exp(-t * (isGlance ? 280 : isJam ? 200 : isWood ? 310 : 320));
+      const airTail = lpAir(raw) * Math.exp(-t * (isGlance ? 500 : isJam ? 170 : isWood ? 330 : 350)) * 0.28;
 
-      const alloyNoiseExc = !isWood && !isGlance && !isJam ? bpAlloyTransient(raw) * Math.exp(-t * 48) * 0.75 : 0;
+      const alloyNoiseExc = !isWood && !isGlance && !isJam ? bpAlloyTransient(raw) * Math.exp(-t * 46) * 0.78 : 0;
 
       let sample = 0;
       if (isGlance) {
-        // FOUL GLANCE: Ultra-short dry cowhide seam skim + tiny wood/metal edge nick (<28ms, ZERO sine whistle!)
-        const seamTick = t >= 0.0014 && t < 0.0021 ? Math.sin(((t - 0.0014) / 0.0007) * Math.PI) * 0.44 : 0;
-        const rimNick = bpWoodSnap(raw) * Math.exp(-t * 380) * 1.4;
-        sample = impulse * 0.6 + hiCrack * 2.5 + midCrack * 0.85 + rimNick + airTail * 0.9 + seamTick;
+        // FOUL GLANCE: Ultra-short dry cowhide seam skim + tiny wood/metal edge nick (<26ms, ZERO whistle!)
+        const seamTick = t >= 0.0012 && t < 0.0019 ? Math.sin(((t - 0.0012) / 0.0007) * Math.PI) * 0.42 : 0;
+        const rimNick = bpWoodSnap(raw) * Math.exp(-t * 400) * 1.45;
+        sample = impulse * 0.6 + hiCrack * 2.55 + midCrack * 0.85 + rimNick + airTail * 0.9 + seamTick;
       } else if (isJam) {
         // INSIDE JAM: Heavy choked handle thump + short muted flex/rattle (NO musical sine hum!)
-        const handleDisp = Math.exp(-t * 280);
-        const fThump = 152 * (1 + 0.35 * handleDisp);
+        const handleDisp = Math.exp(-t * 290);
+        const fThump = 148 * (1 + 0.34 * handleDisp);
         p0 += fThump * twopiOverSr;
-        const chokedMode = Math.sin(p0) * Math.exp(-t * 78) * 0.52;
-        const taperClack = bpPop(raw) * Math.exp(-t * 86) * 2.1 + midCrack * 0.72 + hiCrack * 0.28;
-        // Brief dead metallic clunk only in first 22ms on alloy handles
-        const clunk = !isWood ? Math.sin(2 * Math.PI * 690 * t) * Math.exp(-t * 155) * 0.14 : 0;
-        sample = impulse * 0.65 + taperClack + chokedMode + clunk + airTail * 0.4;
+        const chokedMode = Math.sin(p0) * Math.exp(-t * 86) * 0.5;
+        const taperClack = bpPop(raw) * Math.exp(-t * 92) * 2.1 + midCrack * 0.7 + hiCrack * 0.26;
+        const clunk = !isWood ? Math.sin(2 * Math.PI * 660 * t) * Math.exp(-t * 170) * 0.12 : 0;
+        sample = impulse * 0.65 + taperClack + chokedMode + clunk + airTail * 0.36;
       } else if (isWood) {
-        // BAUM BAT GOLD: Iconic pro solid maple crack + rich, punchy hollow barrel "POP"!
-        const chirp = 1 + 0.16 * Math.exp(-t * 320);
+        // BAUM BAT GOLD: Crisp pro maple crack + dense, tight PermaWood barrel "POP" (zero hollow pipe ring!)
+        const chirp = 1 + 0.18 * Math.exp(-t * 360);
         if (isEndcap) {
-          p0 += 760 * chirp * twopiOverSr;
-          p1 += 1460 * chirp * twopiOverSr;
-          const capKnock = Math.sin(p0) * Math.exp(-t * 140) * 0.38 + Math.sin(p1) * Math.exp(-t * 210) * 0.2;
-          sample = impulse + popBody * 1.35 + midCrack * 2.3 + hiCrack * 2.1 + airTail + capKnock;
+          p0 += 790 * chirp * twopiOverSr;
+          p1 += 1540 * chirp * twopiOverSr;
+          const capKnock = Math.sin(p0) * Math.exp(-t * 155) * 0.36 + Math.sin(p1) * Math.exp(-t * 230) * 0.18;
+          sample = impulse + popBody * 1.3 + midCrack * 2.35 + hiCrack * 2.15 + airTail + capKnock;
         } else {
-          // Two-layer wood barrel "POP" (565 Hz + 615 Hz PermaWood density pop + 1140 Hz crisp grain slap)
-          p0 += 565 * chirp * twopiOverSr;
-          p1 += 1140 * chirp * twopiOverSr;
-          p2 += 245 * chirp * twopiOverSr;
+          // Punchy PermaWood Barrel POP (~585 Hz cavity pop + 1180 Hz maple grain crack + tight 265 Hz chest thump)
+          p0 += 585 * chirp * twopiOverSr;
+          p1 += 1180 * chirp * twopiOverSr;
+          p2 += 265 * chirp * twopiOverSr;
           const barrelPop =
-            Math.sin(p0) * Math.exp(-t * 92) * 0.56 +
-            Math.sin(p1) * Math.exp(-t * 158) * 0.26 +
-            Math.sin(p2) * Math.exp(-t * 82) * 0.34;
-          sample = impulse * 1.18 + popBody * 2.15 + midCrack * 2.75 + hiCrack * 2.35 + airTail + barrelPop;
+            Math.sin(p0) * Math.exp(-t * 108) * 0.58 +
+            Math.sin(p1) * Math.exp(-t * 172) * 0.25 +
+            Math.sin(p2) * Math.exp(-t * 92) * 0.32;
+          sample = impulse * 1.24 + popBody * 2.25 + midCrack * 2.85 + hiCrack * 2.45 + airTail + barrelPop;
         }
       } else {
-        // AUTHENTIC METALLIC ALLOY & HYBRID BATS (Real barrel ovaling split-modes + micro-dispersion + air crack!)
-        const fBase = isGoods26 ? 2790 : isGoods22 ? 2360 : isCatx2 ? 2670 : isCombatBlue ? 2710 : 2540;
-        const splitHz = isGoods22 ? 32 : isGoods26 ? 38 : isCatx2 ? 29 : 34; // dual-axis wall ovaling shimmer!
-        const overRatio = isGoods26 ? 1.415 : isGoods22 ? 1.48 : isCatx2 ? 1.44 : 1.425;
-        const thirdRatio = isGoods26 ? 1.84 : isGoods22 ? 1.92 : 1.88;
-        const chirp = 1 + 0.045 * Math.exp(-t * 420); // subtle physical ball-release pitch settle
+        // AUTHENTIC METALLIC ALLOY & HYBRID BATS (Real barrel ovaling split-modes + bright metallic BBCOR ping + air crack!)
+        const fBase = isGoods26 ? 2760 : isGoods22 ? 2320 : isCatx2 ? 2650 : isCombatBlue ? 2730 : 2530;
+        const splitHz = isGoods22 ? 30 : isGoods26 ? 36 : isCatx2 ? 28 : 33; // dual-axis wall ovaling shimmer!
+        const overRatio = isGoods26 ? 1.418 : isGoods22 ? 1.485 : isCatx2 ? 1.442 : 1.425;
+        const thirdRatio = isGoods26 ? 1.845 : isGoods22 ? 1.92 : 1.88;
+        const chirp = 1 + 0.048 * Math.exp(-t * 440);
 
         p0 += fBase * fScale * chirp * twopiOverSr;
         p1 += (fBase * fScale + splitHz) * chirp * twopiOverSr;
         p2 += fBase * overRatio * fScale * chirp * twopiOverSr;
         p3 += fBase * thirdRatio * fScale * chirp * twopiOverSr;
 
-        const envAttack = 1 - Math.exp(-t * 2800);
-        const decMain = isGoods22 ? 16.5 : isGoods26 ? 21.5 : isCatx2 ? 20.5 : 19.2;
-        const ampScale = isEndcap ? 1.15 : 1.04;
+        const envAttack = 1 - Math.exp(-t * 2900);
+        const decMain = isGoods22 ? 16.0 : isGoods26 ? 20.5 : isCatx2 ? 19.5 : 18.6;
+        const ampScale = isEndcap ? 1.15 : 1.06;
 
         const ovalPrimary =
-          Math.sin(p0) * Math.exp(-t * decMain) * 0.54 +
-          Math.sin(p1) * Math.exp(-t * (decMain * 1.07)) * 0.42;
+          Math.sin(p0) * Math.exp(-t * decMain) * 0.56 +
+          Math.sin(p1) * Math.exp(-t * (decMain * 1.06)) * 0.44;
         const hoopHarmonic =
-          Math.sin(p2) * Math.exp(-t * (decMain * 1.48)) * 0.32 +
-          Math.sin(p3) * Math.exp(-t * (decMain * 2.15)) * 0.16;
+          Math.sin(p2) * Math.exp(-t * (decMain * 1.44)) * 0.34 +
+          Math.sin(p3) * Math.exp(-t * (decMain * 2.08)) * 0.18;
 
-        // 1-pc SFX Combat & AZR have extra punchy barrel shell slap (~1680Hz) while 2-pc Goods has clean X14 ping
         const isOnePc = !isGoods26 && !isGoods22;
         const shellSnap = isOnePc
-          ? Math.sin(2 * Math.PI * (isCatx2 ? 1740 : 1620) * fScale * t) * Math.exp(-t * 44) * 0.22
-          : Math.sin(2 * Math.PI * 1940 * fScale * t) * Math.exp(-t * 58) * 0.12;
+          ? Math.sin(2 * Math.PI * (isCatx2 ? 1760 : 1640) * fScale * t) * Math.exp(-t * 42) * 0.24
+          : Math.sin(2 * Math.PI * 1960 * fScale * t) * Math.exp(-t * 54) * 0.14;
 
         const alloyPing = envAttack * ampScale * (ovalPrimary + hoopHarmonic + shellSnap + alloyNoiseExc);
-        const crackMix = impulse * 0.92 + popBody * (isOnePc ? 1.32 : 1.08) + midCrack * 1.65 + hiCrack * 1.75 + airTail;
-        sample = crackMix * 0.66 + alloyPing;
+        const crackMix = impulse * 0.94 + popBody * (isOnePc ? 1.32 : 1.08) + midCrack * 1.65 + hiCrack * 1.78 + airTail;
+        sample = crackMix * 0.62 + alloyPing;
       }
 
       ch[i] = sample;

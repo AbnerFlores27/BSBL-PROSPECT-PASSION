@@ -16,10 +16,13 @@ function makeStadium(id, tier, lf, cf, rf, h = 8) {
   };
 }
 
-test('No mid-air invisible bounce over HS outfields, CF bays, or open lawns', () => {
-  const hs = makeStadium('hs-tp', 'hs', 318, 392, 318, 6);
-  // Over left-center at Torrey Pines (phi = -0.35), 40 ft past fence -> must be null!
+test('No mid-air invisible bounce over HS outfields, CF bays, or open lawns, while park structures collide properly', () => {
+  const hs = makeStadium('hs-corona', 'hs', 315, 380, 315, 8);
+  // Over left-center at Corona HS (phi = -0.35), 40 ft past fence -> must be null!
   assert.equal(Physics.getParkStructureSurface(hs, -0.35, 40), null);
+
+  const hsRb = makeStadium('hs-rb', 'hs', 315, 385, 315, 7);
+  assert.equal(Physics.getParkStructureSurface(hsRb, 0.42, 32), null);
 
   const oracle = makeStadium('oracle', 'pro', 339, 399, 309, 24);
   // Over RF fence into McCovey Cove (phi = 0.52) -> must be null!
@@ -32,9 +35,18 @@ test('No mid-air invisible bounce over HS outfields, CF bays, or open lawns', ()
   // Past seats (>60ft) -> must be null!
   assert.equal(Physics.getParkStructureSurface(sdsu, 0.65, 68), null);
 
-  const usc = makeStadium('usc', 'college', 335, 395, 325, 9);
-  // Open Trojan berm in RF (phi = 0.55) -> must be null!
-  assert.equal(Physics.getParkStructureSurface(usc, 0.55, 22), null);
+  const calPoly = makeStadium('cal-poly', 'college', 340, 390, 325, 8);
+  assert.equal(Physics.getParkStructureSurface(calPoly, 0.55, 22), null);
+
+  const byu = makeStadium('byu', 'college', 345, 402, 345, 8.5);
+  assert.equal(Physics.getParkStructureSurface(byu, 0.45, 30), null);
+  assert.ok(Physics.getParkStructureSurface(byu, 0.12, 22) !== null);
+
+  const ucla = makeStadium('ucla', 'college', 330, 395, 330, 8);
+  assert.ok(Physics.getParkStructureSurface(ucla, 0.55, 25) !== null);
+
+  const vandy = makeStadium('vandy', 'college', 310, 400, 330, 8);
+  assert.ok(Physics.getParkStructureSurface(vandy, -0.35, 18) !== null);
 
   // Full RK4 flight over HS outfield lands smoothly at z = 0.14 (ground) with zero mid-air deflection
   const hsFlight = Physics.simulateBattedBallRK4({

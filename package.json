@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "PORT=3000 node server.js",
     "start": "node server.js",
-    "build": "node --check server.js && node --check db.js && node --check data.js && node --check physics.js && node --check ui.js && node --check stadium3d.js && node --check drills-quiz.js && node --check onboarding.js",
-    "lint": "node --check server.js && node --check db.js && node --check data.js && node --check physics.js && node --check ui.js && node --check stadium3d.js && node --check drills-quiz.js && node --check onboarding.js"
+    "build": "node --check server.js && node --check db.js && node --check data.js && node --check jax-engine.js && node --check physics.js && node --check ui.js && node --check stadium3d.js && node --check drills-quiz.js && node --check onboarding.js",
+    "lint": "node --check server.js && node --check db.js && node --check data.js && node --check jax-engine.js && node --check physics.js && node --check ui.js && node --check stadium3d.js && node --check drills-quiz.js && node --check onboarding.js"
   },
   "engines": {
     "node": ">=20"

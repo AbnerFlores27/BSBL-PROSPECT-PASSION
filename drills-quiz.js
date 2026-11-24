@@ -1104,7 +1104,6 @@
       const fieldGuide = report.fieldGuide;
 
       reportWrapEl.innerHTML = `
-        <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
         <div class="report-head">
           <div>
             <div class="kicker-line">28-Question Player Baseline Profile</div>

@@ -149,7 +149,6 @@
         .join('');
 
       reportEl.innerHTML = `
-        <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
         <div class="report-head">
           <div>
             <div class="kicker-line">AI Scouting Profile · ${esc(profile.skillTier)} · Baseball IQ ${esc(profile.iqCorrectCount)}/${esc(profile.iqTotal)}</div>

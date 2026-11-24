@@ -571,6 +571,950 @@
   }
 
   /* =========================================================
+     True 60FPS Animated Scenario Canvas Stage
+     Replaces static inline SVG diagrams on Home, Scenarios, and Detail pages
+     ========================================================= */
+  const scenarioStageCleanups = new WeakMap();
+
+  function mountAnimatedScenarioStage(container, diagram, opts = {}) {
+    if (!container || !diagram) return;
+    const prevCleanup = scenarioStageCleanups.get(container);
+    if (typeof prevCleanup === 'function') {
+      prevCleanup();
+      scenarioStageCleanups.delete(container);
+    }
+
+    let step = typeof opts.step === 'number' ? opts.step : 1;
+    const compact = Boolean(opts.compact);
+    const W = 400;
+    const H = 250;
+
+    container.innerHTML = `
+      <div class="scenario-anim-wrap${compact ? ' scenario-anim-wrap--compact' : ''}">
+        <canvas class="scenario-anim-canvas" width="${W}" height="${H}" role="img" aria-label="${escapeHtml(diagram.callout || 'Animated baseball play diagram')}"></canvas>
+        <div class="scenario-anim-bar">
+          <div class="scenario-anim-btns">
+            <button type="button" class="scenario-anim-btn" data-sanim="play" aria-pressed="true">Pause</button>
+            <button type="button" class="scenario-anim-btn" data-sanim="replay">Replay</button>
+          </div>
+          <span class="scenario-anim-phase tabular-nums">${compact ? 'LIVE 60FPS' : (step === 0 ? 'SETUP' : step === 2 ? 'KEY RULE' : 'LIVE PLAY')}</span>
+        </div>
+      </div>`;
+
+    const canvas = container.querySelector('.scenario-anim-canvas');
+    const playBtn = container.querySelector('[data-sanim="play"]');
+    const replayBtn = container.querySelector('[data-sanim="replay"]');
+    const phaseEl = container.querySelector('.scenario-anim-phase');
+    const ctx = canvas.getContext('2d');
+
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let isPlaying = !prefersReduced;
+    let isVisible = true;
+    let tPhase = prefersReduced ? 0.68 : 0.08;
+    let lastTs = 0;
+    let rafId = null;
+
+    if (playBtn) {
+      playBtn.setAttribute('aria-pressed', String(isPlaying));
+      playBtn.textContent = isPlaying ? 'Pause' : 'Play';
+      playBtn.onclick = () => {
+        isPlaying = !isPlaying;
+        playBtn.setAttribute('aria-pressed', String(isPlaying));
+        playBtn.textContent = isPlaying ? 'Pause' : 'Play';
+        if (isPlaying) {
+          lastTs = 0;
+          ensureLoop();
+        } else {
+          draw(tPhase);
+        }
+      };
+    }
+
+    if (replayBtn) {
+      replayBtn.onclick = () => {
+        tPhase = 0;
+        if (!isPlaying) {
+          isPlaying = true;
+          if (playBtn) {
+            playBtn.setAttribute('aria-pressed', 'true');
+            playBtn.textContent = 'Pause';
+          }
+        }
+        lastTs = 0;
+        draw(tPhase);
+        ensureLoop();
+      };
+    }
+
+    const quadPt = (p0, cp, p1, u) => {
+      const m = 1 - u;
+      return [
+        m * m * p0[0] + 2 * m * u * cp[0] + u * u * p1[0],
+        m * m * p0[1] + 2 * m * u * cp[1] + u * u * p1[1]
+      ];
+    };
+
+    const lerpPt = (a, b, u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+
+    function drawBaseball(x, y, r = 6.5, spin = 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(x + 1.5, y + r + 2, r * 0.85, r * 0.34, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.42)';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.lineWidth = 1.1;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.stroke();
+
+      ctx.translate(x, y);
+      ctx.rotate(spin);
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 1.25;
+      ctx.beginPath();
+      ctx.arc(-r * 0.55, 0, r * 0.72, -0.9, 0.9);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(r * 0.55, 0, r * 0.72, Math.PI - 0.9, Math.PI + 0.9);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawFielder(x, y, label, active = false, stepBob = 0) {
+      ctx.save();
+      ctx.translate(x, y + stepBob);
+      ctx.beginPath();
+      ctx.ellipse(0, 8.5 - stepBob, 7.5, 3, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.42)';
+      ctx.fill();
+
+      if (active) {
+        ctx.beginPath();
+        ctx.arc(0, -1, 13.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(216,197,92,0.20)';
+        ctx.fill();
+        ctx.strokeStyle = '#D8C55C';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 2.1;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-4.8, 7);
+      ctx.lineTo(-2.8, 1);
+      ctx.lineTo(2.8, 1);
+      ctx.lineTo(4.8, 7);
+      ctx.stroke();
+
+      ctx.fillStyle = active ? '#D8C55C' : '#263244';
+      ctx.strokeStyle = active ? '#fff8d6' : '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-5.5, -5, 11, 8, 3);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(-6.8, -1.5, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#92400e';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(0, -8.5, 3.6, 0, Math.PI * 2);
+      ctx.fillStyle = '#fed7aa';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(0, -9, 3.9, Math.PI, 0);
+      ctx.fillStyle = active ? '#9A7D12' : '#1e293b';
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(11,12,14,0.9)';
+      ctx.strokeStyle = active ? '#D8C55C' : 'rgba(255,255,255,0.24)';
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.roundRect(-10, 9.5, 20, 10, 3);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = active ? '#F2E28B' : '#f8fafc';
+      ctx.font = '800 6.8px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, 0, 16.5);
+      ctx.restore();
+    }
+
+    function drawRunner(x, y, label = 'RUN', stride = 0) {
+      ctx.save();
+      ctx.translate(x, y + Math.sin(stride) * 1.4);
+      ctx.beginPath();
+      ctx.ellipse(0, 8, 7, 2.5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fill();
+
+      const swing = Math.sin(stride) * 2.5;
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-4 - swing, 7);
+      ctx.lineTo(-0.5, 1);
+      ctx.lineTo(4 + swing, 6.8);
+      ctx.stroke();
+
+      ctx.fillStyle = '#dc2626';
+      ctx.strokeStyle = '#fecaca';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-4.5, -5, 9, 7.5, 2.5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, -8.2, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#fed7aa';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, -8.8, 3.8, Math.PI, 0);
+      ctx.fillStyle = '#991b1b';
+      ctx.fill();
+
+      ctx.fillStyle = '#991b1b';
+      ctx.strokeStyle = '#fecaca';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.roundRect(-11, 9, 22, 10, 3);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 6.5px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, 0, 16);
+      ctx.restore();
+    }
+
+    function drawBanner(text, y = 218) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(11,12,14,0.94)';
+      ctx.strokeStyle = '#D8C55C';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(12, y, 376, 24, 4);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#D8C55C';
+      ctx.fillRect(12, y, 5, 24);
+      ctx.fillStyle = '#F7F8FA';
+      ctx.font = '800 9.4px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(text.slice(0, 56), 202, y + 15.5);
+      ctx.restore();
+    }
+
+    function draw(p) {
+      ctx.clearRect(0, 0, W, H);
+      const u = step === 0 ? 0.05 : p;
+
+      if (diagram.mode === 'statcast-arc') {
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#07090D');
+        sky.addColorStop(0.58, '#111824');
+        sky.addColorStop(1, '#1A2636');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+
+        // Light tower + RF wall
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(348, 138);
+        ctx.lineTo(348, 38);
+        ctx.stroke();
+        ctx.fillStyle = '#fef3c7';
+        ctx.fillRect(330, 30, 36, 11);
+
+        ctx.fillStyle = '#151922';
+        ctx.beginPath();
+        ctx.moveTo(318, 166);
+        ctx.lineTo(398, 124);
+        ctx.lineTo(398, 210);
+        ctx.lineTo(318, 210);
+        ctx.closePath();
+        ctx.fill();
+
+        const turf = ctx.createLinearGradient(0, 0, W, 0);
+        turf.addColorStop(0, '#124626');
+        turf.addColorStop(0.5, '#1d733f');
+        turf.addColorStop(1, '#124626');
+        ctx.fillStyle = turf;
+        ctx.fillRect(0, 206, W, 44);
+        ctx.fillStyle = '#a86b3a';
+        ctx.fillRect(14, 203, 60, 8);
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(12, 206);
+        ctx.lineTo(392, 206);
+        ctx.stroke();
+
+        // Yard markers & wall
+        ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+        ctx.setLineDash([3, 4]);
+        [150, 235].forEach((gx) => {
+          ctx.beginPath();
+          ctx.moveTo(gx, 42);
+          ctx.lineTo(gx, 206);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(255,255,255,0.62)';
+        ctx.font = '700 8.5px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('200 FT', 150, 222);
+        ctx.fillText('300 FT', 235, 222);
+        ctx.fillStyle = '#991b1b';
+        ctx.fillRect(308, 162, 12, 44);
+        ctx.fillStyle = '#D8C55C';
+        ctx.fillRect(306, 159, 16, 5);
+        ctx.fillStyle = '#fde68a';
+        ctx.fillText('400 FT', 314, 224);
+
+        // Barrel cone
+        const cone = ctx.createLinearGradient(54, 180, 388, 54);
+        cone.addColorStop(0, 'rgba(216,197,92,0.34)');
+        cone.addColorStop(1, 'rgba(74,222,128,0.04)');
+        ctx.fillStyle = cone;
+        ctx.beginPath();
+        ctx.moveTo(54, 180);
+        ctx.lineTo(388, 54);
+        ctx.lineTo(388, 128);
+        ctx.closePath();
+        ctx.fill();
+
+        // Dashed comparison paths
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(251,191,36,0.7)';
+        ctx.beginPath();
+        ctx.moveTo(54, 182);
+        ctx.lineTo(195, 205);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(226,232,240,0.75)';
+        ctx.beginPath();
+        ctx.moveTo(54, 180);
+        ctx.quadraticCurveTo(172, 142, 296, 184);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(248,113,113,0.72)';
+        ctx.beginPath();
+        ctx.moveTo(54, 180);
+        ctx.quadraticCurveTo(110, 34, 180, 202);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Animated batter swing
+        const swingFrac = Math.min(1, u / 0.16);
+        const batAng = step === 0 ? -0.9 : -0.9 + swingFrac * 1.35;
+        ctx.save();
+        ctx.translate(36, 174);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(-4, -1, 9, 15);
+        ctx.beginPath();
+        ctx.arc(1, -6, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#fed7aa';
+        ctx.fill();
+        ctx.strokeStyle = '#D8C55C';
+        ctx.lineWidth = 3.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(4, 3);
+        ctx.lineTo(4 + Math.cos(batAng) * 26, 3 + Math.sin(batAng) * 26);
+        ctx.stroke();
+        ctx.restore();
+
+        // Live HR barrel flight trajectory
+        if (step >= 1) {
+          const flightU = Math.max(0, Math.min(1, (u - 0.12) / 0.78));
+          ctx.strokeStyle = '#D8C55C';
+          ctx.lineWidth = 4;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          const steps = 24;
+          const maxStep = Math.max(1, Math.floor(flightU * steps));
+          for (let i = 0; i <= maxStep; i++) {
+            const pt = quadPt([54, 180], [198, 22], [372, 142], (i / steps));
+            if (i === 0) ctx.moveTo(pt[0], pt[1]);
+            else ctx.lineTo(pt[0], pt[1]);
+          }
+          ctx.stroke();
+
+          const bPt = quadPt([54, 180], [198, 22], [372, 142], flightU);
+          drawBaseball(bPt[0], bPt[1], 7.2, flightU * 14);
+          if (flightU > 0.94) {
+            ctx.beginPath();
+            ctx.arc(372, 142, 6 + (flightU - 0.94) * 90, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(216,197,92,0.75)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+          ctx.fillStyle = 'rgba(11,12,14,0.92)';
+          ctx.strokeStyle = '#D8C55C';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.roundRect(140, 62, 152, 20, 3);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#D8C55C';
+          ctx.font = '800 8.8px "IBM Plex Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('92 FT APEX · 416 FT HR', 216, 75.5);
+        } else {
+          drawBaseball(58, 178, 7.2, 0);
+        }
+
+        ctx.fillStyle = '#fca5a5';
+        ctx.font = '700 8.8px "Plus Jakarta Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('52° Pop-Up', 142, 54);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.textAlign = 'right';
+        ctx.fillText('14° Liner', 278, 160);
+
+        drawBanner(step === 2 ? 'BARREL: 98+ MPH · 26°–30° LAUNCH ANGLE' : 'STATCAST BARREL ZONE · 26°–30° ARC', 10);
+        return;
+      }
+
+      if (diagram.mode === 'framing-zone') {
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#07090D');
+        bg.addColorStop(0.65, '#131C28');
+        bg.addColorStop(1, '#5b3c22');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(20, 83, 45, 0.72)';
+        ctx.fillRect(0, 108, W, 74);
+        ctx.fillStyle = '#9a6437';
+        ctx.beginPath();
+        ctx.ellipse(200, 118, 52, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Plate & batter boxes
+        ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(42, 196, 90, 42);
+        ctx.strokeRect(268, 196, 90, 42);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(164, 202);
+        ctx.lineTo(236, 202);
+        ctx.lineTo(236, 214);
+        ctx.lineTo(200, 228);
+        ctx.lineTo(164, 214);
+        ctx.closePath();
+        ctx.fill();
+
+        // Shadow + Strike Zone
+        ctx.fillStyle = 'rgba(216,197,92,0.08)';
+        ctx.strokeStyle = '#D8C55C';
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.roundRect(132, 38, 136, 146, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = 'rgba(11,12,14,0.45)';
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(148, 52, 104, 118);
+        ctx.fillRect(148, 52, 104, 118);
+        ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+        ctx.lineWidth = 1;
+        [183, 217].forEach((x) => { ctx.beginPath(); ctx.moveTo(x, 52); ctx.lineTo(x, 170); ctx.stroke(); });
+        [91, 130].forEach((y) => { ctx.beginPath(); ctx.moveTo(148, y); ctx.lineTo(252, y); ctx.stroke(); });
+
+        // Animate pitch arrival + upward mitt presentation
+        const arriveU = Math.min(1, u / 0.4);
+        const frameU = Math.max(0, Math.min(1, (u - 0.4) / 0.45));
+        const ballY = step === 0 ? 174 : 174 - frameU * 30;
+        const mittY = ballY + 8;
+
+        ctx.save();
+        ctx.translate(200, mittY);
+        ctx.fillStyle = '#85451d';
+        ctx.strokeStyle = '#D8C55C';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 31, 24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#592a0e';
+        ctx.beginPath();
+        ctx.ellipse(-2, -2, 17, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        if (step >= 1 && arriveU < 1) {
+          const pScale = 4 + arriveU * 5;
+          const pY = 114 + arriveU * (ballY - 114);
+          drawBaseball(200, pY, pScale, arriveU * 10);
+        } else {
+          drawBaseball(200, ballY, 8.5, 0);
+        }
+
+        if (step >= 1 && frameU > 0.25) {
+          ctx.strokeStyle = '#4ADE80';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(200, 176);
+          ctx.lineTo(200, 140);
+          ctx.stroke();
+        }
+
+        drawBanner(step === 2 ? 'HOLD QUIET TARGET IN SHADOW ZONE' : 'PRESENT BORDERLINE PITCH INTO ZONE', 10);
+        return;
+      }
+
+      if (diagram.mode === 'xwoba-scale') {
+        ctx.fillStyle = '#0B0C0E';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#131518';
+        ctx.strokeStyle = 'rgba(216,197,92,0.3)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(12, 12, 376, 226, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#F7F8FA';
+        ctx.font = '800 10.5px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('SAME CONTACT QUALITY · ZERO FIELDER LUCK', 200, 32);
+
+        const bProg = step === 0 ? 0.1 : Math.min(1, u / 0.65);
+        // Left & right mini diamonds
+        [
+          { x: 26, cx: 109, to: [95, 77], col: '#ef4444', title: 'SS LINEOUT · .000 AVG', tc: '#fca5a5' },
+          { x: 208, cx: 291, to: [315, 68], col: '#4ade80', title: 'GAP DOUBLE · 1.000 AVG', tc: '#86efac' }
+        ].forEach((side) => {
+          ctx.fillStyle = '#0D0F13';
+          ctx.strokeStyle = '#2d333d';
+          ctx.beginPath();
+          ctx.roundRect(side.x, 48, 166, 74, 6);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#165c32';
+          ctx.beginPath();
+          ctx.moveTo(side.cx, 112);
+          ctx.lineTo(side.cx - 32, 78);
+          ctx.quadraticCurveTo(side.cx, 56, side.cx + 32, 78);
+          ctx.closePath();
+          ctx.fill();
+
+          const pos = lerpPt([side.cx, 110], side.to, bProg);
+          ctx.strokeStyle = side.col;
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(side.cx, 110);
+          ctx.lineTo(pos[0], pos[1]);
+          ctx.stroke();
+          drawBaseball(pos[0], pos[1], 4.2, bProg * 12);
+
+          ctx.fillStyle = side.tc;
+          ctx.font = '800 8.2px "IBM Plex Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(side.title, side.cx, 63);
+        });
+
+        const targetFill = step === 0 ? 115 : step === 1 ? 202 : 272;
+        const animFill = targetFill * (0.45 + 0.55 * Math.min(1, u / 0.45));
+        ctx.fillStyle = '#090B0E';
+        ctx.strokeStyle = '#334155';
+        ctx.beginPath();
+        ctx.roundRect(44, 138, 312, 20, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        const barGrad = ctx.createLinearGradient(44, 0, 356, 0);
+        barGrad.addColorStop(0, '#38bdf8');
+        barGrad.addColorStop(0.55, '#D8C55C');
+        barGrad.addColorStop(1, '#ef4444');
+        ctx.fillStyle = barGrad;
+        ctx.beginPath();
+        ctx.roundRect(44, 138, animFill, 20, 10);
+        ctx.fill();
+
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 9.5px "IBM Plex Mono", monospace';
+        ctx.fillText('.320 AVG', 154, 176);
+        ctx.fillStyle = '#F2E28B';
+        ctx.fillText('.370 PLUS', 240, 176);
+        ctx.fillStyle = '#fca5a5';
+        ctx.fillText('.400+ MVP', 309, 176);
+        drawBanner('GRADES EXIT VELO + LAUNCH ANGLE WITHOUT FIELDER LUCK', 194);
+        return;
+      }
+
+      // Broadcast Stadium Diamond Backdrop for Tactical Field Scenarios
+      const coords = {
+        HOME: [200, 214],
+        '1B': [286, 138],
+        '2B': [200, 68],
+        '3B': [114, 138],
+        P: [200, 144],
+        SS: [152, 84],
+        '2BF': [248, 84],
+        '1BF': [274, 118],
+        '3BF': [126, 118],
+        LF: [80, 46],
+        CF: [200, 30],
+        RF: [320, 46]
+      };
+
+      ctx.fillStyle = '#090B0E';
+      ctx.fillRect(0, 0, W, H);
+      // Stands & Warning track
+      ctx.fillStyle = '#141923';
+      ctx.beginPath();
+      ctx.moveTo(4, 56);
+      ctx.quadraticCurveTo(200, -34, 396, 56);
+      ctx.lineTo(396, 250);
+      ctx.lineTo(4, 250);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#8b512a';
+      ctx.beginPath();
+      ctx.moveTo(10, 66);
+      ctx.quadraticCurveTo(200, -24, 390, 66);
+      ctx.lineTo(390, 250);
+      ctx.lineTo(10, 250);
+      ctx.closePath();
+      ctx.fill();
+
+      // Grass + Diagonal Mow Stripes
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(16, 74);
+      ctx.quadraticCurveTo(200, -10, 384, 74);
+      ctx.lineTo(384, 250);
+      ctx.lineTo(16, 250);
+      ctx.closePath();
+      ctx.clip();
+      ctx.fillStyle = '#196439';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#218049';
+      for (let sx = -260; sx < 520; sx += 26) {
+        ctx.beginPath();
+        ctx.moveTo(sx, 0);
+        ctx.lineTo(sx + 13, 0);
+        ctx.lineTo(sx + 13 - H, H);
+        ctx.lineTo(sx - H, H);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // Outfield Wall + Gold Cap
+      ctx.strokeStyle = '#991b1b';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(10, 66);
+      ctx.quadraticCurveTo(200, -24, 390, 66);
+      ctx.stroke();
+      ctx.strokeStyle = '#D8C55C';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(10, 63);
+      ctx.quadraticCurveTo(200, -27, 390, 63);
+      ctx.stroke();
+
+      // Infield Clay Apron + Inner Cutout
+      const clayGrad = ctx.createRadialGradient(200, 145, 10, 200, 145, 145);
+      clayGrad.addColorStop(0, '#cf8e54');
+      clayGrad.addColorStop(1, '#985d2d');
+      ctx.fillStyle = clayGrad;
+      ctx.beginPath();
+      ctx.moveTo(54, 140);
+      ctx.quadraticCurveTo(200, 6, 346, 140);
+      ctx.lineTo(200, 242);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#1c6d3e';
+      ctx.beginPath();
+      ctx.moveTo(200, 76);
+      ctx.lineTo(270, 138);
+      ctx.lineTo(200, 198);
+      ctx.lineTo(130, 138);
+      ctx.closePath();
+      ctx.fill();
+
+      // Foul Lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(200, 214);
+      ctx.lineTo(18, 68);
+      ctx.moveTo(200, 214);
+      ctx.lineTo(382, 68);
+      ctx.stroke();
+
+      // Mound + Plate Dirt
+      ctx.fillStyle = clayGrad;
+      ctx.beginPath();
+      ctx.arc(200, 142, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(193, 140.5, 14, 3.2);
+      ctx.fillStyle = clayGrad;
+      ctx.beginPath();
+      ctx.arc(200, 212, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Base pads
+      const occupied = new Set(diagram.occupiedBases || []);
+      const highlight = step === 0 ? '' : diagram.highlightBase || '';
+      [
+        ['2B', coords['2B'][0], coords['2B'][1]],
+        ['1B', coords['1B'][0], coords['1B'][1]],
+        ['3B', coords['3B'][0], coords['3B'][1]]
+      ].forEach(([name, bx, by]) => {
+        if (highlight === name) {
+          const pulse = 16 + Math.sin(u * Math.PI * 4) * 3;
+          ctx.beginPath();
+          ctx.arc(bx, by, pulse, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(216,197,92,0.22)';
+          ctx.fill();
+          ctx.strokeStyle = '#D8C55C';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = highlight === name ? '#D8C55C' : occupied.has(name) ? '#fca5a5' : '#ffffff';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.6;
+        ctx.fillRect(-7.5, -7.5, 15, 15);
+        ctx.strokeRect(-7.5, -7.5, 15, 15);
+        ctx.restore();
+      });
+
+      // Home Plate
+      ctx.fillStyle = highlight === 'HOME' ? '#D8C55C' : '#ffffff';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(192, 208);
+      ctx.lineTo(208, 208);
+      ctx.lineTo(208, 215);
+      ctx.lineTo(200, 222);
+      ctx.lineTo(192, 215);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Dynamic Scenario Entities per Mode
+      const mode = diagram.mode;
+      let ssPos = coords.SS;
+      let f2bPos = coords['2BF'];
+      let runner1Pos = [coords['1B'][0] + 10, coords['1B'][1] - 14];
+      let runner3Pos = [coords['3B'][0] - 10, coords['3B'][1] - 14];
+      let ballPos = null;
+      let throwArc = null;
+      let throwArc2 = null;
+
+      if (mode === 'infield-force') {
+        const gFrac = Math.min(1, u / 0.38);
+        const tFrac = Math.max(0, Math.min(1, (u - 0.38) / 0.42));
+        ssPos = lerpPt(coords.SS, [160, 88], gFrac);
+        f2bPos = lerpPt(coords['2BF'], [205, 72], Math.min(1, u / 0.52));
+        runner1Pos = lerpPt([coords['1B'][0] + 4, coords['1B'][1] - 14], [214, 72], Math.min(1, u / 0.86));
+        ballPos = u < 0.38
+          ? lerpPt(coords.HOME, ssPos, gFrac)
+          : quadPt(ssPos, [182, 58], coords['2B'], tFrac);
+        if (step >= 1) throwArc = [ssPos, [182, 58], coords['2B'], tFrac];
+      } else if (mode === 'infield-fly') {
+        const popFrac = Math.min(1, u / 0.85);
+        ballPos = quadPt(coords.HOME, [182, 22], coords.SS, popFrac);
+        drawFielder(coords.SS[0], coords.SS[1], 'SS', true, Math.sin(u * 12) * 1.2);
+        if (step >= 1 && popFrac > 0.2) {
+          ctx.beginPath();
+          ctx.arc(coords.SS[0], coords.SS[1], 19 + Math.sin(u * 16) * 3, 0, Math.PI * 2);
+          ctx.strokeStyle = '#D8C55C';
+          ctx.lineWidth = 1.8;
+          ctx.stroke();
+        }
+      } else if (mode === 'steal-2b') {
+        const pitchF = Math.min(1, u / 0.34);
+        const throwF = Math.max(0, Math.min(1, (u - 0.36) / 0.46));
+        const runF = Math.min(1, u / 0.88);
+        f2bPos = lerpPt(coords['2BF'], [204, 72], Math.min(1, u / 0.48));
+        runner1Pos = lerpPt([coords['1B'][0] + 6, coords['1B'][1] - 12], [212, 72], runF);
+        ballPos = u < 0.35
+          ? lerpPt(coords.P, coords.HOME, pitchF)
+          : quadPt(coords.HOME, [216, 130], coords['2B'], throwF);
+        if (step >= 1 && u >= 0.35) throwArc = [coords.HOME, [216, 130], coords['2B'], throwF];
+      } else if (mode === 'relay-throw') {
+        const hitF = Math.min(1, u / 0.32);
+        const rel1F = Math.max(0, Math.min(1, (u - 0.32) / 0.30));
+        const rel2F = Math.max(0, Math.min(1, (u - 0.62) / 0.30));
+        ssPos = lerpPt(coords.SS, [144, 96], Math.min(1, u / 0.4));
+        const lfPos = lerpPt(coords.LF, [64, 52], hitF);
+        runner3Pos = lerpPt([coords['3B'][0] - 8, coords['3B'][1] - 14], [190, 200], Math.min(1, u / 0.92));
+        if (u < 0.32) ballPos = lerpPt(coords.HOME, lfPos, hitF);
+        else if (u < 0.62) ballPos = quadPt(lfPos, [106, 56], ssPos, rel1F);
+        else ballPos = quadPt(ssPos, [182, 138], coords.HOME, rel2F);
+        if (step >= 1) {
+          throwArc = [lfPos, [106, 56], ssPos, u < 0.32 ? 0.05 : rel1F];
+          throwArc2 = [ssPos, [182, 138], coords.HOME, u < 0.62 ? 0.05 : rel2F];
+        }
+        drawFielder(lfPos[0], lfPos[1], 'LF', true);
+      } else if (mode === 'tag-up') {
+        const flyF = Math.min(1, u / 0.45);
+        const runF = Math.max(0, Math.min(1, (u - 0.45) / 0.48));
+        runner3Pos = lerpPt([coords['3B'][0] - 8, coords['3B'][1] - 12], [192, 202], runF);
+        ballPos = u < 0.45
+          ? quadPt(coords.HOME, [210, 62], coords.CF, flyF)
+          : quadPt(coords.CF, [216, 108], coords.HOME, runF);
+        if (step >= 1 && u >= 0.45) throwArc = [coords.CF, [216, 108], coords.HOME, runF];
+      }
+
+      // Draw Throw Arcs
+      [throwArc, throwArc2].forEach((arc) => {
+        if (!arc) return;
+        const [p0, cp, p1, prog] = arc;
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.8;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        const segs = 18;
+        const maxS = Math.max(1, Math.floor(prog * segs));
+        for (let i = 0; i <= maxS; i++) {
+          const pt = quadPt(p0, cp, p1, i / segs);
+          if (i === 0) ctx.moveTo(pt[0], pt[1]);
+          else ctx.lineTo(pt[0], pt[1]);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      // Runners
+      if (occupied.has('1B')) drawRunner(runner1Pos[0], runner1Pos[1], 'R1', u * 18);
+      if (occupied.has('2B')) drawRunner(coords['2B'][0] + 15, coords['2B'][1] - 14, 'R2', 0);
+      if (occupied.has('3B')) drawRunner(runner3Pos[0], runner3Pos[1], 'R3', u * 18);
+
+      // Fielders
+      drawFielder(coords.P[0], coords.P[1], 'P', false);
+      drawFielder(coords['3BF'][0], coords['3BF'][1], '3B', false);
+      drawFielder(coords['1BF'][0], coords['1BF'][1], '1B', false);
+      drawFielder(f2bPos[0], f2bPos[1], '2B', mode === 'infield-force' || mode === 'steal-2b', mode === 'steal-2b' ? Math.sin(u * 14) : 0);
+      if (mode !== 'infield-fly') drawFielder(ssPos[0], ssPos[1], 'SS', mode === 'infield-force' || mode === 'relay-throw', mode === 'infield-force' ? Math.sin(u * 14) : 0);
+      if (mode !== 'relay-throw') drawFielder(coords.LF[0], coords.LF[1], 'LF', false);
+      drawFielder(coords.CF[0], coords.CF[1], 'CF', mode === 'tag-up');
+      drawFielder(coords.RF[0], coords.RF[1], 'RF', false);
+
+      if (ballPos) drawBaseball(ballPos[0], ballPos[1], 6.4, u * 18);
+
+      if (mode === 'relay-throw' && step >= 1) {
+        ctx.fillStyle = '#0ea5e9';
+        ctx.beginPath();
+        ctx.roundRect(ssPos[0] - 13, ssPos[1] - 24, 26, 12, 3);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 7.2px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CUT', ssPos[0], ssPos[1] - 15.5);
+      }
+
+      // Base labels
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 10.5px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('1B', 306, 142);
+      ctx.textAlign = 'center';
+      ctx.fillText('2B', 200, 49);
+      ctx.textAlign = 'right';
+      ctx.fillText('3B', 94, 142);
+
+      if (step === 2 && diagram.callout) {
+        drawBanner(diagram.callout, 218);
+      }
+    }
+
+    function tick(ts) {
+      if (!lastTs) lastTs = ts;
+      const dt = Math.min(0.05, (ts - lastTs) / 1000);
+      lastTs = ts;
+      if (isPlaying && isVisible) {
+        tPhase += dt / (compact ? 2.9 : 3.2);
+        if (tPhase > 1) tPhase -= 1;
+        draw(tPhase);
+      }
+      if (isPlaying && isVisible) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        rafId = null;
+      }
+    }
+
+    function ensureLoop() {
+      if (!rafId && isPlaying && isVisible) {
+        rafId = requestAnimationFrame(tick);
+      }
+    }
+
+    let io = null;
+    if (typeof IntersectionObserver === 'function') {
+      io = new IntersectionObserver(
+        (entries) => {
+          isVisible = Boolean(entries[0] && entries[0].isIntersecting);
+          if (isVisible) {
+            lastTs = 0;
+            ensureLoop();
+          } else if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
+        },
+        { threshold: 0.05 }
+      );
+      io.observe(canvas);
+    }
+
+    draw(tPhase);
+    ensureLoop();
+
+    const cleanup = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+      if (io) io.disconnect();
+    };
+    scenarioStageCleanups.set(container, cleanup);
+
+    return {
+      setStep(nextStep) {
+        step = nextStep;
+        tPhase = nextStep === 0 ? 0.04 : 0.06;
+        if (phaseEl && !compact) {
+          phaseEl.textContent = step === 0 ? 'SETUP' : step === 2 ? 'KEY RULE' : 'LIVE PLAY';
+        }
+        draw(tPhase);
+      },
+      destroy: cleanup
+    };
+  }
+
+  /* =========================================================
      Global Auth Nav Sync
      ========================================================= */
   async function syncAuthNav() {
@@ -696,8 +1640,13 @@
           'The Play: Runner on 1st is forced to run to 2nd — fielder only needs to touch 2nd base.',
           scenario.keyRule
         ];
+        let featuredStageCtrl = null;
         const setStep = (idx) => {
-          stage.innerHTML = renderDiagramSvg(scenario.diagram, idx);
+          if (!featuredStageCtrl) {
+            featuredStageCtrl = mountAnimatedScenarioStage(stage, scenario.diagram, { step: idx });
+          } else {
+            featuredStageCtrl.setStep(idx);
+          }
           if (stepNote) stepNote.textContent = notes[idx] || notes[0];
           stepBtnsWrap.querySelectorAll('[data-step]').forEach((b) => {
             b.setAttribute('aria-pressed', String(Number(b.dataset.step) === idx));
@@ -880,8 +1829,8 @@
 
     const STADIUM_TIERS = {
       pro: ['fenway', 'petco', 'coors', 'oracle', 'wrigley', 'yankee'],
-      college: ['sdsu', 'usc', 'pk-park', 'stanford', 'ucsb', 'cal-poly'],
-      hs: ['hs-corona', 'hs-rb', 'hs-tp', 'hs-cchs', 'hs-eastlake'],
+      college: ['sdsu', 'ucsb', 'cal-poly', 'pk-park', 'sc-founders', 'stanford', 'usd', 'tcu', 'byu', 'app-state', 'vandy', 'ucla'],
+      hs: ['hs-corona', 'hs-eastlake', 'hs-rb'],
       cage: ['cage']
     };
 
@@ -892,6 +1841,9 @@
         shortName: 'Fenway Park',
         name: 'Fenway Park (Boston)',
         dimsLabel: 'Fenway Park · 310 LF · 390 CF · 302 RF',
+        photo: '/assets/aistudio/IMG_0506_bfc5fffd.jpeg',
+        defaultLighting: 'night',
+        landmarkNote: '37-ft Green Monster, Citgo sign, Pesky Pole (302 RF), manual scoreboard.',
         skyTop: '#071426',
         skyMid: '#132a4a',
         skyLow: '#24476e',
@@ -915,6 +1867,9 @@
         shortName: 'Petco Park',
         name: 'Petco Park (San Diego)',
         dimsLabel: 'Petco Park · 336 LF · 396 CF · 322 RF',
+        photo: '/assets/aistudio/IMG_0507_636f40c3.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: 'Western Metal brick building in LF, Gaslamp towers, San Diego skyline.',
         skyTop: '#061529',
         skyMid: '#13355c',
         skyLow: '#2b618c',
@@ -938,6 +1893,9 @@
         shortName: 'Coors Field',
         name: 'Coors Field (Denver)',
         dimsLabel: 'Coors Field · 347 LF · 415 CF · 350 RF',
+        photo: '/assets/aistudio/IMG_0508_5a15be2a.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: 'Mile High thin air (0.84x drag), purple upper deck, CF waterfall & Rockpile.',
         skyTop: '#0b1838',
         skyMid: '#1e3a6e',
         skyLow: '#5c4b6e',
@@ -961,6 +1919,9 @@
         shortName: 'Oracle Park',
         name: 'Oracle Park (SF)',
         dimsLabel: 'Oracle Park · 339 LF · 399 CF · 309 RF',
+        photo: '/assets/aistudio/IMG_0510_4cccdf41.webp',
+        defaultLighting: 'golden',
+        landmarkNote: '24-ft RF brick wall, McCovey Cove water, LF glove & Coke bottle.',
         skyTop: '#071726',
         skyMid: '#13324a',
         skyLow: '#2c5b75',
@@ -984,6 +1945,9 @@
         shortName: 'Wrigley Field',
         name: 'Wrigley Field (Chicago)',
         dimsLabel: 'Wrigley Field · 355 LF · 400 CF · 353 RF',
+        photo: '/assets/aistudio/IMG_0509_3877b977.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: '11.5-ft ivy brick wall, hand-turned CF scoreboard, rooftop bleachers.',
         skyTop: '#081b2c',
         skyMid: '#153959',
         skyLow: '#2d5c78',
@@ -1007,6 +1971,9 @@
         shortName: 'Yankee Stadium',
         name: 'Yankee Stadium (NY)',
         dimsLabel: 'Yankee Stadium · 318 LF · 408 CF · 314 RF',
+        photo: '/assets/aistudio/IMG_0511_4d58708b.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: 'Iconic white roof frieze, Monument Park CF batter eye, 314-ft RF Short Porch.',
         skyTop: '#061121',
         skyMid: '#122645',
         skyLow: '#21406b',
@@ -1030,6 +1997,10 @@
         shortName: 'SDSU Tony Gwynn',
         name: 'Tony Gwynn Stadium (SDSU)',
         dimsLabel: 'SDSU Tony Gwynn · 340 LF · 410 CF · 340 RF',
+        photo: '/assets/aistudio/IMG_0498_2fe12e03.jpeg',
+        altPhoto: '/assets/aistudio/IMG_0499_47cd7efb.jpeg',
+        defaultLighting: 'night',
+        landmarkNote: 'Scarlet #19 Gwynn banner, Mission-style dorms beyond RF, Cowles Mtn skyline.',
         skyTop: '#071528',
         skyMid: '#132d50',
         skyLow: '#2b547e',
@@ -1045,79 +2016,15 @@
           return 9;
         }
       },
-      usc: {
-        id: 'usc',
-        tier: 'college',
-        shortName: 'USC Dedeaux',
-        name: 'Dedeaux Field (USC)',
-        dimsLabel: 'USC Dedeaux · 335 LF · 395 CF · 325 RF',
-        skyTop: '#0c162b',
-        skyMid: '#24355a',
-        skyLow: '#524968',
-        wallColor: '#18442f',
-        wallCap: '#ffcc00',
-        subBanner: 'USC TROJANS · 12 TITLES',
-        subBanner2: 'EXPOSITION PARK · LA',
-        airDensity: 1.006,
-        wallDist(phi) {
-          return phi < 0
-            ? 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 60
-            : 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
-        },
-        wallHeight() {
-          return 9.5;
-        }
-      },
-      'pk-park': {
-        id: 'pk-park',
-        tier: 'college',
-        shortName: 'Oregon PK Park',
-        name: 'PK Park (Oregon)',
-        dimsLabel: 'PK Park (Oregon) · 335 LF · 400 CF · 325 RF',
-        skyTop: '#071b16',
-        skyMid: '#113a2d',
-        skyLow: '#2a5e4a',
-        wallColor: '#154733',
-        wallCap: '#fee123',
-        subBanner: 'EUGENE · OREGON DUCKS',
-        subBanner2: 'AUTZEN CORRIDOR · 400 CF',
-        airDensity: 0.99,
-        wallDist(phi) {
-          return phi < 0
-            ? 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65
-            : 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
-        },
-        wallHeight() {
-          return 8;
-        }
-      },
-      stanford: {
-        id: 'stanford',
-        tier: 'college',
-        shortName: 'Stanford',
-        name: 'Klein Field at Sunken Diamond (Stanford)',
-        dimsLabel: 'Stanford Sunken Diamond · 335 LF · 400 CF · 335 RF',
-        skyTop: '#12182b',
-        skyMid: '#243454',
-        skyLow: '#485b7a',
-        wallColor: '#8c1515',
-        wallCap: '#f8fafc',
-        subBanner: 'SUNKEN DIAMOND · PALO ALTO',
-        subBanner2: 'HOOVER TOWER · CARDINAL',
-        airDensity: 1.0,
-        wallDist(phi) {
-          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
-        },
-        wallHeight() {
-          return 8;
-        }
-      },
       ucsb: {
         id: 'ucsb',
         tier: 'college',
         shortName: 'UC Santa Barbara',
         name: 'Caesar Uyesaka Stadium (UCSB)',
         dimsLabel: 'Caesar Uyesaka (UCSB) · 335 LF · 400 CF · 335 RF',
+        photo: '/assets/aistudio/IMG_0500_d2b92263.webp',
+        defaultLighting: 'golden',
+        landmarkNote: 'Gauchos navy wall, eucalyptus windbreak trees, Santa Ynez coastal mountains.',
         skyTop: '#071d36',
         skyMid: '#13406e',
         skyLow: '#2d6c99',
@@ -1136,19 +2043,246 @@
       'cal-poly': {
         id: 'cal-poly',
         tier: 'college',
-        shortName: 'Cal Poly',
-        name: 'Baggett Stadium (Cal Poly)',
-        dimsLabel: 'Baggett Stadium (Cal Poly) · 335 LF · 405 CF · 335 RF',
+        shortName: 'Cal Poly Pomona',
+        name: 'Scolinos Field (Cal Poly Pomona)',
+        dimsLabel: 'Scolinos Field (CPP) · 340 LF · 390 CF · 325 RF',
+        photo: '/assets/aistudio/IMG_0501_8ece04db.webp',
+        defaultLighting: 'day',
+        landmarkNote: 'Broncos forest green wall, dirt-to-grass cutout, RF track & green cargo containers.',
         skyTop: '#081b19',
         skyMid: '#153d35',
         skyLow: '#346353',
         wallColor: '#154734',
-        wallCap: '#bd8b13',
-        subBanner: 'MUSTANGS · SAN LUIS OBISPO',
-        subBanner2: 'BISHOP PEAK · 405 CF',
-        airDensity: 0.995,
+        wallCap: '#ffb500',
+        subBanner: 'BRONCOS · SCOLINOS FIELD',
+        subBanner2: 'CAL POLY POMONA · 390 CF',
+        airDensity: 0.992,
         wallDist(phi) {
-          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+          return phi < 0
+            ? 340 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 50
+            : 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      'pk-park': {
+        id: 'pk-park',
+        tier: 'college',
+        shortName: 'Oregon PK Park',
+        name: 'PK Park (Oregon)',
+        dimsLabel: 'PK Park (Oregon) · 335 LF · 400 CF · 325 RF',
+        photo: '/assets/aistudio/IMG_0502_2bfdbf2d.png',
+        defaultLighting: 'golden',
+        landmarkNote: 'Cantilevered grandstand canopy, turf "DUCKS" / "O" apron, Autzen skyline.',
+        skyTop: '#071b16',
+        skyMid: '#113a2d',
+        skyLow: '#2a5e4a',
+        wallColor: '#154733',
+        wallCap: '#fee123',
+        subBanner: 'EUGENE · OREGON DUCKS',
+        subBanner2: 'AUTZEN CORRIDOR · 400 CF',
+        airDensity: 0.99,
+        wallDist(phi) {
+          return phi < 0
+            ? 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65
+            : 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      'sc-founders': {
+        id: 'sc-founders',
+        tier: 'college',
+        shortName: 'SC Founders Park',
+        name: 'Founders Park (South Carolina)',
+        dimsLabel: 'Founders Park (USC) · 325 LF · 400 CF · 325 RF',
+        photo: '/assets/aistudio/IMG_0503_ba7e30e8.png',
+        defaultLighting: 'day',
+        landmarkNote: 'Garnet & brick grandstand, tiered RF berm & concourse, Columbia skyline.',
+        skyTop: '#0e131e',
+        skyMid: '#242938',
+        skyLow: '#474352',
+        wallColor: '#111827',
+        wallCap: '#73000a',
+        subBanner: 'GAMECOCKS · FOUNDERS PARK',
+        subBanner2: 'COLUMBIA SC · 400 CF',
+        airDensity: 1.004,
+        wallDist(phi) {
+          return 325 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 75;
+        },
+        wallHeight() {
+          return 8.5;
+        }
+      },
+      stanford: {
+        id: 'stanford',
+        tier: 'college',
+        shortName: 'Stanford Sunken',
+        name: 'Klein Field at Sunken Diamond (Stanford)',
+        dimsLabel: 'Stanford Sunken Diamond · 335 LF · 400 CF · 335 RF',
+        photo: '/assets/aistudio/IMG_0505_cba0f264.jpeg',
+        defaultLighting: 'golden',
+        landmarkNote: 'Sunken earth bowl, cardinal wall, eucalyptus grove & Santa Cruz foothills.',
+        skyTop: '#12182b',
+        skyMid: '#243454',
+        skyLow: '#485b7a',
+        wallColor: '#8c1515',
+        wallCap: '#f8fafc',
+        subBanner: 'SUNKEN DIAMOND · PALO ALTO',
+        subBanner2: 'KLEIN FIELD · CARDINAL',
+        airDensity: 1.0,
+        wallDist(phi) {
+          return 335 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      usd: {
+        id: 'usd',
+        tier: 'college',
+        shortName: 'USD Fowler Park',
+        name: 'Fowler Park (University of San Diego)',
+        dimsLabel: 'USD Fowler Park · 311 LF · 398 CF · 310 RF',
+        photo: '/assets/aistudio/IMG_0514_b512ef3d.webp',
+        defaultLighting: 'day',
+        landmarkNote: 'Spanish Renaissance RF 4-story dorm, navy "33 CUNNINGHAM FIELD" wall, short corners.',
+        skyTop: '#07172b',
+        skyMid: '#153a60',
+        skyLow: '#2d638a',
+        wallColor: '#002855',
+        wallCap: '#d4af37',
+        subBanner: 'USD TOREROS · FOWLER PARK',
+        subBanner2: '33 CUNNINGHAM FIELD · SD',
+        airDensity: 1.008,
+        wallDist(phi) {
+          return phi < 0
+            ? 311 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 87
+            : 310 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 88;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      tcu: {
+        id: 'tcu',
+        tier: 'college',
+        shortName: 'TCU Lupton',
+        name: 'Lupton Stadium (TCU)',
+        dimsLabel: 'TCU Lupton Stadium · 330 LF · 400 CF · 330 RF',
+        photo: '/assets/aistudio/IMG_0515_390807f5.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: 'Horned Frogs purple wall, cream brick grandstand & LF lawn berm, Fort Worth.',
+        skyTop: '#120f24',
+        skyMid: '#2c2252',
+        skyLow: '#514175',
+        wallColor: '#4d1979',
+        wallCap: '#f8fafc',
+        subBanner: 'TCU HORNED FROGS · LUPTON',
+        subBanner2: 'FORT WORTH TX · 400 CF',
+        airDensity: 0.996,
+        wallDist(phi) {
+          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight() {
+          return 8.5;
+        }
+      },
+      byu: {
+        id: 'byu',
+        tier: 'college',
+        shortName: 'BYU Miller Field',
+        name: 'Larry H. Miller Field (BYU)',
+        dimsLabel: 'BYU Miller Field · 345 LF · 402 CF · 345 RF',
+        photo: '/assets/aistudio/IMG_0516_3358342f.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: 'Snow-capped Wasatch Range, white tensile canopy, CF fieldhouse & high Provo air.',
+        skyTop: '#0d1b33',
+        skyMid: '#274469',
+        skyLow: '#5b7694',
+        wallColor: '#002e5d',
+        wallCap: '#f8fafc',
+        subBanner: 'BYU COUGARS · MILLER FIELD',
+        subBanner2: 'WASATCH PEAKS · 4,550 FT',
+        airDensity: 0.87,
+        wallDist(phi) {
+          return 345 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 57;
+        },
+        wallHeight() {
+          return 8.5;
+        }
+      },
+      'app-state': {
+        id: 'app-state',
+        tier: 'college',
+        shortName: 'App State Beaver',
+        name: 'Beaver Field (App State)',
+        dimsLabel: 'App State Beaver Field · 330 LF · 400 CF · 330 RF',
+        photo: '/assets/aistudio/IMG_0517_53ea8e0c.jpeg',
+        defaultLighting: 'golden',
+        landmarkNote: 'Blue Ridge autumn forest bowl, turf "A" CF logo, 3B hitting barn & RF pond.',
+        skyTop: '#16111c',
+        skyMid: '#3a2936',
+        skyLow: '#704b3d',
+        wallColor: '#18181b',
+        wallCap: '#ffcc00',
+        subBanner: 'APP STATE MOUNTAINEERS',
+        subBanner2: 'BOONE NC · 3,333 FT',
+        airDensity: 0.90,
+        wallDist(phi) {
+          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight() {
+          return 8;
+        }
+      },
+      vandy: {
+        id: 'vandy',
+        tier: 'college',
+        shortName: 'Vanderbilt Hawkins',
+        name: 'Hawkins Field (Vanderbilt)',
+        dimsLabel: 'Vanderbilt Hawkins · 310 LF · 400 CF · 330 RF',
+        photo: '/assets/aistudio/IMG_0518_71e4dfc9.jpeg',
+        defaultLighting: 'night',
+        landmarkNote: '35-ft LF Hawkins Monster, "VandyBoys" turf script, brick scoreboard & Nashville skyline.',
+        skyTop: '#060c18',
+        skyMid: '#121d33',
+        skyLow: '#24324a',
+        wallColor: '#1c1917',
+        wallCap: '#cfb87c',
+        subBanner: 'VANDYBOYS · HAWKINS FIELD',
+        subBanner2: '35-FT LF MONSTER · NASHVILLE',
+        airDensity: 0.996,
+        wallDist(phi) {
+          return phi < 0
+            ? 310 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 90
+            : 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight(phi) {
+          return phi <= -0.22 ? 35 : 8;
+        }
+      },
+      ucla: {
+        id: 'ucla',
+        tier: 'college',
+        shortName: 'UCLA Robinson',
+        name: 'Jackie Robinson Stadium (UCLA)',
+        dimsLabel: 'UCLA Jackie Robinson · 330 LF · 395 CF · 330 RF',
+        photo: '/assets/aistudio/IMG_0519_1bacb357.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: 'True Blue padded wall, 2-tier RF batting pavilion, LA coastal pines & "42" legacy.',
+        skyTop: '#071b30',
+        skyMid: '#14426e',
+        skyLow: '#2f6f9c',
+        wallColor: '#003b5c',
+        wallCap: '#ffd100',
+        subBanner: 'UCLA BRUINS · JACKIE #42',
+        subBanner2: 'LOS ANGELES CA · 395 CF',
+        airDensity: 1.005,
+        wallDist(phi) {
+          return 330 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
         },
         wallHeight() {
           return 8;
@@ -1160,13 +2294,16 @@
         shortName: 'Corona HS',
         name: 'Corona High School (CA)',
         dimsLabel: 'Corona Panthers (CA) · 315 LF · 380 CF · 315 RF',
+        photo: '/assets/aistudio/IMG_0512_adb3b6d5.jpeg',
+        defaultLighting: 'morning',
+        landmarkNote: 'Panthers red scoreboard & charcoal fence, tall palm skyline & Inland Empire foothills.',
         skyTop: '#161124',
         skyMid: '#36213f',
         skyLow: '#663c48',
-        wallColor: '#991b1b',
-        wallCap: '#facc15',
+        wallColor: '#27272a',
+        wallCap: '#dc2626',
         subBanner: 'CORONA PANTHERS · CA',
-        subBanner2: 'CLEVELAND NATL FOREST',
+        subBanner2: 'INLAND EMPIRE · 380 CF',
         airDensity: 0.985,
         wallDist(phi) {
           return 315 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 65;
@@ -1175,12 +2312,39 @@
           return 8;
         }
       },
+      'hs-eastlake': {
+        id: 'hs-eastlake',
+        tier: 'hs',
+        shortName: 'Eastlake HS',
+        name: 'Eastlake High School (San Diego)',
+        dimsLabel: 'Eastlake Titans (SD) · 312 LF · 380 CF · 312 RF',
+        photo: '/assets/aistudio/IMG_0504_56cf92ce.jpeg',
+        defaultLighting: 'day',
+        landmarkNote: 'Titans navy fence, sky-blue campus water tower beyond CF, Otay Mesa hills.',
+        skyTop: '#081b33',
+        skyMid: '#173e69',
+        skyLow: '#346d91',
+        wallColor: '#1e3a8a',
+        wallCap: '#22c55e',
+        subBanner: 'EASTLAKE TITANS · CHULA VISTA',
+        subBanner2: 'OTAY MESA · 380 CF',
+        airDensity: 1.004,
+        wallDist(phi) {
+          return 312 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 68;
+        },
+        wallHeight() {
+          return 7;
+        }
+      },
       'hs-rb': {
         id: 'hs-rb',
         tier: 'hs',
         shortName: 'Rancho Bernardo',
         name: 'Rancho Bernardo HS (San Diego)',
         dimsLabel: 'Rancho Bernardo Broncos (SD) · 315 LF · 385 CF · 315 RF',
+        photo: '/assets/aistudio/IMG_0513_028e3404.png',
+        defaultLighting: 'day',
+        landmarkNote: 'RB campus 8-lane pool beyond LF, adjacent softball field in RF & north SD hills.',
         skyTop: '#091d36',
         skyMid: '#163c63',
         skyLow: '#326a8f',
@@ -1196,80 +2360,20 @@
           return 7;
         }
       },
-      'hs-tp': {
-        id: 'hs-tp',
-        tier: 'hs',
-        shortName: 'Torrey Pines',
-        name: 'Torrey Pines HS (San Diego)',
-        dimsLabel: 'Torrey Pines Falcons (SD) · 318 LF · 392 CF · 318 RF',
-        skyTop: '#071f33',
-        skyMid: '#134669',
-        skyLow: '#347594',
-        wallColor: '#991b1b',
-        wallCap: '#fde047',
-        subBanner: 'TORREY PINES · DEL MAR',
-        subBanner2: 'COASTAL BLUFF · 392 CF',
-        airDensity: 1.012,
-        wallDist(phi) {
-          return 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 74;
-        },
-        wallHeight() {
-          return 7;
-        }
-      },
-      'hs-cchs': {
-        id: 'hs-cchs',
-        tier: 'hs',
-        shortName: 'Cathedral Catholic',
-        name: 'Cathedral Catholic HS (San Diego)',
-        dimsLabel: 'Cathedral Catholic Dons (SD) · 320 LF · 390 CF · 320 RF',
-        skyTop: '#0a182d',
-        skyMid: '#1b3559',
-        skyLow: '#385d82',
-        wallColor: '#7f1d1d',
-        wallCap: '#eab308',
-        subBanner: 'MANCHESTER FIELD · SD',
-        subBanner2: 'DONS · 390 CF',
-        airDensity: 1.008,
-        wallDist(phi) {
-          return 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
-        },
-        wallHeight() {
-          return 8;
-        }
-      },
-      'hs-eastlake': {
-        id: 'hs-eastlake',
-        tier: 'hs',
-        shortName: 'Eastlake HS',
-        name: 'Eastlake High School (San Diego)',
-        dimsLabel: 'Eastlake Titans (SD) · 312 LF · 380 CF · 312 RF',
-        skyTop: '#081b33',
-        skyMid: '#173e69',
-        skyLow: '#346d91',
-        wallColor: '#1e40af',
-        wallCap: '#22c55e',
-        subBanner: 'EASTLAKE TITANS · CHULA VISTA',
-        subBanner2: 'OTAY MESA · 380 CF',
-        airDensity: 1.004,
-        wallDist(phi) {
-          return 312 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 68;
-        },
-        wallHeight() {
-          return 7;
-        }
-      },
       cage: {
         id: 'cage',
         tier: 'cage',
         shortName: 'D1 Rapsodo Lab',
         name: 'D1 Rapsodo Lab',
         dimsLabel: 'D1 Rapsodo Lab · 400 FT Simulated',
+        photo: '/src/assets/images/baseball_night_batter_swing_1794856804641.jpg',
+        defaultLighting: 'night',
+        landmarkNote: 'Indoor high-tunnel cage with Rapsodo optical sensors and netted 400-ft wall.',
         skyTop: '#070d18',
         skyMid: '#0e1b2f',
         skyLow: '#142742',
         wallColor: '#1e3a5f',
-        wallCap: '#fbbf24',
+        wallCap: '#D8C55C',
         airDensity: 1.0,
         wallDist() {
           return 400;
@@ -1350,7 +2454,13 @@
     const rapsodoViewTabs = document.getElementById('rapsodo-view-tabs');
     const batRack = document.getElementById('bat-rack');
     const stadiumTierTabs = document.getElementById('stadium-tier-tabs');
+    const stadiumSelect = document.getElementById('stadium-select');
     const stadiumTabs = document.getElementById('stadium-tabs');
+    const lightingTabs = document.getElementById('lighting-tabs');
+    const venuePhotoImg = document.getElementById('venue-photo-img');
+    const venuePhotoTitle = document.getElementById('venue-photo-title');
+    const venuePhotoDims = document.getElementById('venue-photo-dims');
+    const venuePhotoNote = document.getElementById('venue-photo-note');
     const deliveryTabs = document.getElementById('delivery-tabs');
     const pitchTabs = document.getElementById('pitch-tabs');
     const pitchSpeedTabs = document.getElementById('pitch-speed-tabs');
@@ -1521,6 +2631,7 @@
           ? savedUserPrefs.preferredStadium
           : 'sdsu';
       let activeStadiumTier = (STADIUMS[activeStadiumId] && STADIUMS[activeStadiumId].tier) || 'college';
+      let activeLightingMode = 'auto';
       let activeTelemetryView = 'spray'; // 'spray' | 'arc' | 'zone'
       let selectedPitchType = 'mix';
       let activePitchSpeed = 'pro'; // 'rookie' | 'varsity' | 'pro'
@@ -1626,6 +2737,7 @@
         try {
           engine3D = window.createStadium3DEngine(cageCanvas, BATS, STADIUMS);
           engine3D.setStadium(activeStadiumId);
+          if (engine3D.setLighting) engine3D.setLighting(activeLightingMode);
           engine3D.setBat(activeBatId);
           engine3D.setBatterHand(batterHand);
           engine3D.setPitcherHand(pitcherHand);
@@ -2773,7 +3885,8 @@
       }
 
       function renderFrame(ts) {
-        const dt = sim.lastTs ? Math.min(0.085, (ts - sim.lastTs) / 1000) : 0.016;
+        const rawDt = sim.lastTs ? Math.max(0.001, (ts - sim.lastTs) / 1000) : 0.016;
+        const dt = Math.min(0.085, rawDt);
         sim.lastTs = ts;
 
         // Keyboard PCI movement
@@ -2882,8 +3995,9 @@
           }
         } else if (sim.phase === 'flight' && sim.flight) {
           const fl = sim.flight;
-          fl.playTime += dt * 1.05;
-          sim.swingAngle = Math.min(0.95, sim.swingAngle + dt * 5.2);
+          const flightDt = Math.min(0.28, rawDt);
+          fl.playTime += flightDt * 1.05;
+          sim.swingAngle = Math.min(0.95, sim.swingAngle + flightDt * 5.2);
 
           if (fl.wallHit && !fl.wallThudPlayed && fl.wallHitTime && fl.playTime >= fl.wallHitTime) {
             fl.wallThudPlayed = true;
@@ -3248,6 +4362,19 @@
         };
       }
 
+      function syncVenuePhotoCard(stSpec) {
+        if (!stSpec) return;
+        if (venuePhotoImg && stSpec.photo) {
+          venuePhotoImg.src = stSpec.photo;
+          venuePhotoImg.alt = `${stSpec.name} stadium reference photo`;
+        }
+        if (venuePhotoTitle) venuePhotoTitle.textContent = stSpec.name || stSpec.shortName;
+        if (venuePhotoDims) venuePhotoDims.textContent = stSpec.dimsLabel || '';
+        if (venuePhotoNote) {
+          venuePhotoNote.textContent = stSpec.landmarkNote || '';
+        }
+      }
+
       function renderStadiumButtonsForTier(tierKey, selectedId) {
         const tierIds = STADIUM_TIERS[tierKey] || STADIUM_TIERS.college;
         activeStadiumTier = tierKey;
@@ -3258,6 +4385,15 @@
             b.setAttribute('aria-pressed', String(b.dataset.tier === tierKey));
           });
         }
+        if (stadiumSelect) {
+          stadiumSelect.innerHTML = tierIds
+            .map((id) => {
+              const stSpec = STADIUMS[id];
+              return `<option value="${escapeHtml(id)}"${id === activeStadiumId ? ' selected' : ''}>${escapeHtml(stSpec ? stSpec.name : id)}</option>`;
+            })
+            .join('');
+          stadiumSelect.value = activeStadiumId;
+        }
         if (stadiumTabs) {
           stadiumTabs.innerHTML = tierIds
             .map((id) => {
@@ -3266,7 +4402,11 @@
             })
             .join('');
         }
-        if (engine3D) engine3D.setStadium(activeStadiumId);
+        syncVenuePhotoCard(STADIUMS[activeStadiumId]);
+        if (engine3D) {
+          engine3D.setStadium(activeStadiumId);
+          if (engine3D.setLighting) engine3D.setLighting(activeLightingMode);
+        }
         drawSprayChart();
       }
 
@@ -3284,6 +4424,26 @@
         };
       }
 
+      if (stadiumSelect) {
+        stadiumSelect.onchange = () => {
+          cageEngaged = true;
+          const nextId = stadiumSelect.value;
+          if (!STADIUMS[nextId]) return;
+          activeStadiumId = nextId;
+          activeStadiumTier = STADIUMS[nextId].tier || activeStadiumTier;
+          syncVenuePhotoCard(STADIUMS[nextId]);
+          if (engine3D) {
+            engine3D.setStadium(activeStadiumId);
+            if (engine3D.setLighting) engine3D.setLighting(activeLightingMode);
+          }
+          drawSprayChart();
+          const stSpec = STADIUMS[activeStadiumId];
+          if (pitchNote && stSpec) {
+            pitchNote.textContent = `${stSpec.dimsLabel} · Scouted stadium active.`;
+          }
+        };
+      }
+
       if (stadiumTabs) {
         stadiumTabs.onclick = (e) => {
           const btn = e.target.closest('[data-stadium]');
@@ -3293,9 +4453,29 @@
           if (!STADIUMS[nextId]) return;
           activeStadiumId = nextId;
           activeStadiumTier = STADIUMS[nextId].tier || activeStadiumTier;
+          if (stadiumSelect) stadiumSelect.value = activeStadiumId;
           stadiumTabs.querySelectorAll('[data-stadium]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-          if (engine3D) engine3D.setStadium(activeStadiumId);
+          syncVenuePhotoCard(STADIUMS[nextId]);
+          if (engine3D) {
+            engine3D.setStadium(activeStadiumId);
+            if (engine3D.setLighting) engine3D.setLighting(activeLightingMode);
+          }
           drawSprayChart();
+        };
+      }
+
+      if (lightingTabs) {
+        lightingTabs.onclick = (e) => {
+          const btn = e.target.closest('[data-light]');
+          if (!btn) return;
+          cageEngaged = true;
+          activeLightingMode = btn.dataset.light || 'auto';
+          lightingTabs.querySelectorAll('[data-light]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          if (engine3D && engine3D.setLighting) engine3D.setLighting(activeLightingMode);
+          if (pitchNote) {
+            const label = activeLightingMode === 'auto' ? 'Stadium Default' : activeLightingMode.toUpperCase();
+            pitchNote.textContent = `Ballpark lighting set to ${label}.`;
+          }
         };
       }
 
@@ -3602,7 +4782,7 @@
           <li>
             <article class="card scenario-card">
               <div>
-                <div class="card-diagram-thumb">${renderDiagramSvg(s.diagram, 1)}</div>
+                <div class="card-diagram-thumb" data-anim-sid="${escapeHtml(s.id)}"></div>
                 <div class="meta-line">
                   <span>${escapeHtml(s.categoryLabel)}</span>
                   <span aria-hidden="true">·</span>
@@ -3623,6 +4803,11 @@
           </li>`;
         })
         .join('');
+
+      pageItems.forEach((s) => {
+        const thumb = listEl.querySelector(`[data-anim-sid="${s.id}"]`);
+        if (thumb) mountAnimatedScenarioStage(thumb, s.diagram, { step: 1, compact: true });
+      });
     }
 
     async function fetchAndRender() {
@@ -3800,8 +4985,15 @@
         `${scenario.diagram?.callout || ''} — ${scenario.keyRule}`
       ];
 
+      let detailStageCtrl = null;
       const setDetailStep = (idx) => {
-        if (stage) stage.innerHTML = renderDiagramSvg(scenario.diagram, idx);
+        if (stage) {
+          if (!detailStageCtrl) {
+            detailStageCtrl = mountAnimatedScenarioStage(stage, scenario.diagram, { step: idx });
+          } else {
+            detailStageCtrl.setStep(idx);
+          }
+        }
         if (capEl) capEl.textContent = stepDescriptions[idx] || stepDescriptions[1];
         if (stepGroup) {
           stepGroup.querySelectorAll('[data-dstep]').forEach((b) => {
@@ -4435,8 +5627,9 @@
         const chosenStadium = pStadiumEl ? pStadiumEl.value : 'sdsu';
         const tierMap = {
           fenway: 'pro', petco: 'pro', coors: 'pro', oracle: 'pro', wrigley: 'pro', yankee: 'pro',
-          sdsu: 'college', usc: 'college', 'pk-park': 'college', stanford: 'college', ucsb: 'college', 'cal-poly': 'college',
-          'hs-corona': 'hs', 'hs-rb': 'hs', 'hs-tp': 'hs', 'hs-cchs': 'hs', 'hs-eastlake': 'hs',
+          sdsu: 'college', ucsb: 'college', 'cal-poly': 'college', 'pk-park': 'college', 'sc-founders': 'college',
+          stanford: 'college', usd: 'college', tcu: 'college', byu: 'college', 'app-state': 'college', vandy: 'college', ucla: 'college',
+          'hs-corona': 'hs', 'hs-eastlake': 'hs', 'hs-rb': 'hs',
           cage: 'cage'
         };
         const preferences = {
@@ -4960,7 +6153,6 @@
     drawer.setAttribute('aria-labelledby', 'jax-drawer-title');
     drawer.hidden = true;
     drawer.innerHTML = `
-      <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
       <div class="jax-drawer-head">
         <div style="display:flex;align-items:center;gap:0.65rem;">
           <span class="jax-avatar jax-avatar--lg" aria-hidden="true">JX</span>

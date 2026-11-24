@@ -47,7 +47,6 @@
       </button>
     </div>
   </div>
-  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <section class="subpage-banner" aria-label="My Playbook Workspace">
@@ -73,8 +72,7 @@
     <a href="register.html" style="font-weight:700;">Sign Up</a>
   </p>
 
-  <section id="playbook-ai-card" class="card card-led-top" hidden style="margin-bottom:1.5rem;" aria-labelledby="pb-ai-heading">
-    <div class="rgb-led-rail" aria-hidden="true"></div>
+  <section id="playbook-ai-card" class="card" hidden style="margin-bottom:1.5rem;" aria-labelledby="pb-ai-heading">
     <div class="playbook-ai-head">
       <div>
         <div class="kicker-line" id="pb-ai-kicker">AI Player Checkup Profile</div>
@@ -91,8 +89,7 @@
     <div id="pb-ai-links" class="pb-ai-links-grid"></div>
   </section>
 
-  <section id="playbook-prefs-card" class="card card-led-top" hidden style="margin-bottom:1.5rem;" aria-labelledby="pb-prefs-heading">
-    <div class="rgb-led-rail" aria-hidden="true"></div>
+  <section id="playbook-prefs-card" class="card" hidden style="margin-bottom:1.5rem;" aria-labelledby="pb-prefs-heading">
     <div class="playbook-ai-head" style="margin-bottom:0.85rem;">
       <div>
         <div class="kicker-line">Saved Account Profile · Synced Across Devices</div>
@@ -136,18 +133,22 @@
           </optgroup>
           <optgroup label="College Ballparks">
             <option value="sdsu" selected>Tony Gwynn Stadium (SDSU)</option>
-            <option value="usc">Dedeaux Field (USC)</option>
-            <option value="pk-park">PK Park (Oregon)</option>
-            <option value="stanford">Klein Field Sunken Diamond (Stanford)</option>
             <option value="ucsb">Caesar Uyesaka Stadium (UC Santa Barbara)</option>
-            <option value="cal-poly">Baggett Stadium (Cal Poly)</option>
+            <option value="cal-poly">Scolinos Field (Cal Poly Pomona)</option>
+            <option value="pk-park">PK Park (Oregon)</option>
+            <option value="sc-founders">Founders Park (South Carolina)</option>
+            <option value="stanford">Klein Field Sunken Diamond (Stanford)</option>
+            <option value="usd">Fowler Park (USD)</option>
+            <option value="tcu">Lupton Stadium (TCU)</option>
+            <option value="byu">Larry H. Miller Field (BYU)</option>
+            <option value="app-state">Beaver Field (App State)</option>
+            <option value="vandy">Hawkins Field (Vanderbilt)</option>
+            <option value="ucla">Jackie Robinson Stadium (UCLA)</option>
           </optgroup>
           <optgroup label="California &amp; San Diego HS Fields">
             <option value="hs-corona">Corona High School (Panthers, CA)</option>
-            <option value="hs-rb">Rancho Bernardo High School (SD)</option>
-            <option value="hs-tp">Torrey Pines High School (SD)</option>
-            <option value="hs-cchs">Cathedral Catholic High School (SD)</option>
             <option value="hs-eastlake">Eastlake High School (Titans, SD)</option>
+            <option value="hs-rb">Rancho Bernardo High School (SD)</option>
           </optgroup>
           <optgroup label="Practice Facility">
             <option value="cage">Indoor Batting Cage</option>
@@ -173,8 +174,7 @@
   </section>
 
   <div class="playbook-layout">
-    <section class="card card-led-top" aria-labelledby="add-heading">
-      <div class="rgb-led-rail" aria-hidden="true"></div>
+    <section class="card" aria-labelledby="add-heading">
       <h2 id="add-heading">Add a Play Note</h2>
       <form id="playbook-form" class="form-stack" onsubmit="return false;" novalidate>
         <input type="hidden" id="playbook-edit-id" value="">

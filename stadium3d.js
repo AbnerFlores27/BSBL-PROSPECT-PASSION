@@ -408,29 +408,29 @@ function makeParkWallTexture(stSpec, maxAniso) {
     ctx.textAlign = 'center';
     ctx.fillText('COORS FIELD · ELEVATION 5,280 FT · BLAKE STREET', 1024, 220);
   } else if (id === 'pk-park') {
-    // Oregon Ducks Deep Forest Green + Lightning Yellow Stripe
+    // Oregon Ducks PK Park: Deep Forest Green + Lightning Yellow Stripe + PAT KILKENNY PARK
+    ctx.fillStyle = '#0f281d';
+    ctx.fillRect(0, 0, 2048, 256);
     ctx.fillStyle = '#154733';
-    ctx.fillRect(0, 0, 2048, 256);
-    ctx.fillStyle = '#0f3022';
-    ctx.fillRect(0, 180, 2048, 76);
+    ctx.fillRect(0, 176, 2048, 80);
     ctx.fillStyle = '#fee123';
-    ctx.fillRect(0, 172, 2048, 8);
+    ctx.fillRect(0, 168, 2048, 8);
     ctx.font = '900 28px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('OREGON DUCKS · PK PARK · EUGENE, OREGON', 1024, 220);
+    ctx.fillText('OREGON DUCKS  ·  PAT KILKENNY PARK  ·  EUGENE, OR', 1024, 220);
   } else if (id === 'stanford') {
-    // Stanford Cardinal Red Wall + Palo Alto Brick Knee Base
-    ctx.fillStyle = '#8c1515';
+    // Stanford Klein Field at Sunken Diamond: Deep Cardinal Green Wall + Cardinal Trim
+    ctx.fillStyle = '#14442b';
     ctx.fillRect(0, 0, 2048, 256);
-    ctx.fillStyle = '#5e1414';
-    ctx.fillRect(0, 186, 2048, 70);
+    ctx.fillStyle = '#8c1515';
+    ctx.fillRect(0, 184, 2048, 72);
     ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(0, 180, 2048, 6);
+    ctx.fillRect(0, 178, 2048, 6);
     ctx.font = '900 28px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('STANFORD CARDINAL · SUNKEN DIAMOND · THE FARM', 1024, 222);
+    ctx.fillText('STANFORD CARDINAL  ·  KLEIN FIELD AT SUNKEN DIAMOND', 1024, 222);
   } else if (id === 'ucsb') {
-    // UC Santa Barbara Gaucho Navy & Gold Coastal Wall
+    // UC Santa Barbara Caesar Uyesaka: Royal Blue (#003660) Wall & Gold Accent
     ctx.fillStyle = '#003660';
     ctx.fillRect(0, 0, 2048, 256);
     ctx.fillStyle = '#002240';
@@ -439,42 +439,115 @@ function makeParkWallTexture(stSpec, maxAniso) {
     ctx.fillRect(0, 174, 2048, 8);
     ctx.font = '900 28px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('UC SANTA BARBARA · CAESAR UYESAKA STADIUM', 1024, 220);
+    ctx.fillText('UC SANTA BARBARA GAUCHOS  ·  CAESAR UYESAKA STADIUM', 1024, 220);
   } else if (id === 'cal-poly') {
-    // Cal Poly Mustangs Forest Green & Mustang Gold Wall
-    ctx.fillStyle = '#154734';
+    // Cal Poly Pomona Scolinos Field: Forest Green Wall + Bronco Gold "CAL POLY POMONA · SCOLINOS FIELD"
+    ctx.fillStyle = '#14442b';
     ctx.fillRect(0, 0, 2048, 256);
-    ctx.fillStyle = '#0d2e21';
+    ctx.fillStyle = '#0c2b1b';
     ctx.fillRect(0, 182, 2048, 74);
-    ctx.fillStyle = '#bd8b13';
+    ctx.fillStyle = '#eab308';
     ctx.fillRect(0, 174, 2048, 8);
     ctx.font = '900 28px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('CAL POLY MUSTANGS · BAGGETT STADIUM · SLO', 1024, 220);
-  } else if (id === 'usc') {
-    // USC Trojans Cardinal & Gold Dedeaux Field Championship Wall
-    ctx.fillStyle = '#18442f';
-    ctx.fillRect(0, 0, 2048, 256);
-    ctx.fillStyle = '#990000';
-    ctx.fillRect(0, 166, 2048, 90);
-    ctx.fillStyle = '#ffcc00';
-    ctx.fillRect(0, 160, 2048, 9);
-    ctx.fillStyle = '#ffcc00';
-    ctx.font = '900 28px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('USC TROJANS  ·  DEDEAUX FIELD  ·  12 NATIONAL CHAMPIONSHIPS', 1024, 218);
+    ctx.fillText('CAL POLY POMONA  ·  SCOLINOS FIELD  ·  BRONCOS', 1024, 220);
   } else if (id === 'sdsu') {
-    // SDSU Tony Gwynn Stadium Aztec Scarlet & Matte Black Championship Wall
-    ctx.fillStyle = '#111827';
+    // SDSU Tony Gwynn Stadium: Deep Green Outfield Wall + Iconic Red "TONY GWYNN STADIUM" CF Banner & #19
+    ctx.fillStyle = '#124229';
     ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#0d2c1b';
+    ctx.fillRect(0, 170, 2048, 86);
     ctx.fillStyle = '#a6192e';
-    ctx.fillRect(0, 168, 2048, 88);
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(0, 164, 2048, 5);
+    ctx.fillRect(720, 166, 608, 78);
+    ctx.strokeStyle = '#f8fafc';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(720, 166, 608, 78);
     ctx.fillStyle = '#f8fafc';
     ctx.font = '900 28px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('SAN DIEGO STATE AZTECS  ·  TONY GWYNN STADIUM  ·  #19 RETIRED', 1024, 220);
+    ctx.fillText('TONY GWYNN STADIUM  ·  SAN DIEGO STATE  ·  #19', 1024, 215);
+  } else if (id === 'sc-founders') {
+    // South Carolina Founders Park: Deep Green Wall + Yellow Cap + Garnet Banner
+    ctx.fillStyle = '#103b25';
+    ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#73000a';
+    ctx.fillRect(0, 176, 2048, 80);
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(0, 168, 2048, 8);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('FOUNDERS PARK  ·  HOME OF CAROLINA GAMECOCKS BASEBALL', 1024, 220);
+  } else if (id === 'usd') {
+    // USD Fowler Park / Cunningham Field: Torero Navy Wall + Yellow Coping + "33 CUNNINGHAM FIELD"
+    ctx.fillStyle = '#0f2847';
+    ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#09182e';
+    ctx.fillRect(0, 178, 2048, 78);
+    ctx.fillStyle = '#75b2dd';
+    ctx.fillRect(0, 170, 2048, 8);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('33  CUNNINGHAM FIELD  ·  USD TOREROS  ·  FOWLER PARK', 1024, 220);
+  } else if (id === 'tcu') {
+    // TCU Lupton Stadium: Deep Forest Green + Horned Frog Purple & Big 12 Marks
+    ctx.fillStyle = '#103622';
+    ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#4d1979';
+    ctx.fillRect(0, 176, 2048, 80);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(0, 170, 2048, 6);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('TCU HORNED FROGS  ·  CHARLIE & MARIE LUPTON STADIUM', 1024, 220);
+  } else if (id === 'byu') {
+    // BYU Larry H. Miller Field: Royal Cougar Blue Wall
+    ctx.fillStyle = '#002e5d';
+    ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#001e3c';
+    ctx.fillRect(0, 180, 2048, 76);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 172, 2048, 8);
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('BYU COUGARS  ·  LARRY H. MILLER FIELD  ·  PROVO, UT', 1024, 220);
+  } else if (id === 'app-state') {
+    // App State Beaver Field: Deep Charcoal/Maroon Outfield Fence + Gold Line
+    ctx.fillStyle = '#2d141a';
+    ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#181416';
+    ctx.fillRect(0, 180, 2048, 76);
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(0, 172, 2048, 8);
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('APP STATE MOUNTAINEERS  ·  JIM & BETTIE SMITH STADIUM', 1024, 220);
+  } else if (id === 'vandy') {
+    // Vanderbilt Hawkins Field: Iconic 35-ft Left-Field Monster Wall + Black/Vandy Gold Band
+    ctx.fillStyle = '#1c3e2b';
+    ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 174, 2048, 82);
+    ctx.fillStyle = '#cfae70';
+    ctx.fillRect(0, 168, 2048, 7);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('VANDERBILT COMMODORES  ·  HAWKINS FIELD  ·  VANDYBOYS', 1024, 220);
+  } else if (id === 'ucla') {
+    // UCLA Jackie Robinson Stadium: Deep Green Wall + #13 & #42 + UCLA Gold Band
+    ctx.fillStyle = '#113c26';
+    ctx.fillRect(0, 0, 2048, 256);
+    ctx.fillStyle = '#2774ae';
+    ctx.fillRect(0, 184, 2048, 72);
+    ctx.fillStyle = '#ffd100';
+    ctx.fillRect(0, 176, 2048, 8);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('UCLA BRUINS  ·  JACKIE ROBINSON STADIUM  ·  #42 RETIRED', 1024, 220);
   } else {
     ctx.strokeStyle = 'rgba(255,255,255,0.12)';
     ctx.lineWidth = 3;
@@ -548,6 +621,49 @@ function makeCollegeVideoboardTexture(title, sub1, sub2, bgHex, accentHex, maxAn
   ctx.font = 'bold 14px sans-serif';
   ctx.fillText('RAPSODO HITTING 2.0 · LIVE TELEMETRY', 256, 224);
 
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = maxAniso;
+  return tex;
+}
+
+function makeTurfStencilTexture(label, fgHex, outlineHex, shapeType, maxAniso) {
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 512, 256);
+  ctx.save();
+  ctx.translate(256, 128);
+  if (shapeType === 'oval') {
+    ctx.fillStyle = outlineHex || '#002e5d';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 175, 96, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 8;
+    ctx.stroke();
+  } else if (shapeType === 'ring') {
+    ctx.strokeStyle = fgHex;
+    ctx.lineWidth = 42;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 130, 86, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  if (shapeType !== 'ring') {
+    const isScript = shapeType === 'script';
+    ctx.font = isScript ? 'italic 900 108px Georgia, serif' : '900 94px sans-serif';
+    if (outlineHex && shapeType !== 'oval') {
+      ctx.strokeStyle = outlineHex;
+      ctx.lineWidth = 14;
+      ctx.strokeText(label, 0, 4);
+    }
+    ctx.fillStyle = fgHex;
+    ctx.fillText(label, 0, 4);
+  }
+  ctx.restore();
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = maxAniso;
@@ -1838,6 +1954,7 @@ function makeSculptedCleatMesh(mat, scale = 1.0) {
 function buildStadiumLightTowers(stSpec, towerAngles, concreteMat, steelMat) {
   const grp = new THREE.Group();
   const bulbMat = new THREE.MeshBasicMaterial({ color: '#f8fafc' });
+  const beamMats = [];
   const frameMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.46, metalness: 0.52 });
 
   const colsPerBank = 6;
@@ -1905,23 +2022,24 @@ function buildStadiumLightTowers(stSpec, towerAngles, concreteMat, steelMat) {
     const coneGeom = new THREE.ConeGeometry(34, 155, 18, 1, true);
     coneGeom.translate(0, -77.5, 0);
     coneGeom.rotateX(-Math.PI / 2);
-    const beamCone = new THREE.Mesh(
-      coneGeom,
-      new THREE.MeshBasicMaterial({
-        color: '#e0f2fe',
-        transparent: true,
-        opacity: 0.032,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending
-      })
-    );
+    const beamMat = new THREE.MeshBasicMaterial({
+      color: '#e0f2fe',
+      transparent: true,
+      opacity: 0.035,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending
+    });
+    beamMats.push(beamMat);
+    const beamCone = new THREE.Mesh(coneGeom, beamMat);
     beamCone.position.set(0, 0, 1.5);
     headGrp.add(beamCone);
   }
   bulbs.instanceMatrix.needsUpdate = true;
   bulbs.computeBoundingSphere();
   grp.add(bulbs);
+  grp.userData.bulbMat = bulbMat;
+  grp.userData.beamMats = beamMats;
   return grp;
 }
 
@@ -3336,16 +3454,20 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       wrigley: '#0c3b2e',
       yankee: '#0d2240',
       sdsu: '#a6192e',
-      usc: '#990000',
-      'pk-park': '#154733',
-      stanford: '#8c1515',
       ucsb: '#003660',
-      'cal-poly': '#154734',
+      'cal-poly': '#14442b',
+      'pk-park': '#154733',
+      'sc-founders': '#73000a',
+      stanford: '#8c1515',
+      usd: '#0f2847',
+      tcu: '#4d1979',
+      byu: '#002e5d',
+      'app-state': '#2d141a',
+      vandy: '#1c3e2b',
+      ucla: '#113c26',
+      'hs-eastlake': '#0f294a',
       'hs-corona': '#7f1d1d',
-      'hs-rb': '#0f294a',
-      'hs-tp': '#991b1b',
-      'hs-cchs': '#6b1414',
-      'hs-eastlake': '#1e40af'
+      'hs-rb': '#133a24'
     };
     const chairPalette = {
       fenway: '#166534',
@@ -3354,40 +3476,45 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       oracle: '#c2410c',
       wrigley: '#15803d',
       yankee: '#1e3a8a',
-      sdsu: '#18181b',
-      usc: '#990000',
-      'pk-park': '#154733',
-      stanford: '#8c1515',
+      sdsu: '#991b1b',
       ucsb: '#003660',
       'cal-poly': '#154734',
+      'pk-park': '#154733',
+      'sc-founders': '#73000a',
+      stanford: '#8c1515',
+      usd: '#0f2847',
+      tcu: '#3b0764',
+      byu: '#002e5d',
+      'app-state': '#27272a',
+      vandy: '#1c1917',
+      ucla: '#1d4ed8',
+      'hs-eastlake': '#475569',
       'hs-corona': '#475569',
-      'hs-rb': '#475569',
-      'hs-tp': '#475569',
-      'hs-cchs': '#475569',
-      'hs-eastlake': '#475569'
+      'hs-rb': '#475569'
     };
 
     const accentColor = stSpec.wallCap || '#facc15';
     const chairHex = chairPalette[id] || '#1d4ed8';
     const padHex = backWallPalette[id] || '#102a4e';
 
-    // Park-Specific Architectural Masonry/Facade Material (Brick, Sandstone, Concrete)
+    // Park-Specific Architectural Masonry/Facade Material (Brick, Sandstone, Concrete, Spanish Stucco)
     let masonryTex = null;
     if (
       id === 'fenway' ||
       id === 'wrigley' ||
       id === 'oracle' ||
-      id === 'usc' ||
+      id === 'sc-founders' ||
+      id === 'app-state' ||
       id === 'petco' ||
       id === 'coors' ||
       id === 'stanford' ||
-      id === 'hs-corona' ||
-      id === 'hs-cchs'
+      id === 'hs-corona'
     ) {
-      const bHex = id === 'usc' ? '#8c2d23' : id === 'stanford' ? '#8c3b2b' : '#7f2f22';
+      const bHex = id === 'sc-founders' || id === 'app-state' ? '#7a2722' : id === 'stanford' ? '#8c3b2b' : '#7f2f22';
       masonryTex = makeMasonryTexture(bHex, '#cbbcb0', false, maxAniso);
-    } else if (id === 'yankee' || id === 'sdsu') {
-      masonryTex = makeMasonryTexture(id === 'sdsu' ? '#cbd5e1' : '#dbd7cc', '#8b96a6', true, maxAniso);
+    } else if (id === 'yankee' || id === 'sdsu' || id === 'usd' || id === 'byu') {
+      const sHex = id === 'sdsu' || id === 'usd' ? '#e7dec8' : id === 'byu' ? '#c8a97e' : '#dbd7cc';
+      masonryTex = makeMasonryTexture(sHex, '#8b96a6', true, maxAniso);
     }
     const exteriorMat = masonryTex
       ? new THREE.MeshStandardMaterial({ map: masonryTex, roughness: 0.82, side: THREE.DoubleSide })
@@ -3568,10 +3695,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
 
     // --- OUTFIELD GRANDSTANDS / BERMS / DECKS PER PARK ---
     if (isHs) {
-      // High School Fields (CA / San Diego): Open grass outfields, dugout benches, varsity aluminum bleachers along 1B/3B lines!
-      if (id === 'hs-tp' || id === 'hs-cchs') {
-        grp.add(buildOutfieldBerm(stSpec.wallDist, 4, 38, 2.0, 12, -0.72, 0.72, 44, grassBermMat, concreteMat));
-      }
+      // High School Fields (Eastlake, Corona, RB): Open grass outfields, dugout benches, varsity aluminum bleachers along 1B/3B lines!
       [-1, 1].forEach((side) => {
         const b1 = buildAluminumBleacherSection(58, 5, steelMat, seatsMat);
         b1.position.set(side * 68, 0, 6);
@@ -3579,33 +3703,34 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         grp.add(b1);
       });
     } else if (id === 'sdsu') {
-      // SDSU TONY GWYNN STADIUM: Aztec scarlet/black LF seating pavilion + CF Tony Gwynn Plaza hill + Mission Valley palms!
-      addBowlSection(stSpec.wallDist, { startPhi: -0.77, endPhi: -0.26, dOff: 6, dSpan: 40, y0: 8, y1: 24, steps: 6, yBase: 0 });
-      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 44, 2.8, 17, 0.22, 0.74, 30, grassBermMat, exteriorMat));
-    } else if (id === 'usc') {
-      // USC DEDEAUX FIELD: Red-brick Cardinal & Gold stands in LF/RF alleys overlooking Exposition Park & Coliseum arches!
-      addBowlSection(stSpec.wallDist, { startPhi: -0.76, endPhi: -0.30, dOff: 7, dSpan: 36, y0: 8, y1: 22, steps: 6, yBase: 0 });
-      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 42, 2.5, 15, 0.24, 0.74, 28, grassBermMat, exteriorMat));
+      // SDSU TONY GWYNN STADIUM: Aztec scarlet/black LF seating pavilion + CF Tony Gwynn Plaza hill
+      addBowlSection(stSpec.wallDist, { startPhi: -0.77, endPhi: -0.26, dOff: 6, dSpan: 38, y0: 8, y1: 22, steps: 6, yBase: 0 });
+      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 42, 2.8, 16, 0.22, 0.74, 28, grassBermMat, exteriorMat));
+    } else if (id === 'sc-founders') {
+      // SOUTH CAROLINA FOUNDERS PARK: Garnet & black LF/RF lower seating pavilions + berm
+      addBowlSection(stSpec.wallDist, { startPhi: -0.77, endPhi: -0.34, dOff: 6, dSpan: 38, y0: 8, y1: 24, steps: 6, yBase: 0 });
+      addBowlSection(stSpec.wallDist, { startPhi: 0.34, endPhi: 0.77, dOff: 6, dSpan: 34, y0: 8, y1: 20, steps: 5, yBase: 0 });
+    } else if (id === 'vandy') {
+      // VANDERBILT HAWKINS FIELD: 35-ft Green LF Monster seats + RCF Commodore bleachers
+      addBowlSection(stSpec.wallDist, { startPhi: -0.77, endPhi: -0.28, dOff: 5, dSpan: 24, y0: 35, y1: 42, yBase: 34, steps: 3, backDepth: 5, rearExtraH: 4 });
+      addBowlSection(stSpec.wallDist, { startPhi: 0.24, endPhi: 0.77, dOff: 8, dSpan: 36, y0: 8, y1: 22, steps: 6, yBase: 0 });
     } else if (id === 'pk-park') {
-      // OREGON PK PARK: Lush emerald grass berms behind LF/CF + cozy Ducks bullpen terrace!
+      // OREGON PK PARK: Lush emerald grass berms behind LF/CF + cozy Ducks bullpen terrace
       grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 44, 3.0, 16, -0.75, -0.20, 28, grassBermMat, concreteMat));
       grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 44, 3.0, 16, 0.20, 0.75, 28, grassBermMat, concreteMat));
     } else if (id === 'stanford') {
-      // STANFORD SUNKEN DIAMOND: Authentic continuous sunken grass berm amphitheater sweeping across the entire outfield!
+      // STANFORD SUNKEN DIAMOND: Authentic continuous sunken grass berm amphitheater sweeping across the entire outfield
       grp.add(buildOutfieldBerm(stSpec.wallDist, 5, 52, 2.5, 21, -0.78, 0.78, 56, grassBermMat, exteriorMat));
-    } else if (id === 'ucsb') {
-      // UCSB CAESAR UYESAKA: Coastal grass viewing berms opening toward Santa Ynez Mountains & Pacific horizon!
-      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 44, 2.5, 15, -0.75, 0.75, 48, grassBermMat, concreteMat));
-    } else if (id === 'cal-poly') {
-      // CAL POLY BAGGETT STADIUM: Open LF lawn berm + right-field hillside bleachers facing Bishop Peak!
-      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 42, 2.5, 16, -0.75, -0.18, 28, grassBermMat, concreteMat));
-      addBowlSection(stSpec.wallDist, { startPhi: 0.34, endPhi: 0.76, dOff: 8, dSpan: 32, y0: 8, y1: 20, steps: 5, yBase: 0 });
+    } else if (id === 'ucsb' || id === 'cal-poly' || id === 'usd' || id === 'tcu' || id === 'byu' || id === 'app-state' || id === 'ucla') {
+      // Open college outfield sightlines opening to Santa Ynez, Pomona hills, Mission Canyon, Wasatch peaks, Blue Ridge autumn woods & Westwood palms!
+      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 36, 2.0, 12, -0.74, -0.22, 24, grassBermMat, concreteMat));
+      grp.add(buildOutfieldBerm(stSpec.wallDist, 6, 36, 2.0, 12, 0.22, 0.74, 24, grassBermMat, concreteMat));
     } else if (id === 'fenway') {
       // FENWAY PARK: Solid Green Monster Top Seats ON TOP of 37-ft LF wall + Low Cozy Right-Center/Right Field Bleachers curving to Pesky's Pole!
       addBowlSection(stSpec.wallDist, { startPhi: -0.77, endPhi: -0.26, dOff: 4, dSpan: 24, y0: 38, y1: 48, yBase: 37, steps: 4, backDepth: 5, rearExtraH: 4 });
       addBowlSection(stSpec.wallDist, { startPhi: 0.08, endPhi: 0.77, dOff: 7, dSpan: 48, y0: 8, y1: 28, steps: 8, yBase: 0 });
     } else if (id === 'petco') {
-      // PETCO PARK (SAN DIEGO): LF & RF sandstone bowls flanking Western Metal Building + famous Park at the Park grass lawn behind LCF/CF!
+      // PETCO PARK (SAN DIEGO): LF & RF sandstone bowls flanking Western Metal Building + Park at the Park grass lawn behind LCF/CF!
       addBowlSection(stSpec.wallDist, { startPhi: -0.56, endPhi: -0.22, dOff: 8, dSpan: 48, y0: 10, y1: 31, steps: 7, yBase: 0 });
       grp.add(buildOutfieldBerm(stSpec.wallDist, 8, 56, 3.0, 22, -0.18, 0.20, 26, grassBermMat, exteriorMat));
       addBowlSection(stSpec.wallDist, { startPhi: 0.22, endPhi: 0.77, dOff: 8, dSpan: 48, y0: 10, y1: 31, steps: 7, yBase: 0 });
@@ -3772,17 +3897,21 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         );
       } else {
         const canopyColor =
-          id === 'sdsu'
-            ? '#111827'
-            : id === 'usc'
-              ? '#990000'
-              : id === 'pk-park'
-                ? '#154733'
+          id === 'pk-park' || id === 'byu'
+            ? '#f1f5f9'
+            : id === 'sdsu'
+              ? '#111827'
+              : id === 'sc-founders'
+                ? '#73000a'
                 : id === 'stanford'
                   ? '#8c1515'
                   : id === 'ucsb'
                     ? '#003660'
-                    : '#154734';
+                    : id === 'tcu'
+                      ? '#4d1979'
+                      : id === 'app-state'
+                        ? '#27272a'
+                        : '#154734';
         const infRoof = new THREE.Mesh(
           createSweptStripGeometry(() => infRadiusFn() + 34, () => infRadiusFn() + 68, () => 40, () => 44, Math.PI * 0.62, Math.PI * 1.38, 36),
           new THREE.MeshStandardMaterial({ color: canopyColor, roughness: 0.42, side: THREE.DoubleSide })
@@ -3830,6 +3959,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     const lightGroup = buildStadiumLightTowers(stSpec, towerAngles, concreteMat, steelMat);
     if (isHs) lightGroup.scale.set(1, 0.68, 1);
     grp.add(lightGroup);
+    grp.userData.lightGroup = lightGroup;
 
     // 7. Crisp High-Contrast CF Batter's Eye (Essential for picking up white baseball seams on EVERY park!) + Scoreboards
     const cfDist = stSpec.wallDist(0);
@@ -3955,7 +4085,37 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     const trunkMat = new THREE.MeshStandardMaterial({ color: '#4b3626', roughness: 0.92 });
     const leafMat = new THREE.MeshStandardMaterial({ roughness: 0.8 });
 
-    // 8. Signature Stadium Landmarks, Coastal Skylines & Authentic Mountain Backdrops
+    const addTurfDecal = (tex, x, z, w, h, rotY = 0) => {
+      const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, h),
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.92, depthWrite: false })
+      );
+      m.rotation.x = -Math.PI / 2;
+      m.rotation.z = rotY;
+      m.position.set(x, 0.058, z);
+      grp.add(m);
+    };
+
+    const addBuilding = (x, z, w, d, h, mat, roofHex, ry = 0) => {
+      const bGrp = new THREE.Group();
+      bGrp.position.set(x, 0, z);
+      bGrp.rotation.y = ry;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+      body.position.y = h * 0.5;
+      bGrp.add(body);
+      if (roofHex) {
+        const roof = new THREE.Mesh(
+          new THREE.BoxGeometry(w + 3, 2.6, d + 3),
+          new THREE.MeshStandardMaterial({ color: roofHex, roughness: 0.58 })
+        );
+        roof.position.y = h + 1.3;
+        bGrp.add(roof);
+      }
+      grp.add(bGrp);
+      return bGrp;
+    };
+
+    // 8. Signature Stadium Landmarks, Turf Stencils, Surrounding Buildings & Real Topographic Backdrops
     if (id === 'fenway') {
       const citgoGrp = new THREE.Group();
       citgoGrp.position.set(-255, 76, -365);
@@ -3975,7 +4135,6 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       citgoGrp.add(signTruss, signBack, redTri);
       grp.add(citgoGrp);
     } else if (id === 'petco') {
-      // Historic Red-Brick Western Metal Supply Building down LF foul line!
       const wmsb = new THREE.Group();
       wmsb.position.set(-244, 0, -252);
       wmsb.rotation.y = 0.78;
@@ -3995,7 +4154,6 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       }
       wmsb.add(bldgMesh, roofCap);
       grp.add(wmsb);
-      // Downtown San Diego Gaslamp skyline & palms beyond Park at the Park
       const towerMat = new THREE.MeshPhysicalMaterial({ color: '#1e293b', roughness: 0.25, metalness: 0.55, clearcoat: 0.5 });
       [[-150, -565, 52, 165], [-60, -610, 60, 210], [85, -595, 54, 185], [195, -550, 48, 145]].forEach(([tx, tz, tw, th]) => {
         const b = new THREE.Mesh(
@@ -4012,7 +4170,6 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
         grp.add(p);
       });
     } else if (id === 'coors') {
-      // Rockies Snow-Capped Rocky Mountain Massif + CF Pine Timber Plaza & Cascading Waterfall
       grp.add(
         buildMountainRange({
           minDist: 500,
@@ -4155,154 +4312,191 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
       }
       grp.add(viaductGrp);
     } else if (id === 'sdsu') {
-      // SDSU Tony Gwynn Stadium: Iconic Tony Gwynn #19 Plaza Monument, Aztec Scarlet/Black Canopy + Mission Valley Hills & SoCal Palms!
-      const gwynnMon = new THREE.Group();
-      gwynnMon.position.set(-148, 0, -(cfDist + 14));
-      gwynnMon.rotation.y = 0.34;
-      const plinth = new THREE.Mesh(new THREE.BoxGeometry(36, 12, 14), concreteMat);
-      plinth.position.y = 6;
-      const plaqueTex = makeCollegeVideoboardTexture('TONY GWYNN #19', 'MR. PADRE · .338 LIFETIME', 'SAN DIEGO STATE AZTECS', '#111827', '#a6192e', maxAniso);
-      const plaque = new THREE.Mesh(new THREE.PlaneGeometry(32, 18), new THREE.MeshBasicMaterial({ map: plaqueTex }));
-      plaque.position.set(0, 24, 2);
-      const monumentWall = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(makeRoundedRectShape(38, 24, 2), { depth: 4, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 2 }),
-        new THREE.MeshStandardMaterial({ color: '#a6192e', roughness: 0.45 })
-      );
-      monumentWall.position.y = 24;
-      gwynnMon.add(plinth, monumentWall, plaque);
-      grp.add(gwynnMon);
-      grp.add(buildMountainRange({ minDist: 510, depth: 250, maxHeight: 114, phiSpan: 1.18, seed: 2.8, lowHex: '#1f2e22', midHex: '#4b4f3a', peakHex: '#73705a' }));
-      [[-215, -370, 38, 2.8, -1.2], [-100, -(cfDist + 24), 40, -2.1, 1.4], [125, -(cfDist + 22), 36, 2.2, 1.0], [220, -365, 42, -2.8, -1.0]].forEach(([px, pz, ph, cx, cz]) => {
+      // SDSU Tony Gwynn Stadium: Red "TG" foul decals + 3-story Cream Spanish Mission dorms w/ terracotta roofs behind LF/LCF + SoCal Palms!
+      const tgTex = makeTurfStencilTexture('TG', '#a6192e', '#f8fafc', 'block', maxAniso);
+      addTurfDecal(tgTex, -24, -10, 14, 7, 0.65);
+      addTurfDecal(tgTex, 24, -10, 14, 7, -0.65);
+      const stuccoMat = new THREE.MeshStandardMaterial({ color: '#efe5cc', roughness: 0.82 });
+      addBuilding(-195, -(cfDist + 56), 145, 52, 46, stuccoMat, '#a8442a', 0.28);
+      addBuilding(-75, -(cfDist + 76), 108, 44, 38, stuccoMat, '#a8442a', 0.14);
+      grp.add(buildMountainRange({ minDist: 530, depth: 250, maxHeight: 110, phiSpan: 1.18, seed: 2.8, lowHex: '#1f2e22', midHex: '#4b4b38', peakHex: '#6c6855' }));
+      [[-245, -365, 36, 2.8, -1.2], [-145, -(cfDist + 14), 38, -2.1, 1.4], [140, -(cfDist + 18), 36, 2.2, 1.0], [235, -365, 40, -2.8, -1.0]].forEach(([px, pz, ph, cx, cz]) => {
         const p = buildCaliforniaPalmTree(ph, cx, cz);
         p.position.set(px, 0, pz);
         grp.add(p);
       });
-    } else if (id === 'usc') {
-      // USC Dedeaux Field: Iconic LA Memorial Coliseum Peristyle Arches & Olympic Cauldron + Exposition Park Palms + DTLA Skyline!
-      const peristyle = new THREE.Group();
-      peristyle.position.set(160, 0, -(cfDist + 65));
-      peristyle.rotation.y = -0.34;
-      const colBase = new THREE.Mesh(new THREE.BoxGeometry(108, 34, 18), concreteMat);
-      colBase.position.y = 17;
-      for (let ax = -36; ax <= 36; ax += 18) {
-        const archPillar = new THREE.Mesh(new THREE.BoxGeometry(6, 24, 10), new THREE.MeshStandardMaterial({ color: '#e2dcd0', roughness: 0.6 }));
-        archPillar.position.set(ax, 44, 0);
-        peristyle.add(archPillar);
-      }
-      const torchTower = new THREE.Mesh(new THREE.BoxGeometry(14, 70, 14), new THREE.MeshStandardMaterial({ color: '#e2dcd0', roughness: 0.55 }));
-      torchTower.position.set(0, 35, 2);
-      const cauldron = new THREE.Mesh(new THREE.CylinderGeometry(7.5, 4.5, 7, 12), new THREE.MeshStandardMaterial({ color: '#990000', roughness: 0.4 }));
-      cauldron.position.set(0, 72, 2);
-      const flame = new THREE.Mesh(new THREE.ConeGeometry(4.5, 10, 10), new THREE.MeshBasicMaterial({ color: '#fbbf24' }));
-      flame.position.set(0, 79, 2);
-      peristyle.add(colBase, torchTower, cauldron, flame);
-      grp.add(peristyle);
-
-      const dtlaMat = new THREE.MeshPhysicalMaterial({ color: '#1e293b', roughness: 0.28, metalness: 0.55, clearcoat: 0.48 });
-      [[-245, -575, 48, 155], [-160, -610, 56, 205], [70, -620, 52, 180]].forEach(([tx, tz, tw, th]) => {
-        const bldg = new THREE.Mesh(
-          new THREE.ExtrudeGeometry(makeRoundedRectShape(tw, tw * 0.78, 3), { depth: th, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 1.2, bevelSegments: 2 }),
-          dtlaMat
-        );
-        bldg.rotation.x = -Math.PI / 2;
-        bldg.position.set(tx, 0, tz);
-        grp.add(bldg);
-      });
-      [[-225, -360, 40, 2.5, -1.2], [-115, -(cfDist + 26), 38, -2.0, 1.4], [240, -355, 42, -2.5, -1.0]].forEach(([px, pz, ph, cx, cz]) => {
+    } else if (id === 'ucsb') {
+      // UCSB Caesar Uyesaka: Cursive white "Gauchos" foul decals, dense eucalyptus grove behind CF, broad Santa Ynez mountain wall!
+      const gTex = makeTurfStencilTexture('Gauchos', '#f8fafc', '#003660', 'script', maxAniso);
+      addTurfDecal(gTex, -28, -14, 18, 9, 0.72);
+      addTurfDecal(gTex, 28, -14, 18, 9, -0.72);
+      grp.add(buildMountainRange({ minDist: 495, depth: 260, maxHeight: 175, phiSpan: 1.2, seed: 5.2, lowHex: '#253324', midHex: '#59503d', peakHex: '#8d7b66' }));
+      grp.add(buildNaturalPineOrOakGrove([[-210, -370], [-140, -420], [-65, -435], [65, -435], [145, -415], [220, -365]], trunkMat, leafMat, false));
+      [[-235, -340, 34, 2.5, -1], [235, -340, 36, -2.6, 1]].forEach(([px, pz, ph, cx, cz]) => {
         const p = buildCaliforniaPalmTree(ph, cx, cz);
         p.position.set(px, 0, pz);
         grp.add(p);
       });
+    } else if (id === 'cal-poly') {
+      // Cal Poly Pomona Scolinos Field: Gold Bronco head behind plate, cypress row down 3B, green RF track & containers, boxy campus buildings, Pomona rolling green hills!
+      const cppTex = makeTurfStencilTexture('BRONCOS', '#eab308', '#14442b', 'block', maxAniso);
+      addTurfDecal(cppTex, 0, 14, 18, 9, 0);
+      addBuilding(-155, -(cfDist + 95), 92, 42, 34, concreteMat, '#475569', 0.16);
+      addBuilding(-20, -(cfDist + 115), 110, 44, 38, concreteMat, '#475569', 0.08);
+      // Red running track apron outside RF + green team containers down RF line
+      const trackMat = new THREE.MeshStandardMaterial({ color: '#991b1b', roughness: 0.85 });
+      const rfTrack = new THREE.Mesh(new THREE.RingGeometry(48, 70, 32), trackMat);
+      rfTrack.rotation.x = -Math.PI / 2;
+      rfTrack.position.set(270, 0.08, -280);
+      grp.add(rfTrack);
+      addBuilding(138, -110, 18, 34, 11, new THREE.MeshStandardMaterial({ color: '#14442b', roughness: 0.6 }), null, -0.78);
+      grp.add(buildMountainRange({ minDist: 510, depth: 260, maxHeight: 118, phiSpan: 1.2, seed: 6.1, lowHex: '#253523', midHex: '#3f5a34', peakHex: '#637652' }));
+      grp.add(buildNaturalPineOrOakGrove([[-210, -140], [-195, -200], [-180, -260], [-170, -320], [185, -390], [240, -330]], trunkMat, leafMat, true));
     } else if (id === 'pk-park') {
-      // Oregon PK Park: Autzen Stadium bowl silhouette beyond RF + Willamette pines + Coburg foothills!
-      const autzen = new THREE.Group();
-      autzen.position.set(295, 0, -(cfDist + 165));
-      autzen.rotation.y = -0.35;
-      const bowl = new THREE.Mesh(new THREE.CylinderGeometry(135, 115, 74, 28, 1, true, Math.PI * 0.65, Math.PI * 0.9), concreteMat);
-      bowl.position.y = 37;
-      const greenTrim = new THREE.Mesh(new THREE.TorusGeometry(136, 3.5, 8, 28, Math.PI * 0.9), new THREE.MeshStandardMaterial({ color: '#154733', roughness: 0.5 }));
-      greenTrim.rotation.x = Math.PI / 2;
-      greenTrim.rotation.z = Math.PI * 0.15;
-      greenTrim.position.y = 74;
-      autzen.add(bowl, greenTrim);
-      grp.add(autzen);
+      // Oregon PK Park: Giant yellow "O" in CF turf, yellow "DUCKS" behind plate, dark green RF cage canopy + Willamette pines!
+      const oTex = makeTurfStencilTexture('', '#fee123', null, 'ring', maxAniso);
+      addTurfDecal(oTex, 0, -275, 64, 46, 0);
+      const ducksTex = makeTurfStencilTexture('DUCKS', '#fee123', '#154733', 'block', maxAniso);
+      addTurfDecal(ducksTex, 0, 14, 18, 8, 0);
+      addBuilding(110, -45, 22, 68, 18, new THREE.MeshStandardMaterial({ color: '#154733', roughness: 0.5 }), '#0f281d', -0.78);
       grp.add(buildMountainRange({ minDist: 530, depth: 260, maxHeight: 118, phiSpan: 1.15, seed: 4.1, lowHex: '#0d261a', midHex: '#18442e', peakHex: '#335c47' }));
       grp.add(buildNaturalPineOrOakGrove([[-270, -370], [-200, -435], [-115, -475], [85, -475], [315, -365]], trunkMat, leafMat, true));
+    } else if (id === 'sc-founders') {
+      // South Carolina Founders Park: Big garnet/white "SC" behind plate, downtown Columbia skyline silhouettes behind CF + trees!
+      const scTex = makeTurfStencilTexture('SC', '#ffffff', '#990000', 'script', maxAniso);
+      addTurfDecal(scTex, 0, 14, 18, 10, 0);
+      const cityMat = new THREE.MeshPhysicalMaterial({ color: '#334155', roughness: 0.4, metalness: 0.35 });
+      [[-120, -560, 42, 130], [-30, -595, 48, 165], [65, -575, 40, 118], [160, -550, 38, 105]].forEach(([tx, tz, tw, th]) => {
+        addBuilding(tx, tz, tw, 36, th, cityMat, '#1e293b', 0);
+      });
+      grp.add(buildNaturalPineOrOakGrove([[-230, -355], [-150, -430], [-65, -445], [65, -445], [155, -425], [235, -350]], trunkMat, leafMat, false));
     } else if (id === 'stanford') {
-      // Stanford Sunken Diamond: Hoover Tower spire on campus + CA palms + Santa Cruz / Palo Alto hills
+      // Stanford Klein Field at Sunken Diamond: White "9" behind plate, Hoover Tower spire + eucalyptus/oak grove + Coast Range hills
+      const nineTex = makeTurfStencilTexture('9', '#f8fafc', '#8c1515', 'block', maxAniso);
+      addTurfDecal(nineTex, 0, 15, 11, 10, 0);
       const hoover = new THREE.Group();
       hoover.position.set(-185, 0, -(cfDist + 210));
-      const hShaft = new THREE.Mesh(
-        new THREE.ExtrudeGeometry(makeRoundedRectShape(24, 24, 2), { depth: 115, bevelEnabled: false }),
-        new THREE.MeshStandardMaterial({ color: '#e5dcc5', roughness: 0.65 })
-      );
+      const hShaft = new THREE.Mesh(new THREE.ExtrudeGeometry(makeRoundedRectShape(24, 24, 2), { depth: 115, bevelEnabled: false }), new THREE.MeshStandardMaterial({ color: '#e5dcc5', roughness: 0.65 }));
       hShaft.rotation.x = -Math.PI / 2;
       const hDome = new THREE.Mesh(new THREE.SphereGeometry(12, 16, 12), new THREE.MeshStandardMaterial({ color: '#b45309', roughness: 0.42 }));
       hDome.position.y = 118;
       hoover.add(hShaft, hDome);
       grp.add(hoover);
       grp.add(buildMountainRange({ minDist: 540, depth: 250, maxHeight: 112, phiSpan: 1.15, seed: 3.3, lowHex: '#1f2d21', midHex: '#435334', peakHex: '#6c6a4a' }));
-      [[-240, -385, 42, 3, -1.5], [-165, -445, 38, -2, 1.5], [140, -455, 40, 2.5, 1.0], [235, -395, 44, -2.5, -1.5]].forEach(([px, pz, ph, cx, cz]) => {
+      grp.add(buildNaturalPineOrOakGrove([[-230, -365], [-160, -430], [-75, -445], [75, -445], [165, -425], [235, -360]], trunkMat, leafMat, false));
+    } else if (id === 'usd') {
+      // USD Fowler Park: Powder-blue "SD" behind plate, 4-story cream Spanish Mission dorm behind RCF, San Diego canyon hills!
+      const sdTex = makeTurfStencilTexture('SD', '#75b2dd', '#0f2847', 'block', maxAniso);
+      addTurfDecal(sdTex, 0, 14, 15, 9, 0);
+      const missionDorm = new THREE.MeshStandardMaterial({ color: '#f3e7c8', roughness: 0.8 });
+      addBuilding(155, -(cfDist + 36), 145, 48, 52, missionDorm, '#9a3f28', -0.32);
+      grp.add(buildMountainRange({ minDist: 520, depth: 240, maxHeight: 110, phiSpan: 1.18, seed: 4.9, lowHex: '#1f2c22', midHex: '#4b4735', peakHex: '#6f6954' }));
+      [[-215, -345, 36, 2.5, -1], [-115, -(cfDist + 24), 38, -2.0, 1.2], [235, -320, 36, -2.6, 1]].forEach(([px, pz, ph, cx, cz]) => {
         const p = buildCaliforniaPalmTree(ph, cx, cz);
         p.position.set(px, 0, pz);
         grp.add(p);
       });
-    } else if (id === 'ucsb') {
-      // UCSB Caesar Uyesaka: Dramatic Santa Ynez Mountain Wall behind CF + Pacific channel shimmer & coastal palms!
-      grp.add(buildMountainRange({ minDist: 495, depth: 260, maxHeight: 175, phiSpan: 1.2, seed: 5.2, lowHex: '#253324', midHex: '#59503d', peakHex: '#8d7b66' }));
-      const oceanBand = new THREE.Mesh(new THREE.PlaneGeometry(1200, 380), new THREE.MeshPhysicalMaterial({ color: '#0284c7', roughness: 0.16, metalness: 0.25, clearcoat: 0.78 }));
-      oceanBand.rotation.x = -Math.PI / 2;
-      oceanBand.position.set(220, 0.2, -(cfDist + 210));
-      grp.add(oceanBand);
-      [[-215, -365, 36, 2.8, -1], [-125, -430, 34, -2.2, 1.4], [150, -425, 38, 2.4, 1.2], [235, -360, 36, -3, -1]].forEach(([px, pz, ph, cx, cz]) => {
-        const p = buildCaliforniaPalmTree(ph, cx, cz);
-        p.position.set(px, 0, pz);
-        grp.add(p);
-      });
-    } else if (id === 'cal-poly') {
-      // Cal Poly Baggett Stadium: Iconic Volcanic Bishop Peak Crag + Nine Sisters ridge of San Luis Obispo!
+    } else if (id === 'tcu') {
+      // TCU Lupton Stadium: White cursive "Frogs" behind plate + Fort Worth treeline horizon
+      const frogsTex = makeTurfStencilTexture('Frogs', '#ffffff', '#4d1979', 'script', maxAniso);
+      addTurfDecal(frogsTex, 0, 15, 22, 11, 0);
+      grp.add(buildNaturalPineOrOakGrove([[-235, -380], [-145, -445], [145, -445], [235, -380]], trunkMat, leafMat, false));
+    } else if (id === 'byu') {
+      // BYU Larry H. Miller Field: Royal blue oval "Y" behind plate, tan brick indoor fieldhouse behind CF, dramatic snowy Wasatch mountains!
+      const byuTex = makeTurfStencilTexture('Y', '#ffffff', '#002e5d', 'oval', maxAniso);
+      addTurfDecal(byuTex, 0, 15, 20, 11, 0);
+      addBuilding(0, -(cfDist + 95), 148, 66, 56, new THREE.MeshStandardMaterial({ color: '#c4a47c', roughness: 0.78 }), '#92400e', 0);
       grp.add(
         buildMountainRange({
           minDist: 490,
-          depth: 270,
-          maxHeight: 132,
-          phiSpan: 1.2,
-          seed: 6.1,
-          cragPhi: -0.18,
-          cragAmp: 86,
-          lowHex: '#253523',
-          midHex: '#5b563c',
-          peakHex: '#7d7362'
+          depth: 320,
+          maxHeight: 245,
+          phiSpan: 1.24,
+          seed: 7.7,
+          cragPhi: -0.22,
+          cragAmp: 75,
+          lowHex: '#2c302b',
+          midHex: '#475569',
+          peakHex: '#64748b',
+          snowThreshold: 0.44
         })
       );
-      grp.add(buildNaturalPineOrOakGrove([[-255, -340], [-185, -420], [185, -420], [265, -340]], trunkMat, leafMat, false));
+      grp.add(buildNaturalPineOrOakGrove([[-230, -370], [-150, -430], [150, -430], [230, -370]], trunkMat, leafMat, true));
+    } else if (id === 'app-state') {
+      // App State Beaver Field: Gold "APPSTATE" behind plate, giant "A" in CF turf, brick complex + 3B hitting barn + RF pond + autumn Blue Ridge foliage!
+      const appTex = makeTurfStencilTexture('APPSTATE', '#ffcc00', '#111827', 'block', maxAniso);
+      addTurfDecal(appTex, 0, 14, 22, 8, 0);
+      const appCfTex = makeTurfStencilTexture('A', '#ffcc00', '#111827', 'block', maxAniso);
+      addTurfDecal(appCfTex, 0, -275, 58, 44, 0);
+      const autumnMat = new THREE.MeshStandardMaterial({ color: '#d97706', roughness: 0.82 });
+      grp.add(buildNaturalPineOrOakGrove([[-250, -320], [-175, -405], [-75, -445], [75, -445], [175, -405], [250, -320]], trunkMat, autumnMat, false));
+      const rfPond = new THREE.Mesh(
+        new THREE.CircleGeometry(36, 24),
+        new THREE.MeshPhysicalMaterial({ color: '#0369a1', roughness: 0.16, clearcoat: 0.8 })
+      );
+      rfPond.rotation.x = -Math.PI / 2;
+      rfPond.position.set(225, 0.12, -335);
+      grp.add(rfPond);
+      addBuilding(-140, -145, 28, 72, 20, new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 0.7 }), '#18181b', 0.78);
+      grp.add(buildMountainRange({ minDist: 495, depth: 280, maxHeight: 172, phiSpan: 1.24, seed: 8.8, lowHex: '#6d3012', midHex: '#b45309', peakHex: '#d97706' }));
+    } else if (id === 'vandy') {
+      // Vanderbilt Hawkins Field: Cursive white "VandyBoys" behind plate + glowing Hawkins Monster videoboard + downtown Nashville skyline at night!
+      const vbTex = makeTurfStencilTexture('VandyBoys', '#ffffff', '#1c3e2b', 'script', maxAniso);
+      addTurfDecal(vbTex, 0, 16, 26, 10, 0);
+      const nashMat = new THREE.MeshPhysicalMaterial({ color: '#0f172a', roughness: 0.35, metalness: 0.5 });
+      [[140, -560, 44, 155], [220, -540, 52, 185], [295, -510, 40, 130]].forEach(([tx, tz, tw, th]) => {
+        addBuilding(tx, tz, tw, 36, th, nashMat, '#1e293b', 0);
+      });
+    } else if (id === 'ucla') {
+      // UCLA Jackie Robinson Stadium: Gold-trimmed blue "Ucla" script behind plate, 2-tier covered RF batting pavilion, Westwood palms & eucalyptus!
+      const uclaTex = makeTurfStencilTexture('Ucla', '#2774ae', '#ffd100', 'script', maxAniso);
+      addTurfDecal(uclaTex, 0, 15, 24, 11, 0);
+      addBuilding(205, -295, 76, 26, 28, new THREE.MeshStandardMaterial({ color: '#14442b', roughness: 0.65 }), '#0d2c1b', -0.58);
+      [[-225, -340, 38, 2.6, -1], [-140, -(cfDist + 20), 40, -2.1, 1.3], [140, -(cfDist + 20), 38, 2.2, 1.0], [235, -335, 38, -2.5, -1]].forEach(([px, pz, ph, cx, cz]) => {
+        const p = buildCaliforniaPalmTree(ph, cx, cz);
+        p.position.set(px, 0, pz);
+        grp.add(p);
+      });
+      grp.add(buildNaturalPineOrOakGrove([[-90, -445], [0, -455], [90, -445]], trunkMat, leafMat, false));
+    } else if (id === 'hs-eastlake') {
+      // Eastlake HS (San Diego): Bright blue cylindrical EHS water tower beyond LF + campus stucco buildings + palms & Otay hills!
+      const tankMat = new THREE.MeshStandardMaterial({ color: '#1d4ed8', roughness: 0.38, metalness: 0.25 });
+      const waterTank = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 52, 24), tankMat);
+      waterTank.position.set(-205, 26, -340);
+      grp.add(waterTank);
+      const stucco = new THREE.MeshStandardMaterial({ color: '#e2dcd0', roughness: 0.85 });
+      addBuilding(-85, -(cfDist + 55), 62, 34, 24, stucco, '#94a3b8', 0.1);
+      addBuilding(155, -(cfDist + 48), 88, 36, 22, stucco, '#94a3b8', -0.2);
+      grp.add(buildMountainRange({ minDist: 495, depth: 220, maxHeight: 82, phiSpan: 1.15, seed: 9.1, lowHex: '#253526', midHex: '#4f5439', peakHex: '#737054' }));
+      grp.add(buildNaturalPineOrOakGrove([[-155, -405], [60, -415], [140, -395]], trunkMat, leafMat, false));
     } else if (id === 'hs-corona') {
-      // Corona HS (CA): Crimson & Gold varsity diamond + Cleveland National Forest foothills + CA palms
+      // Corona HS (CA): Iconic 5 tall palms behind CF + Inland Empire foothills + school roofs
       grp.add(buildMountainRange({ minDist: 470, depth: 240, maxHeight: 138, phiSpan: 1.15, seed: 7.4, lowHex: '#273222', midHex: '#5c523b', peakHex: '#84745c' }));
-      [[-215, -345, 38, 2.6, -1], [-135, -395, 35, -2.1, 1.4], [155, -390, 36, 2.4, 1.2], [230, -340, 38, -2.4, -1]].forEach(([px, pz, ph, cx, cz]) => {
+      [[-150, -(cfDist + 24), 40, 2.2, -1], [-95, -(cfDist + 26), 38, -1.8, 1.2], [95, -(cfDist + 24), 39, 2.0, 1.0], [165, -(cfDist + 18), 37, -2.2, -1]].forEach(([px, pz, ph, cx, cz]) => {
         const p = buildCaliforniaPalmTree(ph, cx, cz);
         p.position.set(px, 0, pz);
         grp.add(p);
       });
-    } else if (id === 'hs-rb' || id === 'hs-eastlake') {
-      // Rancho Bernardo & Eastlake (San Diego): Rolling chaparral hills + campus buildings + SoCal palms
-      const hillSeed = id === 'hs-rb' ? 8.3 : 9.1;
-      grp.add(buildMountainRange({ minDist: 465, depth: 230, maxHeight: 108, phiSpan: 1.15, seed: hillSeed, lowHex: '#253526', midHex: '#4f5439', peakHex: '#737054' }));
-      [[-205, -340, 35, 2.4, -1], [195, -345, 36, -2.6, 1.2]].forEach(([px, pz, ph, cx, cz]) => {
-        const p = buildCaliforniaPalmTree(ph, cx, cz);
-        p.position.set(px, 0, pz);
-        grp.add(p);
-      });
-      grp.add(buildNaturalPineOrOakGrove([[-255, -280], [-135, -385], [135, -385], [255, -280]], trunkMat, leafMat, false));
     } else {
-      // Torrey Pines & Cathedral Catholic (Coastal San Diego): Sculpted Torrey pine groves, coastal mesas & Del Mar palms
-      grp.add(buildMountainRange({ minDist: 480, depth: 230, maxHeight: 82, phiSpan: 1.12, seed: id === 'hs-tp' ? 10.2 : 11.4, lowHex: '#1f3628', midHex: '#3f5a47', peakHex: '#647664' }));
-      grp.add(buildNaturalPineOrOakGrove([[-250, -305], [-175, -370], [-85, -405], [95, -405], [185, -365], [255, -300]], trunkMat, leafMat, true));
-      [[-125, -385, 36, 2.2, -1], [135, -385, 35, -2.2, 1.2]].forEach(([px, pz, ph, cx, cz]) => {
-        const p = buildCaliforniaPalmTree(ph, cx, cz);
-        p.position.set(px, 0, pz);
-        grp.add(p);
+      // Rancho Bernardo HS (San Diego): 8-lane bright blue swimming pool complex outside 3B + adjacent Hilltop softball diamond + terracotta-roof neighborhood homes!
+      const poolMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(42, 68),
+        new THREE.MeshPhysicalMaterial({ color: '#0284c7', roughness: 0.14, clearcoat: 0.85 })
+      );
+      poolMesh.rotation.x = -Math.PI / 2;
+      poolMesh.rotation.z = 0.42;
+      poolMesh.position.set(-148, 0.14, -42);
+      grp.add(poolMesh);
+      const sbDirt = new THREE.Mesh(new THREE.CircleGeometry(46, 24), dirtMat);
+      sbDirt.rotation.x = -Math.PI / 2;
+      sbDirt.position.set(78, 0.08, -(cfDist + 95));
+      grp.add(sbDirt);
+      const roofTerr = '#b45309';
+      const stucco = new THREE.MeshStandardMaterial({ color: '#efe5cc', roughness: 0.84 });
+      [[-160, -510], [-90, -525], [-20, -535], [50, -530], [120, -520], [190, -505]].forEach(([hx, hz]) => {
+        addBuilding(hx, hz, 34, 26, 16, stucco, roofTerr, 0.15);
       });
+      grp.add(buildMountainRange({ minDist: 510, depth: 230, maxHeight: 102, phiSpan: 1.15, seed: 8.3, lowHex: '#253526', midHex: '#4f5439', peakHex: '#737054' }));
     }
 
     const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.48, 24, 10), steelMat);
@@ -4393,6 +4587,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   }
 
   let curStadiumId = '';
+  let curLightingMode = 'auto'; // 'auto' | 'morning' | 'day' | 'golden' | 'night'
   let curBatId = '';
   let curCameraMode = 'strike-zone'; // 'strike-zone' | 'fish-eye' | 'show-15' | 'broadcast' | 'swing-lab'
   let curFollowBall = true; // true = Track Ball mid-air; false = Let It Fly from plate
@@ -4461,9 +4656,129 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     curDeliveryMode = mode === 'machine' ? 'machine' : 'pitcher';
   }
 
+  const LIGHTING_PRESETS = {
+    morning: {
+      skyTop: '#2563eb',
+      skyMid: '#7dd3fc',
+      skyLow: '#dbeafe',
+      hemiSky: '#dbeafe',
+      hemiGround: '#1e3a28',
+      hemiInt: 1.05,
+      keyHex: '#fffbeb',
+      keyInt: 2.35,
+      keyPos: [145, 92, 60],
+      rimHex: '#bae6fd',
+      rimInt: 0.72,
+      exposure: 1.15,
+      lightsOn: false
+    },
+    day: {
+      skyTop: '#1d4ed8',
+      skyMid: '#38bdf8',
+      skyLow: '#bae6fd',
+      hemiSky: '#e0f2fe',
+      hemiGround: '#1f492d',
+      hemiInt: 1.18,
+      keyHex: '#fff7e6',
+      keyInt: 2.8,
+      keyPos: [95, 175, 80],
+      rimHex: '#7dd3fc',
+      rimInt: 0.85,
+      exposure: 1.2,
+      lightsOn: false
+    },
+    golden: {
+      skyTop: '#1e293b',
+      skyMid: '#b45309',
+      skyLow: '#fdba74',
+      hemiSky: '#fed7aa',
+      hemiGround: '#24341f',
+      hemiInt: 0.96,
+      keyHex: '#ffb057',
+      keyInt: 2.6,
+      keyPos: [-165, 58, -110],
+      rimHex: '#fb923c',
+      rimInt: 1.05,
+      exposure: 1.16,
+      lightsOn: false
+    },
+    night: {
+      skyTop: '#020617',
+      skyMid: '#0b1628',
+      skyLow: '#172844',
+      hemiSky: '#93c5fd',
+      hemiGround: '#132a1d',
+      hemiInt: 0.92,
+      keyHex: '#f1f5f9',
+      keyInt: 2.2,
+      keyPos: [70, 155, 45],
+      rimHex: '#38bdf8',
+      rimInt: 0.9,
+      exposure: 1.18,
+      lightsOn: true
+    }
+  };
+
+  function applyLightingToActivePark() {
+    const st = stadiumSpecs[curStadiumId] || stadiumSpecs.sdsu;
+    const isCage = curStadiumId === 'cage';
+    const resolvedMode =
+      isCage
+        ? 'night'
+        : curLightingMode === 'auto'
+          ? st.defaultLighting || 'day'
+          : LIGHTING_PRESETS[curLightingMode]
+            ? curLightingMode
+            : 'day';
+    const p = LIGHTING_PRESETS[resolvedMode] || LIGHTING_PRESETS.day;
+    if (isCage) {
+      paintSky(st.skyTop, st.skyMid, st.skyLow);
+    } else if (curLightingMode === 'auto' && st.skyTop) {
+      paintSky(st.skyTop, st.skyMid, st.skyLow);
+    } else {
+      paintSky(p.skyTop, p.skyMid, p.skyLow);
+    }
+    hemi.color.set(p.hemiSky);
+    hemi.groundColor.set(p.hemiGround);
+    hemi.intensity = p.hemiInt;
+    keyLight.color.set(p.keyHex);
+    keyLight.intensity = p.keyInt;
+    keyLight.position.set(p.keyPos[0], p.keyPos[1], p.keyPos[2]);
+    rimLight.color.set(p.rimHex);
+    rimLight.intensity = p.rimInt;
+    renderer.toneMappingExposure = p.exposure;
+
+    const grp = stadiumGroups[curStadiumId];
+    if (grp && grp.userData && grp.userData.lightGroup) {
+      const lg = grp.userData.lightGroup;
+      if (lg.userData.bulbMat) {
+        lg.userData.bulbMat.color.set(p.lightsOn ? '#ffffff' : '#64748b');
+      }
+      if (Array.isArray(lg.userData.beamMats)) {
+        for (const bm of lg.userData.beamMats) {
+          bm.opacity = p.lightsOn ? 0.052 : 0.0;
+        }
+      }
+    }
+    if (canvas) {
+      canvas.dataset.stadium = curStadiumId;
+      canvas.dataset.lighting = resolvedMode;
+    }
+  }
+
+  function setLighting(mode) {
+    const allowed = ['auto', 'morning', 'day', 'golden', 'night'];
+    const next = allowed.includes(mode) ? mode : 'auto';
+    curLightingMode = next;
+    applyLightingToActivePark();
+  }
+
   function setStadium(id) {
     const resolvedId = stadiumSpecs[id] ? id : 'sdsu';
-    if (curStadiumId === resolvedId && stadiumGroups[resolvedId]) return;
+    if (curStadiumId === resolvedId && stadiumGroups[resolvedId]) {
+      applyLightingToActivePark();
+      return;
+    }
     curStadiumId = resolvedId;
     const activeGrp = getOrBuildStadiumGroup(resolvedId);
     for (const k of Object.keys(stadiumGroups)) {
@@ -4471,12 +4786,18 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
     }
     activeGrp.visible = true;
     const st = stadiumSpecs[resolvedId] || stadiumSpecs.sdsu;
-    paintSky(st.skyTop, st.skyMid, st.skyLow);
+    applyLightingToActivePark();
 
     // Subtle Surface & Dugout Team Trim Character Per Ballpark (bright base tints so textures pop!)
     if (resolvedId === 'coors') {
       turfMat.color.set('#e6f7ea');
       dirtMat.color.set('#efc29a');
+    } else if (resolvedId === 'pk-park') {
+      turfMat.color.set('#ddf7e8');
+      dirtMat.color.set('#7c4a30');
+    } else if (resolvedId === 'app-state') {
+      turfMat.color.set('#e2f2d2');
+      dirtMat.color.set('#963b33');
     } else if (resolvedId === 'hs-corona' || resolvedId === 'hs-rb' || resolvedId === 'hs-eastlake') {
       turfMat.color.set('#e2f2d2');
       dirtMat.color.set('#e3a77d');
@@ -5050,6 +5371,7 @@ export function createStadium3DEngine(canvas, batSpecs, stadiumSpecs) {
   return {
     isSoftwareGl,
     setStadium,
+    setLighting,
     setBat,
     setBatterHand,
     setPitcherHand,

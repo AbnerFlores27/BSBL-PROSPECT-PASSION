@@ -57,7 +57,6 @@
       </button>
     </div>
   </div>
-  <div class="rgb-led-rail" aria-hidden="true"></div>
 </header>
 
 <section class="hero-facility" aria-label="DiamondIQ 3D Stadium & Coaching Showcase">
@@ -70,7 +69,7 @@
   <div class="hero-facility-scrim" aria-hidden="true"></div>
   <div class="hero-facility-inner">
     <div class="hero-facility-copy">
-      <div class="hero-eyebrow">17 Pro, College &amp; San Diego HS Ballparks · 120Hz Physics · Coach Jax AI</div>
+      <div class="hero-eyebrow">22 Photo-Verified Pro, College &amp; CA/SD HS Ballparks · 120Hz Physics · Coach Jax AI</div>
       <h1 class="hero-title-stacked">
         <span class="hero-line-white">Step Into The Box.</span>
         <span class="hero-line-gold">Own Every Pitch &amp; Play.</span>
@@ -122,11 +121,10 @@
 
 <main id="home" class="container container--home">
   <section id="gameday-studio" class="section-block section-block--studio-top gameday-studio" aria-labelledby="studio-heading">
-    <div class="rgb-led-rail rgb-led-rail--studio" aria-hidden="true"></div>
     <div class="studio-topbar">
       <div>
         <h2 id="studio-heading">Gameday 3D Broadcast Studio · Rapsodo &amp; HitTrax</h2>
-        <p>17 unique Pro, College &amp; CA/San Diego HS ballparks + D1 Cage · Authentic maple &amp; BBCOR acoustics · Real ground roll &amp; MLB The Show views.</p>
+        <p>22 photo-verified Pro, College &amp; CA/San Diego HS ballparks + D1 Cage · Authentic maple &amp; BBCOR acoustics · Real ground roll &amp; MLB The Show views.</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;">
         <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
@@ -139,7 +137,7 @@
 
     <div class="studio-body">
       <div id="studio-panel-hitlab">
-        <div class="studio-command-dock" aria-label="Ballpark, Pitch, Wind, Matchup, and Camera Controls">
+        <div class="studio-command-dock" aria-label="Ballpark, Lighting, Pitch, Wind, Matchup, and Camera Controls">
           <div class="command-dock-row">
             <span class="dock-row-tag">01 Venue</span>
             <div class="dock-row-controls">
@@ -147,21 +145,27 @@
                 <span class="venue-label">Tier</span>
                 <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
                   <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (6)</button>
-                  <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (6)</button>
-                  <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (5)</button>
+                  <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (12)</button>
+                  <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (3)</button>
                   <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
                 </div>
               </div>
 
               <div class="venue-group">
-                <span class="venue-label">Ballpark</span>
-                <div class="segmented-group" id="stadium-tabs" role="group" aria-label="Choose stadium or cage">
-                  <button type="button" class="segmented-btn" data-stadium="sdsu" aria-pressed="true">SDSU Tony Gwynn</button>
-                  <button type="button" class="segmented-btn" data-stadium="usc" aria-pressed="false">USC Dedeaux</button>
-                  <button type="button" class="segmented-btn" data-stadium="pk-park" aria-pressed="false">Oregon PK Park</button>
-                  <button type="button" class="segmented-btn" data-stadium="stanford" aria-pressed="false">Stanford</button>
-                  <button type="button" class="segmented-btn" data-stadium="ucsb" aria-pressed="false">UC Santa Barbara</button>
-                  <button type="button" class="segmented-btn" data-stadium="cal-poly" aria-pressed="false">Cal Poly</button>
+                <label class="venue-label" for="stadium-select">Ballpark</label>
+                <select id="stadium-select" class="venue-select" aria-label="Choose stadium or cage">
+                  <option value="sdsu" selected>Tony Gwynn Stadium (SDSU)</option>
+                </select>
+              </div>
+
+              <div class="venue-group">
+                <span class="venue-label">Lighting</span>
+                <div class="segmented-group" id="lighting-tabs" role="group" aria-label="Choose stadium lighting">
+                  <button type="button" class="segmented-btn" data-light="auto" aria-pressed="true">Auto</button>
+                  <button type="button" class="segmented-btn" data-light="morning" aria-pressed="false">Morning</button>
+                  <button type="button" class="segmented-btn" data-light="day" aria-pressed="false">Day</button>
+                  <button type="button" class="segmented-btn" data-light="golden" aria-pressed="false">Golden</button>
+                  <button type="button" class="segmented-btn" data-light="night" aria-pressed="false">Night</button>
                 </div>
               </div>
 
@@ -411,6 +415,16 @@
                 <button type="button" class="segmented-btn" data-rview="zone" aria-pressed="false" style="flex:1;">Rapsodo Zone</button>
               </div>
               <canvas id="hittrax-spray-canvas" width="420" height="236" aria-label="Rapsodo and HitTrax live telemetry display"></canvas>
+            </div>
+
+            <div class="venue-photo-preview" id="venue-photo-preview" aria-label="Scouted stadium reference photo">
+              <img id="venue-photo-img" class="venue-photo-thumb" src="/assets/aistudio/IMG_0498_2fe12e03.jpeg" alt="Tony Gwynn Stadium (SDSU) stadium reference photo" referrerpolicy="no-referrer">
+              <div class="venue-photo-meta">
+                <div class="kicker-line" style="margin-bottom:0.05rem;">Scouted Venue Reference</div>
+                <h3 class="venue-photo-title" id="venue-photo-title">Tony Gwynn Stadium (SDSU)</h3>
+                <div class="venue-photo-dims" id="venue-photo-dims">SDSU Tony Gwynn · 340 LF · 410 CF · 340 RF</div>
+                <p class="venue-photo-note" id="venue-photo-note">Scarlet #19 Gwynn banner, Mission-style dorms beyond RF, Cowles Mtn skyline.</p>
+              </div>
             </div>
 
             <div style="display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center;justify-content:space-between;">

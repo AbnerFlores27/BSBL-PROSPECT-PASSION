@@ -9,6 +9,14 @@ const express = require('express');
 const { GoogleGenAI, Type } = require('@google/genai');
 const { store } = require('./db');
 const { OPENING_DAY_ISO, FUN_FACTS } = require('./data');
+const {
+  VALID_CLINICS,
+  VALID_BATS,
+  VALID_SCENARIOS,
+  isValidGeminiKey,
+  parseDelimitedJaxResponse,
+  buildLocalJaxResponse
+} = require('./jax-engine');
 
 // Load optional .env values if not already provided by the runtime environment
 try {
@@ -39,8 +47,7 @@ const GEMINI_FALLBACK_MODEL = 'gemini-3.1-flash-lite';
 
 function getGeminiApiKey() {
   const k = (process.env.GEMINI_API_KEY || '').trim();
-  if (!k || k === 'undefined' || k === 'null') return '';
-  return k;
+  return isValidGeminiKey(k) ? k : '';
 }
 
 async function callWithTimeout(ai, params, timeoutMs) {
@@ -128,77 +135,6 @@ app.set('trust proxy', 1);
 const PORT = Number(process.env.PORT) || 3000;
 const COOKIE_NAME = 'diamondiq_sid';
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-
-const VALID_CLINICS = {
-  'bat-drag': {
-    title: 'Keep Your Hands Connected (Bat Drag Fix)',
-    domain: 'Hitting Mechanics',
-    scenarioId: 'launch-angle-exit-velo',
-    youtube: { label: 'MLB Bat Drag Fix Drill (YouGoProBaseball)', url: 'https://www.youtube.com/watch?v=bkXB66PSKvw' }
-  },
-  casting: {
-    title: 'Stay Short & Inside the Ball (Stop Casting)',
-    domain: 'Hitting Mechanics',
-    scenarioId: 'launch-angle-exit-velo',
-    youtube: { label: 'Improve Your Bat Path (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=oh9rdbm6ne8' }
-  },
-  'rolling-over': {
-    title: 'Drive Line Drives (Stop Rolling Over)',
-    domain: 'Hitting Mechanics',
-    scenarioId: 'xwoba-metrics',
-    youtube: { label: 'Why You Roll Over & Fix (Ultimate Baseball Training)', url: 'https://www.youtube.com/watch?v=0Qa-GRJ7CE0' }
-  },
-  lunging: {
-    title: 'Stay Balanced on Off-Speed & Timing',
-    domain: 'Hitting Mechanics',
-    scenarioId: 'xwoba-metrics',
-    youtube: { label: 'Keep Your Load with Stride (DNA Sports)', url: 'https://www.youtube.com/watch?v=FQus_SP0DKQ' }
-  },
-  'glove-stab': {
-    title: 'Soft Hands & Infield Funnel Routine',
-    domain: 'Fielding Mechanics',
-    scenarioId: 'force-vs-tag',
-    youtube: { label: 'Infield Hands Routine (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=WoSNZqN5G9E' }
-  },
-  'footwork-cadence': {
-    title: 'Infield Footwork & Smooth Exchanges',
-    domain: 'Fielding Mechanics',
-    scenarioId: 'stealing-second',
-    youtube: { label: 'Infield Footwork Drills (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=0_Z3vLKtVl4' }
-  },
-  'banana-route': {
-    title: '45° Outfield Drop Step & Direct Routes',
-    domain: 'Fielding Mechanics',
-    scenarioId: 'tagging-up',
-    youtube: { label: 'Outfield Drop Step Guide (Antonelli Baseball)', url: 'https://www.youtube.com/watch?v=tH9-7NyhtTg' }
-  },
-  'crow-hop': {
-    title: 'Clean Crow Hop & Relay Throws',
-    domain: 'Fielding Mechanics',
-    scenarioId: 'relay-throw',
-    youtube: { label: 'Outfield Crow Hop vs. Step Behind (Ultimate Baseball Training)', url: 'https://www.youtube.com/watch?v=vMU7ds_WpiM' }
-  }
-};
-
-const VALID_BATS = {
-  'baum-gold': 'Baum Bat Gold (PermaWood Composite -3)',
-  'goods-2026': '2026 DeMarini The Goods (Ice Blue/Black/Red Hybrid -3)',
-  'goods-2022': '2022 DeMarini The Goods (Chrome Silver/Black Hybrid -3)',
-  'combat-rodeo': 'Combat MFG Spec-A1 Rodeo (Cream/Maroon 1-Pc Alloy -3)',
-  'combat-blue': 'Combat Spec-A1 Members Club Blue (Powder Blue 1-Pc Alloy -3)',
-  'marucci-catx2': 'Marucci CATX2 Alloy (Silver/Red AZR 1-Pc Liquid-Gel -3)'
-};
-
-const VALID_SCENARIOS = {
-  'force-vs-tag': 'Force Out vs. Tag Out',
-  'infield-fly': 'The Infield Fly Rule',
-  'stealing-second': 'Stealing 2nd Base',
-  'launch-angle-exit-velo': 'Launch Angle & Exit Velocity',
-  'catcher-framing': 'Catcher Framing & Strike Zone',
-  'relay-throw': 'Relay & Cutoff Throws',
-  'xwoba-metrics': 'xwOBA vs. Batting Average',
-  'tagging-up': 'Tagging Up on Fly Balls'
-};
 
 app.use(express.json({ limit: '100kb' }));
 
@@ -1079,70 +1015,14 @@ Rules:
 });
 
 /* =========================================================
-   Coach Jax — Conversational Baseball AI Coach (Gemini API)
+   Coach Jax — Zero-Key Instant Baseball Coach (+ Optional Gemini Search)
    ========================================================= */
-function parseDelimitedJaxResponse(rawText) {
-  const text = String(rawText || '').trim();
-  const headings = ['REPLY', 'TIPS', 'CLINICS', 'SCENARIOS', 'BAT', 'YOUTUBE_TOPICS'];
-  const sections = {};
-  let currentKey = 'REPLY';
-  sections[currentKey] = [];
-
-  for (const rawLine of text.split(/\r?\n/)) {
-    const trimmed = rawLine.trim();
-    const matched = trimmed.match(/^\*{0,2}(REPLY|TIPS|CLINICS|SCENARIOS|BAT|YOUTUBE_TOPICS)\*{0,2}\s*:\s*(.*)$/i);
-    if (matched) {
-      currentKey = matched[1].toUpperCase();
-      if (!sections[currentKey]) sections[currentKey] = [];
-      if (matched[2] && matched[2].trim()) {
-        sections[currentKey].push(matched[2].trim());
-      }
-    } else if (trimmed) {
-      if (!sections[currentKey]) sections[currentKey] = [];
-      sections[currentKey].push(trimmed);
-    }
-  }
-
-  const reply = (sections.REPLY || []).join('\n').trim() || text.slice(0, 700);
-  const tips = (sections.TIPS || [])
-    .join('\n')
-    .split(/\n|;/)
-    .map((line) => line.replace(/^[-*•\d.)\s]+/, '').trim())
-    .filter((line) => line.length > 4)
-    .slice(0, 4);
-
-  const clinicTokens = (sections.CLINICS || []).join(',').toLowerCase().match(/[a-z0-9-]+/g) || [];
-  const scenarioTokens = (sections.SCENARIOS || []).join(',').toLowerCase().match(/[a-z0-9-]+/g) || [];
-  const batTokens = (sections.BAT || []).join(',').toLowerCase().match(/[a-z0-9-]+/g) || [];
-  const ytTopics = (sections.YOUTUBE_TOPICS || [])
-    .join('\n')
-    .split(/\n|,|;/)
-    .map((t) => t.replace(/^[-*•\d.)\s]+/, '').trim())
-    .filter((t) => t.length > 2)
-    .slice(0, 2);
-
-  return {
-    reply,
-    tips,
-    clinicTokens,
-    scenarioTokens,
-    batId: batTokens.find((b) => VALID_BATS[b]) || 'goods-2026',
-    ytTopics
-  };
-}
-
 app.post('/api/ai/jax', async (req, res) => {
   const apiKey = getGeminiApiKey();
   const body = req.body || {};
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message || message.length > 1200) {
     return res.status(400).json({ error: 'Ask Coach Jax a baseball question (1–1,200 characters).' });
-  }
-
-  if (!apiKey) {
-    return res.status(503).json({
-      error: 'Coach Jax AI needs GEMINI_API_KEY set in Settings > Secrets (or .env) to reply.'
-    });
   }
 
   const rawHistory = Array.isArray(body.history) ? body.history.slice(-10) : [];
@@ -1156,20 +1036,37 @@ app.post('/api/ai/jax', async (req, res) => {
   const baselineSummary = typeof body.baselineContext === 'string' ? body.baselineContext.trim().slice(0, 500) : '';
   const cageSummary = typeof body.cageContext === 'string' ? body.cageContext.trim().slice(0, 500) : '';
 
+  let userOnboardingProfile = null;
+  let userPrefs = null;
   let playerContextText = 'Guest player (no signed-in account yet).';
   if (req.user) {
     const saved = await store.getOnboardingProfile(req.user.id);
-    const prefs = req.user.preferences || {};
-    const p = saved && saved.profile ? saved.profile : null;
+    userPrefs = req.user.preferences || {};
+    userOnboardingProfile = saved && saved.profile ? saved.profile : null;
+    const p = userOnboardingProfile;
     playerContextText = p
-      ? `Username: ${req.user.username} | Level: ${p.inputs?.experienceLevel || 'N/A'} | Position: ${p.inputs?.primaryPosition || 'N/A'} | Bats/Throws: ${prefs.battingHand || 'R'}/${prefs.throwingHand || 'R'} | Swing Symptom: ${p.inputs?.hittingSymptom || 'N/A'} | Fielding Symptom: ${p.inputs?.fieldingSymptom || 'N/A'} | Saved Bat: ${prefs.defaultBat || p.recommendedBatId || 'goods-2026'}`
-      : `Username: ${req.user.username} | Bats/Throws: ${prefs.battingHand || 'R'}/${prefs.throwingHand || 'R'} | Preferred Bat: ${prefs.defaultBat || 'goods-2026'}`;
+      ? `Username: ${req.user.username} | Level: ${p.inputs?.experienceLevel || 'N/A'} | Position: ${p.inputs?.primaryPosition || 'N/A'} | Bats/Throws: ${userPrefs.battingHand || 'R'}/${userPrefs.throwingHand || 'R'} | Swing Symptom: ${p.inputs?.hittingSymptom || 'N/A'} | Fielding Symptom: ${p.inputs?.fieldingSymptom || 'N/A'} | Saved Bat: ${userPrefs.defaultBat || p.recommendedBatId || 'goods-2026'}`
+      : `Username: ${req.user.username} | Bats/Throws: ${userPrefs.battingHand || 'R'}/${userPrefs.throwingHand || 'R'} | Preferred Bat: ${userPrefs.defaultBat || 'goods-2026'}`;
   }
   if (baselineSummary) {
     playerContextText += `\nLocal Baseline Diagnostic: ${baselineSummary}`;
   }
   if (cageSummary) {
     playerContextText += `\nLive 3D Cage Setup & Last Rep: ${cageSummary}`;
+  }
+
+  const localFallbackPayload = () =>
+    buildLocalJaxResponse({
+      message,
+      history: cleanHistory,
+      baselineContext: baselineSummary,
+      cageContext: cageSummary,
+      userProfile: userOnboardingProfile,
+      preferences: userPrefs
+    });
+
+  if (!apiKey) {
+    return res.json(localFallbackPayload());
   }
 
   const clinicCatalogText = Object.entries(VALID_CLINICS)
@@ -1244,20 +1141,20 @@ YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
     ];
 
     let response = null;
-    let lastJaxErr = null;
     for (const attemptCfg of jaxAttempts) {
       try {
         response = await generateWithRetry(ai, attemptCfg, 16000);
         if (response && response.text) break;
       } catch (innerErr) {
-        lastJaxErr = innerErr;
         const status = Number(innerErr && (innerErr.status || innerErr.statusCode)) || 0;
         const msg = String(innerErr && innerErr.message ? innerErr.message : innerErr || '');
         const authFatal = status === 401 || status === 403 || /API_KEY_INVALID|PERMISSION_DENIED/i.test(msg);
-        if (authFatal) throw innerErr;
+        if (authFatal) break;
       }
     }
-    if (!response) throw lastJaxErr || new Error('Coach Jax request did not receive a response.');
+    if (!response || !response.text) {
+      return res.json(localFallbackPayload());
+    }
 
     const parsed = parseDelimitedJaxResponse(response.text || '');
     const chosenBatId = VALID_BATS[parsed.batId] ? parsed.batId : 'goods-2026';
@@ -1314,6 +1211,7 @@ YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
 
     return res.json({
       coach: 'Jax',
+      source: 'gemini-grounded',
       reply: parsed.reply,
       actionableTips: parsed.tips,
       videoLinks,
@@ -1324,11 +1222,8 @@ YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
       recommendedBatName: VALID_BATS[chosenBatId]
     });
   } catch (err) {
-    console.error('Coach Jax Gemini error:', err && err.message ? err.message : err);
-    const classified = classifyGeminiError(err);
-    return res.status(classified.httpStatus).json({
-      error: classified.message
-    });
+    console.warn('Coach Jax Gemini fallback to zero-key engine:', err && err.message ? err.message : err);
+    return res.json(localFallbackPayload());
   }
 });
 
@@ -1549,6 +1444,7 @@ app.delete('/api/playbook/:id', requireAuth, async (req, res, next) => {
    ========================================================= */
 app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
 app.use('/vendor/three', express.static(path.join(__dirname, 'node_modules', 'three')));
 app.use(express.static(__dirname));
 
