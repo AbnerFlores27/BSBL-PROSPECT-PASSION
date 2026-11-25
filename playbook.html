@@ -10,7 +10,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="ui.js" defer></script>
 </head>
@@ -18,6 +18,7 @@
 <a class="skip-link" href="#playbook">Skip to content</a>
 
 <header class="site-header">
+  <div class="rgb-spectrum-rail" aria-hidden="true"></div>
   <div class="header-inner">
     <a class="brand" href="index.html">
       <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -50,16 +51,15 @@
 </header>
 
 <section class="subpage-banner" aria-label="My Playbook Workspace">
-  <img class="subpage-banner-bg" src="/src/assets/images/baseball_dugout_playbook_1794855949938.jpg" alt="Leather baseball glove, stitched baseball, and coach's tactical playbook notebook on a dugout bench" referrerpolicy="no-referrer">
+  <img class="subpage-banner-bg" src="/assets/hero/baseball_dugout_playbook_1794855949938.jpg" alt="Leather baseball glove, stitched baseball, and coach's tactical playbook notebook on a dugout bench" referrerpolicy="no-referrer">
   <div class="subpage-banner-scrim" aria-hidden="true"></div>
   <div class="subpage-banner-inner">
     <div class="subpage-banner-copy">
-      <div class="hero-eyebrow">Dugout Workspace <span id="playbook-user-badge" class="tabular-nums" style="margin-left:0.5rem;color:#F7F8FA;" hidden></span></div>
       <h1 class="subpage-banner-title">
         <span class="hero-line-white">Personal Dugout</span>
-        <span class="hero-line-gold">My Playbook</span>
+        <span class="hero-line-led">My Playbook</span>
       </h1>
-      <p class="subpage-banner-lead">Keep your own game-day notes, practice drills, 3D cage defaults, and favorite plays saved directly to your account.</p>
+      <span id="playbook-user-badge" class="tabular-nums" style="display:inline-block;margin-top:0.35rem;font-size:0.82rem;color:var(--accent);font-weight:700;" hidden></span>
     </div>
   </div>
 </section>
@@ -149,6 +149,13 @@
             <option value="hs-corona">Corona High School (Panthers, CA)</option>
             <option value="hs-eastlake">Eastlake High School (Titans, SD)</option>
             <option value="hs-rb">Rancho Bernardo High School (SD)</option>
+            <option value="hs-cchs">Cathedral Catholic HS (Lynch Allred, SD)</option>
+            <option value="hs-tp">Torrey Pines HS (Falcons, SD)</option>
+            <option value="hs-poway">Poway HS (Titan Field, SD)</option>
+            <option value="hs-granite">Granite Hills HS (Eagles, El Cajon)</option>
+            <option value="hs-santana">Santana HS (Sultans, Santee)</option>
+            <option value="hs-grossmont">Grossmont HS (Foothillers, El Cajon)</option>
+            <option value="hs-valhalla">Valhalla HS (Norsemen, El Cajon)</option>
           </optgroup>
           <optgroup label="Practice Facility">
             <option value="cage">Indoor Batting Cage</option>
@@ -159,11 +166,21 @@
         <label for="pb-prof-bat">Default Bat Model</label>
         <select id="pb-prof-bat" name="defaultBat">
           <option value="baum-gold">Baum Bat Gold (-3)</option>
+          <option value="victus-v243">Victus V243 Pro Maple (-3)</option>
+          <option value="ls-c271">LS Prime C271 Maple (-3)</option>
           <option value="goods-2026" selected>2026 The Goods (-3)</option>
           <option value="goods-2022">2022 The Goods Chrome (-3)</option>
+          <option value="voodoo-one">2026 DeMarini Voodoo One (-3)</option>
+          <option value="ls-atlas">LS Atlas EVO-K Alloy (-3)</option>
           <option value="combat-rodeo">Combat Spec-A1 Rodeo (-3)</option>
           <option value="combat-blue">Combat Members Club Blue (-3)</option>
           <option value="marucci-catx2">Marucci CATX2 Alloy (-3)</option>
+          <option value="rawlings-icon">Rawlings Icon Composite (-3)</option>
+          <option value="easton-hype">Easton Hype Fire Composite (-3)</option>
+          <option value="warstic-bonesaber">Warstic Bonesaber Hybrid (-3)</option>
+          <option value="stringking-metal2">StringKing Metal 2 Pro Alloy (-3)</option>
+          <option value="victus-vandal">Victus Vandal Carbon-Cap Alloy (-3)</option>
+          <option value="old-hickory-j143">Old Hickory J143M Pro Maple (-3)</option>
         </select>
       </div>
       <div class="pb-prefs-actions">

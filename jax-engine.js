@@ -62,11 +62,21 @@
 
   const VALID_BATS = {
     'baum-gold': 'Baum Bat Gold (PermaWood Composite -3)',
+    'victus-v243': 'Victus V243 Pro Reserve Maple (Honey/Black -3)',
+    'ls-c271': 'Louisville Slugger Prime C271 Maple (Espresso/Gold -3)',
+    'old-hickory-j143': 'Old Hickory J143M Pro Maple (Chestnut/Walnut -3)',
     'goods-2026': '2026 DeMarini The Goods (Ice Blue/Black/Red Hybrid -3)',
     'goods-2022': '2022 DeMarini The Goods (Chrome Silver/Black Hybrid -3)',
+    'warstic-bonesaber': 'Warstic Bonesaber Hybrid (Katana2X Alloy/Tsuka -3)',
+    'voodoo-one': '2026 DeMarini Voodoo One (Crimson X14 1-Pc Alloy -3)',
+    'ls-atlas': 'Louisville Slugger Atlas EVO-K (Graphite/Cyan 1-Pc SL Alloy -3)',
+    'stringking-metal2': 'StringKing Metal 2 Pro (Titanium Raw 1-Pc Alloy -3)',
     'combat-rodeo': 'Combat MFG Spec-A1 Rodeo (Cream/Maroon 1-Pc Alloy -3)',
     'combat-blue': 'Combat Spec-A1 Members Club Blue (Powder Blue 1-Pc Alloy -3)',
-    'marucci-catx2': 'Marucci CATX2 Alloy (Silver/Red AZR 1-Pc Liquid-Gel -3)'
+    'marucci-catx2': 'Marucci CATX2 Alloy (Silver/Red AZR 1-Pc Liquid-Gel -3)',
+    'victus-vandal': 'Victus Vandal BBCOR (Matte Black Carbon-Cap 1-Pc Alloy -3)',
+    'rawlings-icon': 'Rawlings Icon (-3 In/Tense Carbon Composite)',
+    'easton-hype': 'Easton Hype Fire (-3 Thermo-Composite)'
   };
 
   const VALID_SCENARIOS = {
@@ -87,7 +97,7 @@
     oracle: { name: 'Oracle Park (San Francisco)', tier: 'pro', dims: '339 LF · 399 CF · 309 RF', note: 'Triples Alley in RCF runs deep before the 24-ft brick arcade wall guarding McCovey Cove at 309 ft down the RF line.' },
     wrigley: { name: 'Wrigley Field (Chicago)', tier: 'pro', dims: '355 LF · 400 CF · 353 RF', note: '11.5-ft ivy-covered brick wall and Lake Michigan winds turn routine flies into HRs or warning-track outs.' },
     yankee: { name: 'Yankee Stadium (New York)', tier: 'pro', dims: '318 LF · 408 CF · 314 RF', note: 'The 314-ft Short Porch in RF rewards lefty pull lift, while straightaway CF plays 408 ft toward Monument Park.' },
-    sdsu: { name: 'Tony Gwynn Stadium (SDSU)', tier: 'college', dims: '340 LF · 410 CF · 340 RF', note: 'Spacious 410-ft center gap rewards crisp line drives and gap-to-gap speed over lazy fly balls.' },
+    sdsu: { name: 'Tony Gwynn Stadium (SDSU)', tier: 'college', dims: '340 LF · 412 CF · 340 RF', note: 'Spacious 412-ft center gap rewards crisp line drives and gap-to-gap speed over lazy fly balls.' },
     ucsb: { name: 'Caesar Uyesaka Stadium (UC Santa Barbara)', tier: 'college', dims: '335 LF · 400 CF · 335 RF', note: 'Ocean-cooled coastal air below the Santa Ynez mountains plays fair both ways for gap doubles and backspin lift.' },
     'cal-poly': { name: 'Scolinos Field (Cal Poly Pomona)', tier: 'college', dims: '340 LF · 390 CF · 325 RF', note: 'Pomona valley warmth lets squared 26°–30° barrels jump toward the green wall and 325-ft right-field line.' },
     'pk-park': { name: 'PK Park (Oregon)', tier: 'college', dims: '335 LF · 400 CF · 325 RF', note: 'Full synthetic turf means hard ground balls race quickly through the infield gaps in Eugene.' },
@@ -102,6 +112,13 @@
     'hs-rb': { name: 'Rancho Bernardo HS (San Diego)', tier: 'hs', dims: '315 LF · 385 CF · 315 RF', note: 'Classic San Diego varsity dimensions — clean gap shots carry past the CF batter’s eye.' },
     'hs-corona': { name: 'Corona High School (CA)', tier: 'hs', dims: '315 LF · 380 CF · 315 RF', note: 'Crisp Inland Empire warmth makes 90+ mph exit velos at 24°–30° fly past the red LF scoreboard.' },
     'hs-eastlake': { name: 'Eastlake High School (San Diego)', tier: 'hs', dims: '312 LF · 380 CF · 312 RF', note: 'Tight 312-ft corners in Chula Vista turn well-timed pull and opposite-field backspin into extra-base trouble.' },
+    'hs-cchs': { name: 'Cathedral Catholic HS — Lynch Allred Field (San Diego)', tier: 'hs', dims: '318 LF · 385 CF · 315 RF', note: 'Carmel Valley coastal breeze plays subtly cool in late afternoons; Dons crimson windscreen frames crisp varsity alleys.' },
+    'hs-tp': { name: 'Torrey Pines HS — Falcons Field (San Diego)', tier: 'hs', dims: '320 LF · 390 CF · 318 RF', note: 'Del Mar Heights marine air near Torrey Pines mesas rewards low-spin backspin lasers over high pop-ups.' },
+    'hs-poway': { name: 'Poway HS — Titan Field (San Diego)', tier: 'hs', dims: '322 LF · 392 CF · 320 RF', note: 'Inland North County afternoon sun warms the ball cleanly over the Titan forest-green sponsor wall.' },
+    'hs-granite': { name: 'Granite Hills HS — Eagles Field (El Cajon)', tier: 'hs', dims: '320 LF · 388 CF · 318 RF', note: 'East County canyon heat helps well-struck barrels carry cleanly against the rocky El Cajon granite backdrop.' },
+    'hs-santana': { name: 'Santana High School — Sultans Field (Santee)', tier: 'hs', dims: '318 LF · 385 CF · 315 RF', note: 'Santee East County thermal warmth lifts high-backspin drives nicely over the purple Sultans windscreen toward Mission Trails.' },
+    'hs-grossmont': { name: 'Grossmont High School — Foothillers Field (El Cajon)', tier: 'hs', dims: '320 LF · 390 CF · 318 RF', note: 'La Mesa / El Cajon hillside setting below Mt. Helix rewards clean gap-to-gap line drives over the royal-blue windscreen.' },
+    'hs-valhalla': { name: 'Valhalla High School — Norsemen Field (El Cajon)', tier: 'hs', dims: '316 LF · 382 CF · 316 RF', note: 'Rancho San Diego foothills push dry afternoon air across the navy-and-orange fence beneath the rocky Hillsdale ridge.' },
     cage: { name: 'D1 Rapsodo Lab (Indoor)', tier: 'cage', dims: '400 FT Simulated Net', note: 'Focus purely on barrel contact zone, smash factor, attack angle (+6° to +12°), and spin efficiency.' }
   };
 
@@ -121,7 +138,7 @@
 
     for (const rawLine of text.split(/\r?\n/)) {
       const trimmed = rawLine.trim();
-      const matched = trimmed.match(/^\*{0,2}(REPLY|TIPS|CLINICS|SCENARIOS|BAT|YOUTUBE_TOPICS)\*{0,2}\s*:\s*(.*)$/i);
+      const matched = trimmed.match(/^\*{0,2}(REPLY|TIPS|CLINICS|SCENARIOS|BAT|YOUTUBE_TOPICS|FOLLOW_UPS)\*{0,2}\s*:\s*(.*)$/i);
       if (matched) {
         currentKey = matched[1].toUpperCase();
         if (!sections[currentKey]) sections[currentKey] = [];
@@ -151,6 +168,12 @@
       .map((t) => t.replace(/^[-*•\d.)\s]+/, '').trim())
       .filter((t) => t.length > 2)
       .slice(0, 2);
+    const followUps = (sections.FOLLOW_UPS || [])
+      .join('\n')
+      .split(/\n|\|/)
+      .map((t) => t.replace(/^[-*•\d.)\s]+/, '').trim())
+      .filter((t) => t.length > 4)
+      .slice(0, 3);
 
     return {
       reply,
@@ -158,7 +181,8 @@
       clinicTokens,
       scenarioTokens,
       batId: batTokens.find((b) => VALID_BATS[b]) || 'goods-2026',
-      ytTopics
+      ytTopics,
+      followUps
     };
   }
 
@@ -184,7 +208,14 @@
       ['ucla', ['ucla', 'jackie robinson', 'bruin']],
       ['hs-rb', ['rancho bernardo', 'rb high', 'rb hs', 'hs-rb']],
       ['hs-corona', ['corona', 'panthers', 'hs-corona']],
-      ['hs-eastlake', ['eastlake', 'chula vista', 'titans', 'hs-eastlake']]
+      ['hs-eastlake', ['eastlake', 'chula vista', 'hs-eastlake']],
+      ['hs-cchs', ['cathedral catholic', 'lynch allred', 'cchs', 'dons', 'hs-cchs']],
+      ['hs-tp', ['torrey pines', 'falcons field', 'del mar heights', 'hs-tp']],
+      ['hs-poway', ['poway', 'titan field', 'hs-poway']],
+      ['hs-granite', ['granite hills', 'el cajon', 'eagles field', 'hs-granite']],
+      ['hs-santana', ['santana', 'sultans', 'santee', 'hs-santana']],
+      ['hs-grossmont', ['grossmont', 'foothillers', 'mt helix', 'la mesa', 'hs-grossmont']],
+      ['hs-valhalla', ['valhalla', 'norsemen', 'rancho san diego', 'hs-valhalla']]
     ];
     for (const [id, keys] of aliases) {
       if (keys.some((k) => low.includes(k))) return id;
@@ -209,26 +240,217 @@
     };
   }
 
-  function buildLocalJaxResponse({ message = '', baselineSummary = '', cageSummary = '', playerProfile = null } = {}) {
-    const msgLow = String(message || '').toLowerCase();
-    const baseLow = String(baselineSummary || '').toLowerCase();
-    const combined = `${msgLow} ${baseLow}`.trim();
-    const cage = extractCageDetails(cageSummary);
+  function buildFollowUpPrompts(topicKey, { batId = 'goods-2026', stadiumId = 'sdsu' } = {}) {
+    if (topicKey === 'beginner') {
+      return [
+        'Give me a 10-minute tee progression to feel good contact',
+        'How does Force Out vs. Tag Out work on a grounder?',
+        'Which BBCOR bat swings fastest for a new player?'
+      ];
+    }
+    if (topicKey === 'bat-drag' || topicKey === 'casting' || topicKey === 'rolling-over' || topicKey === 'lunging') {
+      return [
+        'Give me 2 harder tee drills for this exact flaw',
+        'Why does this happen on 90+ mph or off-speed pitches?',
+        'Which bat in the 3D locker helps fix my hand path?'
+      ];
+    }
+    if (topicKey === 'infield' || topicKey === 'outfield' || topicKey === 'catcher') {
+      return [
+        'Give me another 5-minute glove & footwork drill',
+        'Break down what to do with runners on 1st and 2nd',
+        'Walk me through a practice plan for my position'
+      ];
+    }
+    if (topicKey === 'bats') {
+      const altBatMap = {
+        'warstic-bonesaber': 'Compare Warstic Bonesaber Hybrid vs. 2026 The Goods',
+        'stringking-metal2': 'How does StringKing Metal 2 Pro compare to Voodoo One?',
+        'victus-vandal': 'Compare Victus Vandal Carbon-Cap vs. Marucci CATX2',
+        'old-hickory-j143': 'Compare Old Hickory J143M vs. Baum Bat Gold wood crack'
+      };
+      return [
+        altBatMap[batId] || 'Compare Warstic Bonesaber vs. Victus Vandal & Metal 2 Pro',
+        'Why does Baum Bat Gold pop differently from Old Hickory J143M?',
+        `Which bat fits my swing at ${VALID_STADIUMS[stadiumId]?.name || 'this ballpark'}?`
+      ];
+    }
+    if (topicKey === 'stadium') {
+      return [
+        'Compare Grossmont Foothillers vs. Santana Sultans Field',
+        'How does a 12 mph wind in change my launch angle target?',
+        `Pick the best bat for ${VALID_STADIUMS[stadiumId]?.name || 'this ballpark'}`
+      ];
+    }
+    return [
+      'Analyze my last swing & exit velo cue',
+      'Compare 2026 The Goods vs. Rawlings Icon & CATX2',
+      'Build a 15-minute beginner or varsity cage routine'
+    ];
+  }
 
+  function buildLocalJaxResponse({
+    message = '',
+    history = [],
+    baselineSummary = '',
+    baselineContext = '',
+    cageSummary = '',
+    cageContext = ''
+  } = {}) {
+    const effBase = baselineSummary || baselineContext || '';
+    const effCage = cageSummary || cageContext || '';
+    const msgLow = String(message || '').toLowerCase().trim();
+    const baseLow = String(effBase).toLowerCase();
+    const combined = `${msgLow} ${baseLow}`.trim();
+    const cage = extractCageDetails(effCage);
+
+    // Inspect prior conversation turns so Coach Jax stays conversational and NEVER repeats the same text verbatim!
+    const cleanHist = Array.isArray(history) ? history : [];
+    const priorJaxTexts = cleanHist
+      .filter((h) => h && (h.role === 'jax' || h.role === 'model' || h.role === 'assistant') && typeof h.text === 'string')
+      .map((h) => h.text);
+    const priorUserTexts = cleanHist
+      .filter((h) => h && h.role === 'user' && typeof h.text === 'string')
+      .map((h) => h.text.toLowerCase());
+    const lastJaxText = priorJaxTexts.length ? priorJaxTexts[priorJaxTexts.length - 1] : '';
+    const turnCount = priorJaxTexts.length;
+
+    const alreadySaid = (candidateReply) => {
+      if (!candidateReply) return false;
+      const head = candidateReply.slice(0, 68).toLowerCase();
+      return priorJaxTexts.some((t) => t.toLowerCase().includes(head));
+    };
+
+    const inferPriorTopic = (txt) => {
+      const low = String(txt || '').toLowerCase();
+      if (/bat drag|rear elbow/.test(low)) return 'bat-drag';
+      if (/casting|loops wide/.test(low)) return 'casting';
+      if (/rolls? over|topspin|palm-up/.test(low)) return 'rolling-over';
+      if (/lunging|changeups and sliders|front leg/.test(low)) return 'lunging';
+      if (/infield defense|triangle setup|soft hands/.test(low)) return 'infield';
+      if (/catcher framing|shadow-zone/.test(low)) return 'catcher';
+      if (/drop-step|crow hop|outfield/.test(low)) return 'outfield';
+      if (/baum bat|rawlings icon|hype fire|catx2|bonesaber|warstic|stringking|metal 2|vandal|old hickory|j143|bbcor/.test(low)) return 'bats';
+      if (/ballpark scouting|altitude|windscreen|carry/.test(low)) return 'stadium';
+      if (/welcome to the diamond/.test(low)) return 'beginner';
+      return 'general';
+    };
+    const priorTopic = inferPriorTopic(lastJaxText);
+
+    let topicKey = 'general';
     let reply = '';
     let tips = [];
     let clinicIds = [];
     let scenarioIds = [];
     let batId = 'goods-2026';
     let ytQuery = 'baseball hitting mechanics tee drills';
+    let detectedStadiumId = matchStadiumMention(msgLow);
 
-    const stadiumHitId = matchStadiumMention(msgLow);
+    // Explicit interactive follow-up intents ("more drills", "why", "what next", "compare", "last hit")
+    const asksFollowUpDrills = /^(more\s+drills?|another\s+drill|next\s+drill|more\s+reps|more)$/.test(msgLow) || /(another drill|2 harder|more drills|extra drill)/.test(msgLow);
+    const asksWhy = /^(why\??|why does that happen|explain why)/.test(msgLow) || /^why\b/.test(msgLow);
+    const asksLastRep = /(last hit|last swing|current cage|analyze my|my setup|this rep)/.test(msgLow);
 
+    // 0A. Interactive Follow-up: "last hit" / "current cage setup"
+    if (asksLastRep && cage && (cage.ev || cage.bat || cage.park)) {
+      topicKey = 'cage-rep';
+      const evTxt = cage.ev ? `${cage.ev} mph exit velocity` : 'your live cage setup';
+      const laTxt = cage.la != null ? `${cage.la}° launch angle` : 'swing angle';
+      batId =
+        (cage.bat.toLowerCase().includes('baum') && 'baum-gold') ||
+        (cage.bat.toLowerCase().includes('old hickory') && 'old-hickory-j143') ||
+        (cage.bat.toLowerCase().includes('j143') && 'old-hickory-j143') ||
+        (cage.bat.toLowerCase().includes('bonesaber') && 'warstic-bonesaber') ||
+        (cage.bat.toLowerCase().includes('warstic') && 'warstic-bonesaber') ||
+        (cage.bat.toLowerCase().includes('stringking') && 'stringking-metal2') ||
+        (cage.bat.toLowerCase().includes('metal 2') && 'stringking-metal2') ||
+        (cage.bat.toLowerCase().includes('vandal') && 'victus-vandal') ||
+        (cage.bat.toLowerCase().includes('icon') && 'rawlings-icon') ||
+        (cage.bat.toLowerCase().includes('hype') && 'easton-hype') ||
+        (cage.bat.toLowerCase().includes('catx') && 'marucci-catx2') ||
+        (cage.bat.toLowerCase().includes('voodoo') && 'voodoo-one') ||
+        (cage.bat.toLowerCase().includes('atlas') && 'ls-atlas') ||
+        (cage.bat.toLowerCase().includes('victus') && 'victus-v243') ||
+        (cage.bat.toLowerCase().includes('c271') && 'ls-c271') ||
+        (cage.bat.toLowerCase().includes('rodeo') && 'combat-rodeo') ||
+        (cage.bat.toLowerCase().includes('blue') && 'combat-blue') ||
+        (cage.bat.toLowerCase().includes('2022') && 'goods-2022') ||
+        'goods-2026';
+      const highAngle = cage.la != null && cage.la > 34;
+      const lowAngle = cage.la != null && cage.la < 11;
+      clinicIds = lowAngle ? ['rolling-over', 'bat-drag'] : highAngle ? ['casting', 'lunging'] : ['rolling-over', 'lunging'];
+      scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
+      ytQuery = lowAngle ? 'improve launch angle baseball line drive drill' : 'barrel control tee progression';
+      const cueLine = lowAngle
+        ? 'Your launch dipped under 11°—shift your PCI center 0.3 balls lower so the barrel climbs slightly through the zone (+8° to +12° attack angle).'
+        : highAngle
+          ? 'Your 34°+ angle steepened into fly-out territory—stay through your front hip and drive straight back toward the pitching screen to flatten to 24°–29°.'
+          : 'You squared up a clean gap window! Stack 3 more straight reps while mixing pitch speeds so your stride stays on time.';
+      reply = `Reviewing your live telemetry (${cage.bat || '3D Bat'} at ${cage.park || 'the ballpark'} — ${evTxt}, ${laTxt}${cage.hit ? `, ${cage.hit}` : ''}): ${cueLine}`;
+      tips = [
+        'Rapsodo Attack Target: Keep attack angle between +6° and +13° and Smash Factor above 1.24.',
+        'Check Flight Arc Tab: Compare apex height and wind carry delta before changing swing mechanics.',
+        'Next Test: Switch Pitch Speed to Varsity or Mix and aim cleanly for the opposite gap.'
+      ];
+    }
+    // 0B. Interactive Follow-up: "more drills" / "another drill" based on prior conversation topic
+    else if (asksFollowUpDrills && turnCount > 0) {
+      topicKey = priorTopic;
+      if (priorTopic === 'bat-drag' || priorTopic === 'casting') {
+        batId = 'baum-gold';
+        clinicIds = ['bat-drag', 'casting'];
+        scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
+        reply =
+          'Here is your Stage-2 progression to lock in tight hands: move past dry tee reps into constraint flips where your back shoulder stays higher than your front elbow at toe-touch. If your knob races past your belly button before your hips clear, reset and feel a slower gather with faster barrel snap out front.';
+        tips = [
+          'Two-Ball Timing Tee (3×8): Place two balls spaced 4 inches apart along the barrel lane—sweep through both cleanly without clipping the back ball.',
+          'Offset Closed-Stance Flips (10 reps): Step 10° closed with front toe to keep ribs closed while hands fire down the inside seam.',
+          'Baum Bat Wood Calibration: Take 8 manual-PCI swings in 3D against 90+ mph fastballs and track clean sweet-spot chimes.'
+        ];
+      } else if (priorTopic === 'infield' || priorTopic === 'outfield' || priorTopic === 'catcher') {
+        batId = 'goods-2022';
+        clinicIds = priorTopic === 'catcher' ? ['footwork-cadence', 'glove-stab'] : priorTopic === 'outfield' ? ['crow-hop', 'banana-route'] : ['footwork-cadence', 'glove-stab'];
+        scenarioIds = priorTopic === 'outfield' ? ['relay-throw', 'tagging-up'] : ['force-vs-tag', 'stealing-second'];
+        reply =
+          'Let’s level up your defensive speed drills without rushing your glove: add live sound-cue cadence reps so your feet never cross awkwardly after catching. Focus on throwing with a low horizontal arrow to chest height instead of arcing slow lobs.';
+        tips = [
+          'Rapid Two-Ball Bounce Shuffle (3×6): Catch a short-hop roll, tap belt buckle, and fire immediately in two quick steps.',
+          'Backhand Open-Hip Pick (8 reps): Stay down through the ball on forehand and backhand picks without raising your chin early.',
+          'Cut-4 Callout Check: Point and vocalize the base target out loud on every throw.'
+        ];
+      } else {
+        batId = 'easton-hype';
+        clinicIds = ['rolling-over', 'lunging'];
+        scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
+        reply =
+          'Building right off our previous talk: pair high-low tee adjustments with random speed mixes so you stop muscling the ball and start letting barrel whip do the heavy work. Keep your head anchored over your belt buckle until the ball jumps off the sweet spot.';
+        tips = [
+          'High-Low Contrast Tee (2×10): Alternate one chest-high pitch with one shin-high pitch to build instant barrel-angle adjustability.',
+          'Walk-Away Stride Check (8 swings): Freeze your finish 2 seconds after follow-through—both heels balanced means your swing plane is synced.',
+          'Audition Easton Hype Fire vs. 2026 The Goods in the Bat Locker to see which MOI yields a higher Smash Factor for your timing.'
+        ];
+      }
+    }
+    // 0C. Interactive Follow-up: "why" / deeper mechanical explanation
+    else if (asksWhy && turnCount > 0) {
+      topicKey = priorTopic;
+      batId = 'marucci-catx2';
+      clinicIds = ['rolling-over', 'bat-drag'];
+      scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
+      reply =
+        'Physics-wise, exit velocity and carry come from how efficiently energy moves up the kinetic chain: ground reaction -> rear hip turn -> torso whip -> late barrel snap. Whenever arms or hands rush early, the barrel leaks wide away from your center of mass, killing rotational speed (RPM) and turning 95 mph squared line drives into weak topspin rollovers.';
+      tips = [
+        'Watch Smash Factor: Exit Velo / (Pitch Speed * 0.2 + Bat Speed * 1.15) spikes whenever center-of-percussion meets center-of-ball.',
+        'Respect Backspin: 1,900–2,300 rpm of true backspin lifts the ball via Magnus force over deep walls.',
+        'Check Inside Jam vs. Sweet Spot audio in the Bat Locker to hear why centered contact transfers full energy cleanly.'
+      ];
+    }
     // 1. Complete Beginner Path
-    if (
+    else if (
       /\b(beginner|never played|first season|total beginner|brand new|basics|3 simplest|how do i start)\b/.test(msgLow) ||
-      (baseLow.includes('beginner') && !/(drag|cast|roll|lunge|stab|crow hop|banana|baum|goods|combat)/.test(msgLow))
+      (baseLow.includes('beginner') && !/(drag|cast|roll|lunge|stab|crow hop|banana|baum|goods|combat|icon|hype|catx)/.test(msgLow))
     ) {
+      topicKey = 'beginner';
       batId = 'combat-blue';
       clinicIds = ['bat-drag', 'glove-stab'];
       scenarioIds = ['force-vs-tag', 'launch-angle-exit-velo'];
@@ -243,6 +465,7 @@
     }
     // 2. Bat Drag / Jammed / Late on Fastballs
     else if (/(bat drag|drag|jam|late on fastball|elbow|hands behind|connected)/.test(combined)) {
+      topicKey = 'bat-drag';
       batId = 'baum-gold';
       clinicIds = ['bat-drag', 'casting'];
       scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
@@ -257,6 +480,7 @@
     }
     // 3. Casting / Sweeping Loop / Long Swing
     else if (/(cast|loop|long swing|around the ball|flare|foul ball)/.test(combined)) {
+      topicKey = 'casting';
       batId = 'combat-blue';
       clinicIds = ['casting', 'bat-drag'];
       scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
@@ -271,6 +495,7 @@
     }
     // 4. Rolling Over / Grounders / Low Launch Angle
     else if (/(roll over|rollover|ground ball|grounder|top spin|topspin|chop|extension|wrist)/.test(combined)) {
+      topicKey = 'rolling-over';
       batId = 'goods-2026';
       clinicIds = ['rolling-over', 'lunging'];
       scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
@@ -285,6 +510,7 @@
     }
     // 5. Lunging / Off-Speed / Changeup / Curveball / Timing
     else if (/(lunge|drift|off-speed|offspeed|changeup|curve|slider|front foot|weight transfer|timing|whiff|missed pci)/.test(combined)) {
+      topicKey = 'lunging';
       batId = 'combat-rodeo';
       clinicIds = ['lunging', 'rolling-over'];
       scenarioIds = ['xwoba-metrics', 'catcher-framing'];
@@ -299,6 +525,7 @@
     }
     // 6. Infield Defense / Glove / Footwork
     else if (/(infield|glove|stab|funnel|shortstop|second base|third base|first base|grounder|footwork|exchange|double play|force)/.test(combined)) {
+      topicKey = 'infield';
       batId = 'goods-2022';
       clinicIds = ['glove-stab', 'footwork-cadence'];
       scenarioIds = ['force-vs-tag', 'infield-fly', 'stealing-second'];
@@ -314,6 +541,7 @@
     // 7. Outfield / Catcher / Relay / Routes / Tag Up
     else if (/(outfield|drop step|banana|route|crow hop|relay|cutoff|tag up|fly ball|catcher|framing)/.test(combined)) {
       const isCatcher = combined.includes('catcher') || combined.includes('framing');
+      topicKey = isCatcher ? 'catcher' : 'outfield';
       batId = 'goods-2026';
       clinicIds = isCatcher ? ['footwork-cadence', 'glove-stab'] : ['banana-route', 'crow-hop'];
       scenarioIds = isCatcher ? ['catcher-framing', 'stealing-second'] : ['relay-throw', 'tagging-up'];
@@ -333,75 +561,96 @@
             'Pre-Pitch Tag Alert: Check runner speed on 3rd and wind direction before every fly ball situation.'
           ];
     }
-    // 8. Bat Comparisons & Acoustics
-    else if (/(baum|goods|combat|rodeo|catx2|marucci|bat|wood|alloy|bbcor|ping|pop|sweet spot|moi)/.test(combined)) {
-      batId = combined.includes('baum') ? 'baum-gold' : combined.includes('combat') ? 'combat-rodeo' : combined.includes('catx2') ? 'marucci-catx2' : 'goods-2026';
+    // 8. Bat Comparisons & Acoustics (all 16 bats incl. Warstic Bonesaber, StringKing Metal 2 Pro, Victus Vandal, Old Hickory J143M)
+    else if (/(baum|victus|v243|vandal|c271|old hickory|hickory|j143|voodoo|atlas|goods|combat|rodeo|catx2|marucci|rawlings|icon|easton|hype|warstic|bonesaber|stringking|metal 2|metal2|composite|bat|wood|alloy|bbcor|ping|pop|sweet spot|moi)/.test(combined)) {
+      topicKey = 'bats';
+      batId =
+        (combined.includes('bonesaber') || combined.includes('warstic') ? 'warstic-bonesaber' : '') ||
+        (combined.includes('stringking') || combined.includes('metal 2') || combined.includes('metal2') ? 'stringking-metal2' : '') ||
+        (combined.includes('vandal') ? 'victus-vandal' : '') ||
+        (combined.includes('old hickory') || combined.includes('hickory') || combined.includes('j143') ? 'old-hickory-j143' : '') ||
+        (combined.includes('icon') || combined.includes('rawlings') ? 'rawlings-icon' : '') ||
+        (combined.includes('hype') || combined.includes('easton') ? 'easton-hype' : '') ||
+        (combined.includes('baum') && 'baum-gold') ||
+        (combined.includes('victus') && 'victus-v243') ||
+        (combined.includes('c271') && 'ls-c271') ||
+        (combined.includes('voodoo') && 'voodoo-one') ||
+        (combined.includes('atlas') && 'ls-atlas') ||
+        (combined.includes('rodeo') && 'combat-rodeo') ||
+        (combined.includes('combat') && 'combat-blue') ||
+        (combined.includes('catx') && 'marucci-catx2') ||
+        'goods-2026';
       clinicIds = ['rolling-over', 'bat-drag'];
       scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
-      ytQuery = 'bbcor bat comparison tree goods baum wood swing weight';
+      ytQuery = 'bbcor composite vs alloy baseball bat comparison bonesaber vandal metal 2 catx2';
       reply =
-        "Every bat in the DiamondIQ Locker has distinct mass, MOI (Moment of Inertia — how heavy the barrel feels through the zone), and barrel sound: Baum Bat Gold (-3) is a dense maple-composite PermaWood with an honest 2.505\" sweet spot and dry crack + short woody barrel pop; 2026 & 2022 DeMarini The Goods pair heavy end-loaded X14 alloy barrels with composite handles for max Statcast exit velo and crisp two-piece pings; Combat Spec-A1 (Rodeo / Members Blue) & Marucci CATX2 are responsive 1-piece alloys with lower swing weight and wider sweet spots for catch-up bat speed.";
+        batId === 'warstic-bonesaber'
+          ? 'Warstic Bonesaber Hybrid (-3) pairs a Katana2X alloy barrel with a composite handle and Tsuka-Warrior pommel—giving you blazing speed-loaded barrel whip and a crisp, razor-edged alloy ping without heavy end-load drag.'
+          : batId === 'stringking-metal2'
+            ? 'StringKing Metal 2 Pro (-3) is an ultra-lightweight raw 1-piece alloy stick engineered for pure whip and top-of-zone fastballs, producing an unmistakable glassy high-register metallic ring when squared cleanly.'
+            : batId === 'victus-vandal'
+              ? 'Victus Vandal (-3) combines a stealth matte-black VXP 1-piece alloy barrel with a hollow carbon composite end cap—dropping swing weight toward your hands for quick whip and a punchy, damped alloy knock.'
+              : batId === 'old-hickory-j143'
+                ? 'Old Hickory J143M (-3 Pro Maple) turns a dense, flame-tempered chestnut barrel into an end-loaded maple profile with an intense dry hardwood crack—ideal for training heavy-barrel carry vs. Baum Bat Gold’s PermaWood pop.'
+                : batId === 'rawlings-icon'
+                  ? 'Rawlings Icon (-3 Composite) uses In/Tense Carbon Composite walls that deliver a deep, muted carbon thud instead of a bright metallic ring, with a huge zero-loss sweet spot and smooth balanced whip through the zone.'
+                  : batId === 'easton-hype'
+                    ? 'Easton Hype Fire (-3 Thermo-Composite) pairs a flexible ConneXion Max joint with a hollow trampoline composite barrel that produces a crisp, snappy carbon whack and blazing bat speed.'
+                    : batId === 'marucci-catx2'
+                      ? 'Marucci CATX2 (-3 AZR Alloy) blends a classic clean high-pitched AZR alloy bell ring with a Liquid-Gel dampened knob—so squared barrels ring loudly without stinging your bottom hand on cool mornings.'
+                      : batId === 'baum-gold'
+                        ? 'Baum Bat Gold (-3 PermaWood Composite) adds a dense interior wood-composite cavity pop layered beneath a crisp maple crack—giving you true pro wood durability plus unmistakable barrel pop when you find the sweet spot.'
+                        : "All 16 bats in the DiamondIQ Locker carry distinct mass, MOI, and acoustics: Pro Wood (Baum Bat Gold, Victus V243, LS Prime C271, Old Hickory J143M), Hybrids (DeMarini Goods '26/'22, Warstic Bonesaber), Composite BBCOR (Rawlings Icon, Easton Hype Fire), and 1-Pc Alloys (Voodoo One, Atlas EVO-K, StringKing Metal 2 Pro, Combat Rodeo/Blue, Marucci CATX2, Victus Vandal).";
       tips = [
-        'Audition Contact Zones: Use the "Sweet Spot / End Cap / Inside Jam / Foul Glance" buttons under the Bat Locker to hear real barrel feedback.',
-        'Match Bat to Goal: Pick Baum Bat Gold to groove inside mechanics; pick 2026 Goods for max carry; pick Combat Blue for elite bat speed.',
-        'Check Smash Factor: Aim for 1.24–1.30 smash factor in Rapsodo telemetry to verify pure barrel efficiency.'
+        'Audition Contact Zones: Compare Sweet Spot, End Cap, Inside Jam, and Foul Glance right inside the Bat Locker audio lab.',
+        'Speed-Loaded vs. End-Loaded: Try Warstic Bonesaber, StringKing Metal 2 Pro, or Victus Vandal against heavy end-loads like The Goods \'26 or Old Hickory J143M.',
+        'Check Smash Factor: Target 1.24–1.30 in Rapsodo telemetry to verify pure sweet-spot transfer.'
       ];
     }
-    // 9. Specific Stadium / Weather / Wind / Ballpark Scouting
-    else if (stadiumHitId || /(stadium|field|ballpark|wind|altitude|wall|monster|rapsodo|exit velo|launch angle|statcast)/.test(combined)) {
-      const park = VALID_STADIUMS[stadiumHitId || 'sdsu'];
-      batId = stadiumHitId === 'fenway' || stadiumHitId === 'vandy' || stadiumHitId === 'yankee' ? 'goods-2026' : 'goods-2022';
+    // 9. Specific Stadium / Weather / Wind / Ballpark Scouting (incl. East County HS!)
+    else if (detectedStadiumId || /(stadium|field|ballpark|wind|altitude|wall|monster|rapsodo|exit velo|launch angle|statcast|east county|san diego)/.test(combined)) {
+      topicKey = 'stadium';
+      const stId = detectedStadiumId || 'sdsu';
+      const park = VALID_STADIUMS[stId];
+      detectedStadiumId = stId;
+      batId = stId === 'fenway' || stId === 'vandy' || stId === 'yankee' ? 'goods-2026' : stId.startsWith('hs-') ? 'easton-hype' : 'goods-2022';
       clinicIds = ['rolling-over', 'casting'];
       scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
       ytQuery = 'launch angle exit velocity spray chart hitting approach';
-      reply = `Ballpark Scouting — ${park.name} (${park.dims}): ${park.note} Use the Launch Angle (~24°–30° for HRs, 10°–20° for gap line drives) and Wind toggles in the 3D Studio to see exactly how your batted balls carry into alleys vs. tall walls.`;
+      reply = `Ballpark Scouting — ${park.name} (${park.dims}): ${park.note} Use the Launch Angle (~24°–30° for HRs, 10°–20° for gap line drives) and Wind toggles in the 3D Studio to test how flies carry over this exact wall.`;
       tips = [
         'Test Carry vs. Wind: Toggle 10 Out vs. 12 In wind in Rapsodo Flight Arc to see 15–28 ft carry swings firsthand.',
         'Hunt 26°–30° Barrels: Press "Demo High HR" or aim slightly under middle fastballs with Manual PCI for ideal backspin.',
         'Play the Park: Shorten up with two strikes toward open gaps rather than forcing steep uppercuts into deep CF.'
       ];
     }
-    // 10. Live Cage Telemetry Follow-up (e.g. "Analyze my current cage setup" or "I just hit a...")
-    else if (cage && (cage.ev || cage.bat)) {
-      const evTxt = cage.ev ? `${cage.ev} mph exit velocity` : 'your current rep';
-      const laTxt = cage.la != null ? `${cage.la}° launch angle` : 'swing plane';
-      batId = (cage.bat.toLowerCase().includes('baum') && 'baum-gold') ||
-        (cage.bat.toLowerCase().includes('rodeo') && 'combat-rodeo') ||
-        (cage.bat.toLowerCase().includes('blue') && 'combat-blue') ||
-        (cage.bat.toLowerCase().includes('catx') && 'marucci-catx2') ||
-        (cage.bat.toLowerCase().includes('2022') && 'goods-2022') ||
-        'goods-2026';
-      const highAngle = cage.la != null && cage.la > 35;
-      const lowAngle = cage.la != null && cage.la < 10;
-      clinicIds = lowAngle ? ['rolling-over', 'bat-drag'] : highAngle ? ['casting', 'lunging'] : ['rolling-over', 'lunging'];
-      scenarioIds = ['launch-angle-exit-velo', 'xwoba-metrics'];
-      ytQuery = lowAngle ? 'improve baseball launch angle backspin line drives' : 'consistent baseball barrel path tee drills';
-      reply = `Looking at your live 3D Studio setup (${cage.bat || 'Selected Bat'} at ${cage.park || 'the ballpark'} — ${evTxt}, ${laTxt}): ${
-        lowAngle
-          ? 'Your launch angle dipped below 10°, meaning the barrel arrived slightly on top of the ball. Aim the lower third of your PCI slightly beneath the baseball (+8° to +12° attack angle) and keep your top palm facing up past contact to turn grounders into carrying line drives.'
-          : highAngle
-            ? 'Your launch angle climbed past 35° (sky-high fly / pop territory). Stay taller through your front side and meet the pitch out front cleanly at 22°–29° so energy transfers forward into the gaps instead of straight up.'
-            : 'That swing plane sits right in the sweet-spot zone! Repeat that clean hip-first turn with quiet head tracking so you stack back-to-back 95+ mph line drives across all pitch speeds.'
-      }`;
-      tips = [
-        'Dial In Attack Angle: Watch the Rapsodo Attack Angle readout right below the 3D field—target +6° to +13° on level strikes.',
-        'Switch Spray vs. Flight Arc: Check the Flight Arc tab after each swing to see wall clearance and apex height.',
-        'Mix Off-Speed: Switch Pitch from Fastball to Mix once you barrel 3 straight pitches.'
-      ];
-    }
-    // 11. General / Catch-All Baseball Coaching
+    // 10. General / Catch-All Baseball Coaching
     else {
-      batId = 'goods-2026';
+      topicKey = 'general';
+      batId = turnCount % 2 === 1 ? 'rawlings-icon' : 'goods-2026';
       clinicIds = ['rolling-over', 'glove-stab'];
       scenarioIds = ['force-vs-tag', 'launch-angle-exit-velo'];
       ytQuery = 'complete baseball hitting and fielding practice drills';
       reply =
-        "Let's keep your training sharp and simple! Great baseball comes down to timing your load early at the plate, catching the ball out in front of your glove-side hip on defense, and knowing where every throw goes before the pitch is thrown. Pick any specific issue—like bat drag, rolling over grounders, throwing accuracy, beginner setup, or a stadium approach—and I'll build your exact step-by-step fix.";
+        turnCount > 0 && cage && (cage.bat || cage.park)
+          ? `Checking in on your session (${cage.bat || 'Selected Bat'} at ${cage.park || 'the ballpark'}): dial in one simple focus for your next 5 reps—either landing softly on time at toe-touch or holding palm-up/palm-down extension past contact. Tell me whether you want a swing drill, bat comparison, or East County field scouting report next.`
+          : "Let's keep your training sharp and practical! Great baseball comes down to timing your load early at the plate, catching the ball out in front of your glove-side hip on defense, and knowing where every throw goes before the pitch is thrown. Pick any specific topic—like Rawlings Icon vs. CATX2, bat drag, Santana/Grossmont/Valhalla HS fields, or a beginner checkup—and I'll build your next step.";
       tips = [
         '10-Min Tee Calibration: 5 swings up the middle + 5 swings to the opposite gap before stepping into live speed.',
         'Pre-Pitch Mental Rep: Check outs, baserunners, and wind before every single pitch in the 3D Stadium.',
-        'Run the 28-Q Baseline: Visit Training Lab -> 28-Q Baseline Quiz to lock in your honest profile without guessing.'
+        'Run the 28-Q Baseline: Visit Training Lab -> 28-Q Baseline Quiz to lock in your honest profile.'
       ];
+    }
+
+    // Anti-repetition guard: cycle through genuinely distinct angles if the same topic comes back around!
+    if (alreadySaid(reply)) {
+      const cageTag = cage && (cage.ev || cage.bat) ? ` [${cage.bat || 'Cage'}${cage.ev ? ` · ${cage.ev} mph EV` : ''}]` : '';
+      const angles = [
+        `Progression Check (Turn ${turnCount + 1}${cageTag}): Move from single-speed reps into live Mix mode—track spin axis out of the hand and stay palm-up/palm-down through the middle third.`,
+        `Acoustic & Barrel Feedback (Turn ${turnCount + 1}${cageTag}): Compare your swing against ${VALID_BATS[batId] || 'your gamer bat'} in Manual PCI mode—if you hear jam/endcap damping, shorten your gather by 15%.`,
+        `Launch Window Tune-Up (Turn ${turnCount + 1}${cageTag}): Aim for 14°–24° line drives up the big part of ${VALID_STADIUMS[detectedStadiumId || 'sdsu']?.name || 'the yard'} before hunting pull-side elevation.`
+      ];
+      reply = `${angles[turnCount % angles.length]} ${tips[turnCount % Math.max(1, tips.length)] || ''}`.trim();
     }
 
     const cleanClinicIds = clinicIds.filter((id, i, a) => VALID_CLINICS[id] && a.indexOf(id) === i).slice(0, 2);
@@ -428,8 +677,14 @@
       }
     ].slice(0, 3);
 
+    const followUpPrompts = buildFollowUpPrompts(topicKey, {
+      batId: VALID_BATS[batId] ? batId : 'goods-2026',
+      stadiumId: detectedStadiumId || 'sdsu'
+    }).filter((p) => !priorUserTexts.includes(p.toLowerCase()));
+
     return {
       coach: 'Jax',
+      source: 'instant-local',
       mode: 'local-scouting',
       reply,
       actionableTips: tips.slice(0, 3),
@@ -438,7 +693,8 @@
       youtubeLinks,
       webSources: [],
       recommendedBatId: VALID_BATS[batId] ? batId : 'goods-2026',
-      recommendedBatName: VALID_BATS[batId] || VALID_BATS['goods-2026']
+      recommendedBatName: VALID_BATS[batId] || VALID_BATS['goods-2026'],
+      followUpPrompts: followUpPrompts.slice(0, 3)
     };
   }
 
@@ -449,6 +705,7 @@
     VALID_STADIUMS,
     isValidGeminiKey,
     parseDelimitedJaxResponse,
+    buildFollowUpPrompts,
     buildLocalJaxResponse
   };
 });

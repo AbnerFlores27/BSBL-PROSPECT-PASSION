@@ -1059,8 +1059,8 @@ app.post('/api/ai/jax', async (req, res) => {
     buildLocalJaxResponse({
       message,
       history: cleanHistory,
-      baselineContext: baselineSummary,
-      cageContext: cageSummary,
+      baselineSummary,
+      cageSummary,
       userProfile: userOnboardingProfile,
       preferences: userPrefs
     });
@@ -1112,7 +1112,8 @@ TIPS:
 CLINICS: comma-separated valid clinic IDs (e.g. rolling-over, bat-drag)
 SCENARIOS: comma-separated valid scenario IDs (e.g. launch-angle-exit-velo)
 BAT: single valid bat ID (e.g. goods-2026)
-YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
+YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases
+FOLLOW_UPS: 3 short clickable next questions separated by | (e.g. Give me a harder drill | Compare Icon vs CATX2 | Check my launch angle)`;
 
   const ai = new GoogleGenAI({
     apiKey,
@@ -1209,6 +1210,12 @@ YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
       }
     }
 
+    const { buildFollowUpPrompts } = require('./jax-engine');
+    const followUpPrompts =
+      Array.isArray(parsed.followUps) && parsed.followUps.length >= 2
+        ? parsed.followUps
+        : buildFollowUpPrompts(clinicIds[0] || 'general', { batId: chosenBatId });
+
     return res.json({
       coach: 'Jax',
       source: 'gemini-grounded',
@@ -1219,7 +1226,8 @@ YOUTUBE_TOPICS: 1–2 concise baseball drill search phrases`;
       youtubeLinks,
       webSources,
       recommendedBatId: chosenBatId,
-      recommendedBatName: VALID_BATS[chosenBatId]
+      recommendedBatName: VALID_BATS[chosenBatId],
+      followUpPrompts
     });
   } catch (err) {
     console.warn('Coach Jax Gemini fallback to zero-key engine:', err && err.message ? err.message : err);

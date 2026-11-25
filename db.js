@@ -28,7 +28,24 @@ function verifyPassword(password, storedHash) {
   return crypto.timingSafeEqual(keyBuf, derivedBuf);
 }
 
-const ALLOWED_BATS = new Set(['baum-gold', 'goods-2026', 'goods-2022', 'combat-rodeo', 'combat-blue', 'marucci-catx2']);
+const ALLOWED_BATS = new Set([
+  'baum-gold',
+  'victus-v243',
+  'ls-c271',
+  'goods-2026',
+  'goods-2022',
+  'voodoo-one',
+  'ls-atlas',
+  'combat-rodeo',
+  'combat-blue',
+  'marucci-catx2',
+  'rawlings-icon',
+  'easton-hype',
+  'warstic-bonesaber',
+  'stringking-metal2',
+  'victus-vandal',
+  'old-hickory-j143'
+]);
 const ALLOWED_TIERS = new Set(['pro', 'college', 'hs', 'cage']);
 
 function sanitizePreferences(raw) {

@@ -10,7 +10,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script type="importmap">
 {
@@ -28,6 +28,7 @@
 <a class="skip-link" href="#home">Skip to content</a>
 
 <header class="site-header">
+  <div class="rgb-spectrum-rail" aria-hidden="true"></div>
   <div class="header-inner">
     <a class="brand" href="index.html">
       <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -62,19 +63,17 @@
 <section class="hero-facility" aria-label="DiamondIQ 3D Stadium & Coaching Showcase">
   <img
     class="hero-facility-bg"
-    src="/src/assets/images/baseball_diamond_twilight_1794597327254.jpg"
+    src="/assets/hero/baseball_diamond_twilight_1794597327254.jpg"
     alt="Twilight baseball stadium diamond lit for batting practice and infield reps"
     referrerpolicy="no-referrer"
   >
   <div class="hero-facility-scrim" aria-hidden="true"></div>
   <div class="hero-facility-inner">
     <div class="hero-facility-copy">
-      <div class="hero-eyebrow">22 Photo-Verified Pro, College &amp; CA/SD HS Ballparks · 120Hz Physics · Coach Jax AI</div>
       <h1 class="hero-title-stacked">
         <span class="hero-line-white">Step Into The Box.</span>
-        <span class="hero-line-gold">Own Every Pitch &amp; Play.</span>
+        <span class="hero-line-led">Own Every Pitch &amp; Play.</span>
       </h1>
-      <p class="hero-lead-facility">Authentic Baum Wood, Goods &amp; Combat bat acoustics, Rapsodo flight &amp; roll telemetry, MLB The Show camera angles, and Coach Jax live web scouting.</p>
       <div class="hero-facility-actions">
         <a class="btn btn-primary btn-pill" href="#gameday-studio" id="hero-open-hitlab">Launch 3D Studio</a>
         <button type="button" class="btn btn-outline-light btn-pill" data-open-jax data-jax-prompt="Give me a quick 3-step hitting & fielding checkup to start today's session.">Ask Coach Jax</button>
@@ -124,7 +123,7 @@
     <div class="studio-topbar">
       <div>
         <h2 id="studio-heading">Gameday 3D Broadcast Studio · Rapsodo &amp; HitTrax</h2>
-        <p>22 photo-verified Pro, College &amp; CA/San Diego HS ballparks + D1 Cage · Authentic maple &amp; BBCOR acoustics · Real ground roll &amp; MLB The Show views.</p>
+        <p>29 Pro, College &amp; San Diego HS ballparks + D1 Cage · 16 wood, alloy &amp; composite bats · Rapsodo telemetry &amp; MLB The Show views.</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;">
         <div class="segmented-group" id="studio-tabs" role="group" aria-label="Switch studio mode">
@@ -137,6 +136,11 @@
 
     <div class="studio-body">
       <div id="studio-panel-hitlab">
+        <div class="studio-flow-bar" aria-label="Quick 3-step simulator workflow">
+          <div class="studio-flow-step"><span class="studio-flow-num">01</span><span>Pick <strong>Ballpark</strong>, <strong>Lighting</strong> &amp; <strong>Wind</strong></span></div>
+          <div class="studio-flow-step"><span class="studio-flow-num">02</span><span>Select <strong>Bat</strong>, <strong>Pitch</strong> &amp; <strong>Camera</strong></span></div>
+          <div class="studio-flow-step"><span class="studio-flow-num">03</span><span>Aim PCI &amp; press <strong>Space</strong> to <strong>Swing</strong></span></div>
+        </div>
         <div class="studio-command-dock" aria-label="Ballpark, Lighting, Pitch, Wind, Matchup, and Camera Controls">
           <div class="command-dock-row">
             <span class="dock-row-tag">01 Venue</span>
@@ -146,7 +150,7 @@
                 <div class="segmented-group" id="stadium-tier-tabs" role="group" aria-label="Choose venue level">
                   <button type="button" class="segmented-btn" data-tier="pro" aria-pressed="false">Pro (6)</button>
                   <button type="button" class="segmented-btn" data-tier="college" aria-pressed="true">College (12)</button>
-                  <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (3)</button>
+                  <button type="button" class="segmented-btn" data-tier="hs" aria-pressed="false">High School (10)</button>
                   <button type="button" class="segmented-btn" data-tier="cage" aria-pressed="false">D1 Cage</button>
                 </div>
               </div>
@@ -263,7 +267,7 @@
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;">
               <span id="cage-pitch-note" class="tabular-nums" style="font-size:0.82rem;color:var(--text-secondary);">Aim PCI with mouse or WASD · Press Space to pitch &amp; swing</span>
-              <span class="tabular-nums" id="count-readout" style="font-size:0.84rem;font-weight:700;color:var(--gold);padding:0.2rem 0.55rem;border-radius:6px;background:var(--bg-subtle);border:1px solid var(--border);">Count: 0-0 · Outs: 0</span>
+              <span class="tabular-nums" id="count-readout" style="font-size:0.84rem;font-weight:700;color:var(--accent);padding:0.2rem 0.55rem;border-radius:6px;background:var(--bg-subtle);border:1px solid var(--border);">Count: 0-0 · Outs: 0</span>
             </div>
           </div>
 
@@ -332,7 +336,23 @@
                     <span class="bat-swatch" style="background:linear-gradient(90deg,#090a0d 34%,#eab308 42%,#fef08a 50%,#eab308 58%,#090a0d 66%);"></span>
                     <span class="bat-btn-name">Baum Bat Gold</span>
                   </span>
-                  <span class="bat-btn-meta">Gloss Black/Gold Composite Wood · -3</span>
+                  <span class="bat-btn-meta">Gloss Black/Gold Comp Wood · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="victus-v243" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#b4773e 34%,#0b0c10 42%,#d4af37 52%,#111318 66%,#07080a 100%);"></span>
+                    <span class="bat-btn-name">Victus V243 Maple</span>
+                  </span>
+                  <span class="bat-btn-meta">Honey/Black Pro Maple · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="ls-c271" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#140c08 32%,#2d1c14 48%,#eab308 56%,#1a100b 70%,#140c08 100%);"></span>
+                    <span class="bat-btn-name">LS Prime C271</span>
+                  </span>
+                  <span class="bat-btn-meta">Espresso/Gold ExoPro Maple · -3</span>
                 </button>
 
                 <button type="button" class="bat-btn" data-bat="goods-2026" aria-pressed="true">
@@ -349,6 +369,22 @@
                     <span class="bat-btn-name">2022 The Goods</span>
                   </span>
                   <span class="bat-btn-meta">Brushed Chrome/Black Hybrid · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="voodoo-one" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#111318 32%,#dc2626 38%,#ef4444 62%,#0f172a 76%,#dc2626 92%);"></span>
+                    <span class="bat-btn-name">2026 Voodoo One</span>
+                  </span>
+                  <span class="bat-btn-meta">Crimson X14 1-Pc Alloy · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="ls-atlas" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#0f172a 30%,#475569 38%,#06b6d4 54%,#eab308 66%,#334155 92%);"></span>
+                    <span class="bat-btn-name">LS Atlas EVO-K</span>
+                  </span>
+                  <span class="bat-btn-meta">Graphite/Cyan SL Alloy · -3</span>
                 </button>
 
                 <button type="button" class="bat-btn" data-bat="combat-rodeo" aria-pressed="false">
@@ -373,6 +409,54 @@
                     <span class="bat-btn-name">Marucci CATX2 Alloy</span>
                   </span>
                   <span class="bat-btn-meta">AZR Silver/Red 1-Pc · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="rawlings-icon" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#111318 34%,#dfd2bc 40%,#f3ead9 62%,#b45309 74%,#dfd2bc 92%);"></span>
+                    <span class="bat-btn-name">Rawlings Icon</span>
+                  </span>
+                  <span class="bat-btn-meta">Sand/Bronze Carbon Comp · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="easton-hype" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#0f1116 32%,#fb7185 44%,#f97316 68%,#00e5ff 86%,#ea580c 100%);"></span>
+                    <span class="bat-btn-name">Easton Hype Fire</span>
+                  </span>
+                  <span class="bat-btn-meta">Ember/Cyan Thermo-Comp · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="warstic-bonesaber" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#0b0c10 28%,#e5dcc8 34%,#f6f1e7 64%,#dc2626 76%,#e5dcc8 92%);"></span>
+                    <span class="bat-btn-name">Warstic Bonesaber</span>
+                  </span>
+                  <span class="bat-btn-meta">Bone/Crimson Katana2X Hybrid · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="stringking-metal2" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#0f172a 28%,#94a3b8 34%,#f1f5f9 62%,#06b6d4 76%,#64748b 92%);"></span>
+                    <span class="bat-btn-name">StringKing Metal 2 Pro</span>
+                  </span>
+                  <span class="bat-btn-meta">Titanium/Cyan 1-Pc Alloy · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="victus-vandal" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#090a0d 30%,#181a21 44%,#343946 66%,#facc15 80%,#111318 94%);"></span>
+                    <span class="bat-btn-name">Victus Vandal</span>
+                  </span>
+                  <span class="bat-btn-meta">Matte Black Carbon-Cap Alloy · -3</span>
+                </button>
+
+                <button type="button" class="bat-btn" data-bat="old-hickory-j143" aria-pressed="false">
+                  <span class="bat-btn-top">
+                    <span class="bat-swatch" style="background:linear-gradient(90deg,#3b2214 34%,#7c451d 46%,#b8733b 64%,#eab308 76%,#d89860 92%);"></span>
+                    <span class="bat-btn-name">Old Hickory J143M</span>
+                  </span>
+                  <span class="bat-btn-meta">Chestnut/Walnut Pro Maple · -3</span>
                 </button>
               </div>
             </div>
@@ -402,7 +486,7 @@
               <div class="spray-head">
                 <div>
                   <div class="kicker-line" style="margin-bottom:0.1rem;">Rapsodo / HitTrax Console</div>
-                  <div id="spray-stadium-label" class="tabular-nums" style="font-size:0.8rem;color:var(--text-secondary);">SDSU Tony Gwynn · 340 LF · 410 CF · 340 RF</div>
+                  <div id="spray-stadium-label" class="tabular-nums" style="font-size:0.8rem;color:var(--text-secondary);">SDSU Tony Gwynn · 340 LF · 412 CF · 340 RF</div>
                 </div>
                 <div style="text-align:right;">
                   <div id="session-count-pill" class="tabular-nums" style="font-size:0.82rem;font-weight:700;color:var(--accent);">0 HR · 0 Hits</div>
@@ -419,10 +503,14 @@
 
             <div class="venue-photo-preview" id="venue-photo-preview" aria-label="Scouted stadium reference photo">
               <img id="venue-photo-img" class="venue-photo-thumb" src="/assets/aistudio/IMG_0498_2fe12e03.jpeg" alt="Tony Gwynn Stadium (SDSU) stadium reference photo" referrerpolicy="no-referrer">
+              <div id="venue-photo-fallback" class="venue-photo-fallback" hidden>
+                <span class="venue-fallback-abbr" id="venue-fallback-abbr">SDSU</span>
+                <span class="venue-fallback-name" id="venue-fallback-name">Venue Profile</span>
+              </div>
               <div class="venue-photo-meta">
                 <div class="kicker-line" style="margin-bottom:0.05rem;">Scouted Venue Reference</div>
                 <h3 class="venue-photo-title" id="venue-photo-title">Tony Gwynn Stadium (SDSU)</h3>
-                <div class="venue-photo-dims" id="venue-photo-dims">SDSU Tony Gwynn · 340 LF · 410 CF · 340 RF</div>
+                <div class="venue-photo-dims" id="venue-photo-dims">SDSU Tony Gwynn · 340 LF · 412 CF · 340 RF</div>
                 <p class="venue-photo-note" id="venue-photo-note">Scarlet #19 Gwynn banner, Mission-style dorms beyond RF, Cowles Mtn skyline.</p>
               </div>
             </div>
@@ -477,7 +565,7 @@
       <article class="card bento-feature">
         <div class="bento-feature-media">
           <img
-            src="/src/assets/images/baseball_infield_slide_action_1794856804290.jpg"
+            src="/assets/hero/baseball_infield_slide_action_1794856804290.jpg"
             alt="Baserunner sliding into second base as the shortstop fires a relay throw"
             referrerpolicy="no-referrer"
           >

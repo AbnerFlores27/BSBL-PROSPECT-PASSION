@@ -289,13 +289,13 @@
           <!-- Yardage & Broadcast Grid -->
           <line x1="150" y1="42" x2="150" y2="206" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 4"/>
           <line x1="235" y1="42" x2="235" y2="206" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 4"/>
-          <text x="150" y="222" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.65)">200 FT</text>
-          <text x="235" y="222" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.65)">300 FT</text>
+          <text x="150" y="222" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.65)">200 FT</text>
+          <text x="235" y="222" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="700" fill="rgba(255,255,255,0.65)">300 FT</text>
 
           <!-- Padded 400ft Outfield Wall -->
           <rect x="308" y="162" width="12" height="44" rx="2" fill="#990000" stroke="#f8fafc" stroke-width="1"/>
           <rect x="306" y="159" width="16" height="5" rx="2" fill="#facc15"/>
-          <text x="314" y="224" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.8" font-weight="800" fill="#fde68a">400 FT</text>
+          <text x="314" y="224" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="800" fill="#fde68a">400 FT</text>
 
           <!-- Batter Swinging at Home Plate -->
           <g transform="translate(36, 174)">
@@ -317,7 +317,7 @@
               ? `<path class="svg-flow-arc" filter="url(#glow_${uid})" d="M 54 180 Q 198 22 372 142" fill="none" stroke="url(#hrGlow_${uid})" stroke-width="4.8" stroke-linecap="round"/>
                  <circle cx="372" cy="142" r="5" fill="#fbbf24"/>
                  <rect x="140" y="62" width="148" height="20" rx="3" fill="rgba(8,14,25,0.92)" stroke="#38bdf8" stroke-width="1.2"/>
-                 <text x="214" y="76" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" font-weight="800" fill="#7dd3fc">92 FT APEX · 416 FT HR</text>`
+                 <text x="214" y="76" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="800" fill="#7dd3fc">92 FT APEX · 416 FT HR</text>`
               : ''
           }
           ${showBarrel ? renderBaseballMarkup(252, 88, 7.5) : renderBaseballMarkup(58, 178, 7.5)}
@@ -325,7 +325,7 @@
           <text x="278" y="160" text-anchor="end" font-size="9" font-weight="700" fill="#cbd5e1">14° Liner</text>
           <rect x="10" y="10" width="268" height="24" rx="4" fill="rgba(8,14,25,0.94)" stroke="#38bdf8" stroke-width="1.2"/>
           <rect x="10" y="10" width="5" height="24" rx="2" fill="#38bdf8"/>
-          <text x="146" y="26" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.6" font-weight="800" fill="#f8fafc">${showNote ? 'BARREL: 98+ MPH · 26°–30° LA' : 'STATCAST BARREL ZONE · 26°–30°'}</text>
+          <text x="146" y="26" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9.6" font-weight="800" fill="#f8fafc">${showNote ? 'BARREL: 98+ MPH · 26°–30° LA' : 'STATCAST BARREL ZONE · 26°–30°'}</text>
         </svg>`;
     }
 
@@ -377,7 +377,7 @@
           ${step >= 1 ? `<path class="svg-flow-arc" d="M 200 176 L 200 138" stroke="#38bdf8" stroke-width="3.2" marker-end="url(#fArr_${uid})"/>` : ''}
           <rect x="46" y="10" width="308" height="22" rx="4" fill="rgba(8,14,25,0.94)" stroke="#38bdf8" stroke-width="1.2"/>
           <rect x="46" y="10" width="5" height="22" rx="2" fill="#38bdf8"/>
-          <text x="202" y="25" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="800" fill="#f8fafc">${step === 2 ? 'HOLD QUIET TARGET IN SHADOW ZONE' : 'PRESENT BORDERLINE PITCH INTO ZONE'}</text>
+          <text x="202" y="25" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="800" fill="#f8fafc">${step === 2 ? 'HOLD QUIET TARGET IN SHADOW ZONE' : 'PRESENT BORDERLINE PITCH INTO ZONE'}</text>
         </svg>`;
     }
 
@@ -396,32 +396,32 @@
           <rect x="0" y="0" width="400" height="250" rx="10" fill="#08111f"/>
           <rect x="12" y="12" width="376" height="226" rx="8" fill="#101f36" stroke="#2d4368" stroke-width="1.4"/>
           <rect x="12" y="12" width="376" height="30" rx="8" fill="#0b1628"/>
-          <text x="200" y="32" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="800" fill="#f8fafc">SAME CONTACT QUALITY · ZERO FIELDER LUCK</text>
+          <text x="200" y="32" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#f8fafc">SAME CONTACT QUALITY · ZERO FIELDER LUCK</text>
 
           <!-- Left Mini Diamond: Lineout -->
           <rect x="26" y="50" width="166" height="70" rx="6" fill="#0b1525" stroke="#334155"/>
           <path d="M 109 110 L 79 78 Q 109 58 139 78 Z" fill="#165c32"/>
           <line class="svg-flow-arc" x1="109" y1="108" x2="95" y2="77" stroke="#f87171" stroke-width="2.2"/>
           <circle cx="95" cy="77" r="4" fill="#ef4444" stroke="#fff" stroke-width="1"/>
-          <text x="109" y="65" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.4" font-weight="800" fill="#fca5a5">SS LINEOUT · .000 AVG</text>
-          <text x="109" y="114" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.8" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText}</text>
+          <text x="109" y="65" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="800" fill="#fca5a5">SS LINEOUT · .000 AVG</text>
+          <text x="109" y="114" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText}</text>
 
           <!-- Right Mini Diamond: Gap Double -->
           <rect x="208" y="50" width="166" height="70" rx="6" fill="#0b1525" stroke="#334155"/>
           <path d="M 291 110 L 261 78 Q 291 58 321 78 Z" fill="#165c32"/>
           <line class="svg-flow-arc" x1="291" y1="108" x2="315" y2="68" stroke="#4ade80" stroke-width="2.2"/>
           <circle cx="315" cy="68" r="4" fill="#22c55e" stroke="#fff" stroke-width="1"/>
-          <text x="291" y="65" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.4" font-weight="800" fill="#86efac">GAP DOUBLE · 1.000 AVG</text>
-          <text x="291" y="114" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="8.8" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText}</text>
+          <text x="291" y="65" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.4" font-weight="800" fill="#86efac">GAP DOUBLE · 1.000 AVG</text>
+          <text x="291" y="114" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.8" font-weight="700" fill="#38bdf8">105 mph · 16° → ${valText}</text>
 
           <rect x="44" y="136" width="312" height="20" rx="10" fill="#08111e" stroke="#2d4266"/>
           <rect x="44" y="136" width="${fillW}" height="20" rx="10" fill="url(#xw_${uid})"/>
           <circle cx="154" cy="146" r="5.5" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
           <circle cx="240" cy="146" r="5.5" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
           <circle cx="309" cy="146" r="5.5" fill="#0f1b2e" stroke="#f8fafc" stroke-width="2"/>
-          <text x="154" y="174" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="700" fill="#cbd5e1">.320 AVG</text>
-          <text x="240" y="174" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="700" fill="#fde68a">.370 PLUS</text>
-          <text x="309" y="174" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.5" font-weight="700" fill="#fca5a5">.400+ MVP</text>
+          <text x="154" y="174" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#cbd5e1">.320 AVG</text>
+          <text x="240" y="174" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#fde68a">.370 PLUS</text>
+          <text x="309" y="174" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="700" fill="#fca5a5">.400+ MVP</text>
           <rect x="36" y="188" width="328" height="32" rx="5" fill="rgba(8,14,25,0.92)" stroke="#38bdf8" stroke-width="1"/>
           <text x="200" y="208" text-anchor="middle" font-size="10" font-weight="700" fill="#f8fafc">Grades True Exit Velo + Launch Angle Quality</text>
         </svg>`;
@@ -506,7 +506,7 @@
       step === 2
         ? `<rect x="12" y="218" width="376" height="24" rx="4" fill="rgba(8,14,25,0.94)" stroke="#38bdf8" stroke-width="1.2"/>
            <rect x="12" y="218" width="5" height="24" rx="2" fill="#38bdf8"/>
-           <text x="202" y="234" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9.4" font-weight="800" fill="#f8fafc">${escapeHtml(diagram.callout.slice(0, 54))}</text>`
+           <text x="202" y="234" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9.4" font-weight="800" fill="#f8fafc">${escapeHtml(diagram.callout.slice(0, 54))}</text>`
         : '';
 
     return `
@@ -695,9 +695,9 @@
       if (active) {
         ctx.beginPath();
         ctx.arc(0, -1, 13.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(216,197,92,0.20)';
+        ctx.fillStyle = 'rgba(0,229,255,0.20)';
         ctx.fill();
-        ctx.strokeStyle = '#D8C55C';
+        ctx.strokeStyle = '#00E5FF';
         ctx.lineWidth = 1.3;
         ctx.stroke();
       }
@@ -712,8 +712,8 @@
       ctx.lineTo(4.8, 7);
       ctx.stroke();
 
-      ctx.fillStyle = active ? '#D8C55C' : '#263244';
-      ctx.strokeStyle = active ? '#fff8d6' : '#94a3b8';
+      ctx.fillStyle = active ? '#00E5FF' : '#263244';
+      ctx.strokeStyle = active ? '#cffafe' : '#94a3b8';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.roundRect(-5.5, -5, 11, 8, 3);
@@ -732,19 +732,19 @@
 
       ctx.beginPath();
       ctx.arc(0, -9, 3.9, Math.PI, 0);
-      ctx.fillStyle = active ? '#9A7D12' : '#1e293b';
+      ctx.fillStyle = active ? '#0284c7' : '#1e293b';
       ctx.fill();
 
       ctx.fillStyle = 'rgba(11,12,14,0.9)';
-      ctx.strokeStyle = active ? '#D8C55C' : 'rgba(255,255,255,0.24)';
+      ctx.strokeStyle = active ? '#00E5FF' : 'rgba(255,255,255,0.24)';
       ctx.lineWidth = 0.9;
       ctx.beginPath();
       ctx.roundRect(-10, 9.5, 20, 10, 3);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = active ? '#F2E28B' : '#f8fafc';
-      ctx.font = '800 6.8px "IBM Plex Mono", monospace';
+      ctx.fillStyle = active ? '#7dd3fc' : '#f8fafc';
+      ctx.font = '800 6.8px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.fillText(label, 0, 16.5);
       ctx.restore();
@@ -793,7 +793,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 6.5px "IBM Plex Mono", monospace';
+      ctx.font = '800 6.5px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.fillText(label, 0, 16);
       ctx.restore();
@@ -802,16 +802,16 @@
     function drawBanner(text, y = 218) {
       ctx.save();
       ctx.fillStyle = 'rgba(11,12,14,0.94)';
-      ctx.strokeStyle = '#D8C55C';
+      ctx.strokeStyle = '#00E5FF';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.roundRect(12, y, 376, 24, 4);
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = '#D8C55C';
+      ctx.fillStyle = '#00E5FF';
       ctx.fillRect(12, y, 5, 24);
       ctx.fillStyle = '#F7F8FA';
-      ctx.font = '800 9.4px "IBM Plex Mono", monospace';
+      ctx.font = '800 9.4px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.fillText(text.slice(0, 56), 202, y + 15.5);
       ctx.restore();
@@ -874,20 +874,20 @@
         });
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(255,255,255,0.62)';
-        ctx.font = '700 8.5px "IBM Plex Mono", monospace';
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.fillText('200 FT', 150, 222);
         ctx.fillText('300 FT', 235, 222);
         ctx.fillStyle = '#991b1b';
         ctx.fillRect(308, 162, 12, 44);
-        ctx.fillStyle = '#D8C55C';
+        ctx.fillStyle = '#00E5FF';
         ctx.fillRect(306, 159, 16, 5);
-        ctx.fillStyle = '#fde68a';
+        ctx.fillStyle = '#7dd3fc';
         ctx.fillText('400 FT', 314, 224);
 
         // Barrel cone
         const cone = ctx.createLinearGradient(54, 180, 388, 54);
-        cone.addColorStop(0, 'rgba(216,197,92,0.34)');
+        cone.addColorStop(0, 'rgba(0,229,255,0.34)');
         cone.addColorStop(1, 'rgba(74,222,128,0.04)');
         ctx.fillStyle = cone;
         ctx.beginPath();
@@ -930,7 +930,7 @@
         ctx.arc(1, -6, 5, 0, Math.PI * 2);
         ctx.fillStyle = '#fed7aa';
         ctx.fill();
-        ctx.strokeStyle = '#D8C55C';
+        ctx.strokeStyle = '#00E5FF';
         ctx.lineWidth = 3.2;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -942,7 +942,7 @@
         // Live HR barrel flight trajectory
         if (step >= 1) {
           const flightU = Math.max(0, Math.min(1, (u - 0.12) / 0.78));
-          ctx.strokeStyle = '#D8C55C';
+          ctx.strokeStyle = '#00E5FF';
           ctx.lineWidth = 4;
           ctx.lineCap = 'round';
           ctx.beginPath();
@@ -960,19 +960,19 @@
           if (flightU > 0.94) {
             ctx.beginPath();
             ctx.arc(372, 142, 6 + (flightU - 0.94) * 90, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(216,197,92,0.75)';
+            ctx.strokeStyle = 'rgba(0,229,255,0.75)';
             ctx.lineWidth = 2;
             ctx.stroke();
           }
           ctx.fillStyle = 'rgba(11,12,14,0.92)';
-          ctx.strokeStyle = '#D8C55C';
+          ctx.strokeStyle = '#00E5FF';
           ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.roundRect(140, 62, 152, 20, 3);
           ctx.fill();
           ctx.stroke();
-          ctx.fillStyle = '#D8C55C';
-          ctx.font = '800 8.8px "IBM Plex Mono", monospace';
+          ctx.fillStyle = '#00E5FF';
+          ctx.font = '800 8.8px "JetBrains Mono", monospace';
           ctx.textAlign = 'center';
           ctx.fillText('92 FT APEX · 416 FT HR', 216, 75.5);
         } else {
@@ -1021,8 +1021,8 @@
         ctx.fill();
 
         // Shadow + Strike Zone
-        ctx.fillStyle = 'rgba(216,197,92,0.08)';
-        ctx.strokeStyle = '#D8C55C';
+        ctx.fillStyle = 'rgba(0,229,255,0.08)';
+        ctx.strokeStyle = '#00E5FF';
         ctx.lineWidth = 1.8;
         ctx.setLineDash([6, 4]);
         ctx.beginPath();
@@ -1050,7 +1050,7 @@
         ctx.save();
         ctx.translate(200, mittY);
         ctx.fillStyle = '#85451d';
-        ctx.strokeStyle = '#D8C55C';
+        ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.ellipse(0, 0, 31, 24, 0, 0, Math.PI * 2);
@@ -1087,7 +1087,7 @@
         ctx.fillStyle = '#0B0C0E';
         ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = '#131518';
-        ctx.strokeStyle = 'rgba(216,197,92,0.3)';
+        ctx.strokeStyle = 'rgba(0,229,255,0.32)';
         ctx.lineWidth = 1.4;
         ctx.beginPath();
         ctx.roundRect(12, 12, 376, 226, 8);
@@ -1095,7 +1095,7 @@
         ctx.stroke();
 
         ctx.fillStyle = '#F7F8FA';
-        ctx.font = '800 10.5px "IBM Plex Mono", monospace';
+        ctx.font = '800 10.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.fillText('SAME CONTACT QUALITY · ZERO FIELDER LUCK', 200, 32);
 
@@ -1129,7 +1129,7 @@
           drawBaseball(pos[0], pos[1], 4.2, bProg * 12);
 
           ctx.fillStyle = side.tc;
-          ctx.font = '800 8.2px "IBM Plex Mono", monospace';
+          ctx.font = '800 8.2px "JetBrains Mono", monospace';
           ctx.textAlign = 'center';
           ctx.fillText(side.title, side.cx, 63);
         });
@@ -1145,7 +1145,7 @@
 
         const barGrad = ctx.createLinearGradient(44, 0, 356, 0);
         barGrad.addColorStop(0, '#38bdf8');
-        barGrad.addColorStop(0.55, '#D8C55C');
+        barGrad.addColorStop(0.55, '#00E5FF');
         barGrad.addColorStop(1, '#ef4444');
         ctx.fillStyle = barGrad;
         ctx.beginPath();
@@ -1153,9 +1153,9 @@
         ctx.fill();
 
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 9.5px "IBM Plex Mono", monospace';
+        ctx.font = '700 9.5px "JetBrains Mono", monospace';
         ctx.fillText('.320 AVG', 154, 176);
-        ctx.fillStyle = '#F2E28B';
+        ctx.fillStyle = '#7dd3fc';
         ctx.fillText('.370 PLUS', 240, 176);
         ctx.fillStyle = '#fca5a5';
         ctx.fillText('.400+ MVP', 309, 176);
@@ -1179,10 +1179,14 @@
         RF: [320, 46]
       };
 
-      ctx.fillStyle = '#090B0E';
+      ctx.fillStyle = '#060911';
       ctx.fillRect(0, 0, W, H);
-      // Stands & Warning track
-      ctx.fillStyle = '#141923';
+      // Floodlight Twilight Stadium Sky & Stand Rim
+      const rimGrad = ctx.createRadialGradient(200, 10, 12, 200, 60, 260);
+      rimGrad.addColorStop(0, 'rgba(0, 229, 255, 0.16)');
+      rimGrad.addColorStop(0.55, '#111a29');
+      rimGrad.addColorStop(1, '#090d16');
+      ctx.fillStyle = rimGrad;
       ctx.beginPath();
       ctx.moveTo(4, 56);
       ctx.quadraticCurveTo(200, -34, 396, 56);
@@ -1190,6 +1194,19 @@
       ctx.lineTo(4, 250);
       ctx.closePath();
       ctx.fill();
+
+      // Distant Broadcast Floodlight Masts
+      [68, 332].forEach((lx) => {
+        ctx.fillStyle = 'rgba(224, 242, 254, 0.85)';
+        ctx.fillRect(lx - 8, 8, 16, 4);
+        const beam = ctx.createRadialGradient(lx, 12, 2, lx, 12, 56);
+        beam.addColorStop(0, 'rgba(224, 242, 254, 0.25)');
+        beam.addColorStop(1, 'rgba(224, 242, 254, 0)');
+        ctx.fillStyle = beam;
+        ctx.beginPath();
+        ctx.arc(lx, 12, 56, 0, Math.PI * 2);
+        ctx.fill();
+      });
 
       ctx.fillStyle = '#8b512a';
       ctx.beginPath();
@@ -1200,7 +1217,7 @@
       ctx.closePath();
       ctx.fill();
 
-      // Grass + Diagonal Mow Stripes
+      // Grass + Crisp Broadcast Mow Stripes
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(16, 74);
@@ -1209,37 +1226,37 @@
       ctx.lineTo(16, 250);
       ctx.closePath();
       ctx.clip();
-      ctx.fillStyle = '#196439';
+      ctx.fillStyle = '#155c34';
       ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = '#218049';
-      for (let sx = -260; sx < 520; sx += 26) {
+      ctx.fillStyle = '#1e7b47';
+      for (let sx = -260; sx < 520; sx += 24) {
         ctx.beginPath();
         ctx.moveTo(sx, 0);
-        ctx.lineTo(sx + 13, 0);
-        ctx.lineTo(sx + 13 - H, H);
+        ctx.lineTo(sx + 12, 0);
+        ctx.lineTo(sx + 12 - H, H);
         ctx.lineTo(sx - H, H);
         ctx.closePath();
         ctx.fill();
       }
       ctx.restore();
 
-      // Outfield Wall + Gold Cap
-      ctx.strokeStyle = '#991b1b';
-      ctx.lineWidth = 6;
+      // Outfield Wall + LED Broadcast Trim
+      ctx.strokeStyle = '#0c4a6e';
+      ctx.lineWidth = 6.5;
       ctx.beginPath();
       ctx.moveTo(10, 66);
       ctx.quadraticCurveTo(200, -24, 390, 66);
       ctx.stroke();
-      ctx.strokeStyle = '#D8C55C';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#00E5FF';
+      ctx.lineWidth = 2.2;
       ctx.beginPath();
       ctx.moveTo(10, 63);
       ctx.quadraticCurveTo(200, -27, 390, 63);
       ctx.stroke();
 
-      // Infield Clay Apron + Inner Cutout
+      // Infield Clay Apron + Inner Cutout + Chalk Boxes
       const clayGrad = ctx.createRadialGradient(200, 145, 10, 200, 145, 145);
-      clayGrad.addColorStop(0, '#cf8e54');
+      clayGrad.addColorStop(0, '#d39258');
       clayGrad.addColorStop(1, '#985d2d');
       ctx.fillStyle = clayGrad;
       ctx.beginPath();
@@ -1249,7 +1266,7 @@
       ctx.closePath();
       ctx.fill();
 
-      ctx.fillStyle = '#1c6d3e';
+      ctx.fillStyle = '#19693b';
       ctx.beginPath();
       ctx.moveTo(200, 76);
       ctx.lineTo(270, 138);
@@ -1258,8 +1275,8 @@
       ctx.closePath();
       ctx.fill();
 
-      // Foul Lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      // Foul Lines & Batter Boxes
+      ctx.strokeStyle = 'rgba(255,255,255,0.88)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(200, 214);
@@ -1267,6 +1284,10 @@
       ctx.moveTo(200, 214);
       ctx.lineTo(382, 68);
       ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.52)';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(181, 204, 8, 16);
+      ctx.strokeRect(211, 204, 8, 16);
 
       // Mound + Plate Dirt
       ctx.fillStyle = clayGrad;
@@ -1292,16 +1313,16 @@
           const pulse = 16 + Math.sin(u * Math.PI * 4) * 3;
           ctx.beginPath();
           ctx.arc(bx, by, pulse, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(216,197,92,0.22)';
+          ctx.fillStyle = 'rgba(0,229,255,0.22)';
           ctx.fill();
-          ctx.strokeStyle = '#D8C55C';
+          ctx.strokeStyle = '#00E5FF';
           ctx.lineWidth = 2;
           ctx.stroke();
         }
         ctx.save();
         ctx.translate(bx, by);
         ctx.rotate(Math.PI / 4);
-        ctx.fillStyle = highlight === name ? '#D8C55C' : occupied.has(name) ? '#fca5a5' : '#ffffff';
+        ctx.fillStyle = highlight === name ? '#00E5FF' : occupied.has(name) ? '#fca5a5' : '#ffffff';
         ctx.strokeStyle = '#0f172a';
         ctx.lineWidth = 1.6;
         ctx.fillRect(-7.5, -7.5, 15, 15);
@@ -1310,7 +1331,7 @@
       });
 
       // Home Plate
-      ctx.fillStyle = highlight === 'HOME' ? '#D8C55C' : '#ffffff';
+      ctx.fillStyle = highlight === 'HOME' ? '#00E5FF' : '#ffffff';
       ctx.strokeStyle = '#0f172a';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -1350,7 +1371,7 @@
         if (step >= 1 && popFrac > 0.2) {
           ctx.beginPath();
           ctx.arc(coords.SS[0], coords.SS[1], 19 + Math.sin(u * 16) * 3, 0, Math.PI * 2);
-          ctx.strokeStyle = '#D8C55C';
+          ctx.strokeStyle = '#00E5FF';
           ctx.lineWidth = 1.8;
           ctx.stroke();
         }
@@ -1431,7 +1452,7 @@
         ctx.roundRect(ssPos[0] - 13, ssPos[1] - 24, 26, 12, 3);
         ctx.fill();
         ctx.fillStyle = '#ffffff';
-        ctx.font = '800 7.2px "IBM Plex Mono", monospace';
+        ctx.font = '800 7.2px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.fillText('CUT', ssPos[0], ssPos[1] - 15.5);
       }
@@ -1663,14 +1684,14 @@
       }
     }
 
-    // 3. Interactive MLB-Style Pitching + Mini PCI + HitTrax Stadium Simulator + 5 Real Bats
+    // 3. Interactive MLB-Style Pitching + Mini PCI + HitTrax Stadium Simulator + 12 Real Bats
     const BATS = {
       'baum-gold': {
         id: 'baum-gold',
         name: 'Baum Bat Gold',
         shortLabel: 'Baum',
-        meta: 'AAA Pro Maple Gold Edition · Slight End-Load · 2.505" Barrel',
-        desc: 'High-gloss jet-black maple-composite finish with metallic gold Baum oval medallion, gold BBCOR .50 stamp, cupped black tip, and solid-wood crack.',
+        meta: 'AAA Pro Maple-Composite · Slight End-Load · 2.505" Barrel',
+        desc: 'High-gloss jet-black maple-composite finish with metallic gold Baum oval medallion, gold BBCOR .50 stamp, cupped black tip, and signature PermaWood barrel pop + maple crack.',
         construction: '1pc-wood',
         weightMod: 0.986,
         popMod: 0.976,
@@ -1688,6 +1709,60 @@
         accentColor: '#eab308',
         trimColor: '#d4af37',
         capColor: '#0a0b0e',
+        capStyle: 'cupped'
+      },
+      'victus-v243': {
+        id: 'victus-v243',
+        name: 'Victus V243 Pro Reserve Maple',
+        shortLabel: 'VICTUS V243',
+        meta: 'Pro Reserve Solid Maple · Big-Barrel End-Load · 2.56" Barrel',
+        desc: 'Honey natural flame maple handle fading into high-gloss jet-black pro maple barrel with gold Victus Ink Dot stamp and dense hardwood crack.',
+        construction: '1pc-wood',
+        weightMod: 0.982,
+        popMod: 0.982,
+        cor: 0.458,
+        moi: 1.11,
+        sweetSpot: 0.84,
+        taperSharpness: 1.50,
+        launchLift: 0.2,
+        soundType: 'wood',
+        barrelColor: '#0e1015',
+        barrelHi: '#2a2d36',
+        barrelLo: '#050608',
+        taperColor: '#1a1410',
+        handleColor: '#b4773e',
+        gripColor: '#1c1917',
+        accentColor: '#facc15',
+        trimColor: '#d4af37',
+        capColor: '#090a0d',
+        knobColor: '#9d622c',
+        capStyle: 'cupped'
+      },
+      'ls-c271': {
+        id: 'ls-c271',
+        name: 'Louisville Slugger Prime C271',
+        shortLabel: 'Slugger C271',
+        meta: 'ExoPro Maple C271 · Balanced Whip · Medium Barrel',
+        desc: 'Rich espresso dark maple finish with metallic gold Louisville Slugger oval crest, balanced C271 turning profile, and crisp hardwood crack.',
+        construction: '1pc-wood',
+        weightMod: 1.004,
+        popMod: 0.974,
+        cor: 0.454,
+        moi: 0.99,
+        sweetSpot: 0.88,
+        taperSharpness: 1.38,
+        launchLift: 0.3,
+        soundType: 'wood',
+        barrelColor: '#241610',
+        barrelHi: '#42291d',
+        barrelLo: '#120a07',
+        taperColor: '#1e120d',
+        handleColor: '#160d09',
+        gripColor: '#111827',
+        accentColor: '#fef08a',
+        trimColor: '#eab308',
+        capColor: '#140c08',
+        knobColor: '#140c08',
         capStyle: 'cupped'
       },
       'goods-2026': {
@@ -1742,6 +1817,60 @@
         accentColor: '#111827',
         trimColor: '#111827',
         capColor: '#0e1015',
+        capStyle: 'dish'
+      },
+      'voodoo-one': {
+        id: 'voodoo-one',
+        name: '2026 DeMarini Voodoo One',
+        shortLabel: 'VOODOO ONE',
+        meta: '1-Piece X14 Alloy · Featherlight Whip · 2 5/8" Barrel',
+        desc: 'Crimson-red X14 Alloy one-piece barrel with dark charcoal skull filigree, Tapered Construction knob, and sharp high-frequency one-piece alloy ping.',
+        construction: '1pc',
+        weightMod: 1.035,
+        popMod: 1.028,
+        cor: 0.511,
+        moi: 0.91,
+        sweetSpot: 1.06,
+        taperSharpness: 0.86,
+        launchLift: 0.9,
+        soundType: 'combat',
+        barrelColor: '#dc2626',
+        barrelHi: '#f87171',
+        barrelLo: '#7f1d1d',
+        taperColor: '#b91c1c',
+        handleColor: '#111318',
+        gripColor: '#090b0f',
+        accentColor: '#f8fafc',
+        trimColor: '#fef08a',
+        capColor: '#090b0f',
+        knobColor: '#dc2626',
+        capStyle: 'tremor'
+      },
+      'ls-atlas': {
+        id: 'ls-atlas',
+        name: 'Louisville Slugger Atlas EVO-K',
+        shortLabel: 'ATLAS',
+        meta: '1-Piece SL Hyper Alloy · Mid-Balanced · Tuned SPD-Gen2 Cap',
+        desc: 'Gunmetal graphite SL Hyper superalloy barrel with electric cyan & gold aero rings, Pro Comfort grip, and crisp resonant one-piece metallic ping.',
+        construction: '1pc',
+        weightMod: 1.029,
+        popMod: 1.034,
+        cor: 0.512,
+        moi: 0.94,
+        sweetSpot: 1.08,
+        taperSharpness: 0.85,
+        launchLift: 1.0,
+        soundType: 'catx2',
+        barrelColor: '#475569',
+        barrelHi: '#94a3b8',
+        barrelLo: '#1e293b',
+        taperColor: '#334155',
+        handleColor: '#0f172a',
+        gripColor: '#0f172a',
+        accentColor: '#06b6d4',
+        trimColor: '#eab308',
+        capColor: '#0891b2',
+        knobColor: '#06b6d4',
         capStyle: 'dish'
       },
       'combat-rodeo': {
@@ -1824,13 +1953,181 @@
         capColor: '#111827',
         knobColor: '#dc2626',
         capStyle: 'dish'
+      },
+      'rawlings-icon': {
+        id: 'rawlings-icon',
+        name: 'Rawlings Icon Composite',
+        shortLabel: 'ICON',
+        meta: '2-Piece In/Tense Carbon Composite · Balanced Power · ZeroTune Collar',
+        desc: 'Matte warm-sand carbon barrel paired with stealth black weave handle, bronze chevrons, RevGrip, and deep composite carbon trampoline thud.',
+        construction: '2pc',
+        cuffColor: '#18181b',
+        cuffTrim: '#b45309',
+        weightMod: 1.006,
+        popMod: 1.044,
+        cor: 0.515,
+        moi: 1.03,
+        sweetSpot: 1.09,
+        taperSharpness: 0.92,
+        launchLift: 1.3,
+        soundType: 'composite',
+        barrelColor: '#dfd2bc',
+        barrelHi: '#f3ead9',
+        barrelLo: '#c4b49a',
+        taperColor: '#18181b',
+        handleColor: '#111318',
+        gripColor: '#090b0f',
+        accentColor: '#b45309',
+        trimColor: '#18181b',
+        capColor: '#090b0f',
+        knobColor: '#b45309',
+        capStyle: 'dish'
+      },
+      'easton-hype': {
+        id: 'easton-hype',
+        name: 'Easton Hype Fire BBCOR',
+        shortLabel: 'HYPE FIRE',
+        meta: '2-Piece Thermo-Composite · ConneXion Max · Massive Sweet Spot',
+        desc: 'Ember orange & coral Thermo-Composite barrel fading into obsidian carbon handle with electric cyan collar bands and explosive hot carbon crack.',
+        construction: '2pc',
+        cuffColor: '#00e5ff',
+        cuffTrim: '#f97316',
+        weightMod: 1.018,
+        popMod: 1.042,
+        cor: 0.514,
+        moi: 0.97,
+        sweetSpot: 1.13,
+        taperSharpness: 0.82,
+        launchLift: 1.2,
+        soundType: 'composite',
+        barrelColor: '#f97316',
+        barrelHi: '#fb923c',
+        barrelLo: '#ea580c',
+        taperColor: '#18181b',
+        handleColor: '#0f1116',
+        gripColor: '#0b0d12',
+        accentColor: '#00e5ff',
+        trimColor: '#f97316',
+        capColor: '#090a0d',
+        knobColor: '#f97316',
+        capStyle: 'tremor'
+      },
+      'warstic-bonesaber': {
+        id: 'warstic-bonesaber',
+        name: 'Warstic Bonesaber Hybrid',
+        shortLabel: 'BONESABER',
+        meta: '2-Piece Katana2X Alloy · Tsuka-Warrior Pommel · Speed-Loaded',
+        desc: 'Ivory bone Katana2X alloy barrel paired with obsidian handle, crimson feather chevron, Tsuka flared pommel, and crisp razor-sharp alloy whip ping.',
+        construction: '2pc',
+        cuffColor: '#14161b',
+        cuffTrim: '#dc2626',
+        weightMod: 1.024,
+        popMod: 1.036,
+        cor: 0.512,
+        moi: 0.95,
+        sweetSpot: 1.07,
+        taperSharpness: 0.89,
+        launchLift: 1.0,
+        soundType: 'hybrid',
+        barrelColor: '#e5dcc8',
+        barrelHi: '#f6f1e7',
+        barrelLo: '#c8bfa9',
+        taperColor: '#14161b',
+        handleColor: '#0b0c10',
+        gripColor: '#090a0e',
+        accentColor: '#dc2626',
+        trimColor: '#14161b',
+        capColor: '#0b0c10',
+        knobColor: '#dc2626',
+        capStyle: 'tsuka'
+      },
+      'stringking-metal2': {
+        id: 'stringking-metal2',
+        name: 'StringKing Metal 2 Pro',
+        shortLabel: 'METAL 2',
+        meta: '1-Piece Raw Alloy · Ultra-Light Whip · Crisp High-Pitch Ring',
+        desc: 'Raw brushed titanium-silver aerospace alloy with electric cyan aero bands, stiff zero-flex whip, and unmistakable glassy high-register 1-piece ring.',
+        construction: '1pc',
+        weightMod: 1.038,
+        popMod: 1.026,
+        cor: 0.508,
+        moi: 0.90,
+        sweetSpot: 1.05,
+        taperSharpness: 0.84,
+        launchLift: 0.8,
+        soundType: 'catx2',
+        barrelColor: '#94a3b8',
+        barrelHi: '#f1f5f9',
+        barrelLo: '#64748b',
+        taperColor: '#64748b',
+        handleColor: '#0f172a',
+        gripColor: '#0b1120',
+        accentColor: '#06b6d4',
+        trimColor: '#0284c7',
+        capColor: '#0284c7',
+        knobColor: '#06b6d4',
+        capStyle: 'dish'
+      },
+      'victus-vandal': {
+        id: 'victus-vandal',
+        name: 'Victus Vandal BBCOR',
+        shortLabel: 'VANDAL',
+        meta: '1-Piece Carbon-Cap Alloy · Stealth Balanced · Fast Whip',
+        desc: 'Stealth matte-black VXP alloy barrel fitted with a lightweight hollow carbon composite end cap for lightning bat speed and punchy metallic knock.',
+        construction: '1pc',
+        weightMod: 1.034,
+        popMod: 1.030,
+        cor: 0.510,
+        moi: 0.92,
+        sweetSpot: 1.06,
+        taperSharpness: 0.86,
+        launchLift: 0.9,
+        soundType: 'combat',
+        barrelColor: '#181a21',
+        barrelHi: '#343946',
+        barrelLo: '#090a0d',
+        taperColor: '#1f2937',
+        handleColor: '#111318',
+        gripColor: '#090a0f',
+        accentColor: '#facc15',
+        trimColor: '#e2e8f0',
+        capColor: '#181a20',
+        knobColor: '#eab308',
+        capStyle: 'carbon-cap'
+      },
+      'old-hickory-j143': {
+        id: 'old-hickory-j143',
+        name: 'Old Hickory J143M Pro Maple',
+        shortLabel: 'OLD HICKORY',
+        meta: 'Hand-Rubbed Solid Maple · Dense End-Load · Mike Trout Profile',
+        desc: 'Two-tone flame-tempered chestnut maple barrel fading into dark walnut handle with metallic gold brand oval and raw dense pro hardwood crack.',
+        construction: '1pc-wood',
+        weightMod: 0.978,
+        popMod: 0.986,
+        cor: 0.459,
+        moi: 1.13,
+        sweetSpot: 0.83,
+        taperSharpness: 1.52,
+        launchLift: 0.1,
+        soundType: 'wood',
+        barrelColor: '#b8733b',
+        barrelHi: '#d89860',
+        barrelLo: '#7c451d',
+        taperColor: '#543018',
+        handleColor: '#3b2214',
+        gripColor: '#1c1917',
+        accentColor: '#facc15',
+        trimColor: '#eab308',
+        capColor: '#261409',
+        knobColor: '#3b2214',
+        capStyle: 'cupped'
       }
     };
 
     const STADIUM_TIERS = {
       pro: ['fenway', 'petco', 'coors', 'oracle', 'wrigley', 'yankee'],
       college: ['sdsu', 'ucsb', 'cal-poly', 'pk-park', 'sc-founders', 'stanford', 'usd', 'tcu', 'byu', 'app-state', 'vandy', 'ucla'],
-      hs: ['hs-corona', 'hs-eastlake', 'hs-rb'],
+      hs: ['hs-corona', 'hs-eastlake', 'hs-rb', 'hs-cchs', 'hs-tp', 'hs-poway', 'hs-granite', 'hs-santana', 'hs-grossmont', 'hs-valhalla'],
       cage: ['cage']
     };
 
@@ -1996,21 +2293,21 @@
         tier: 'college',
         shortName: 'SDSU Tony Gwynn',
         name: 'Tony Gwynn Stadium (SDSU)',
-        dimsLabel: 'SDSU Tony Gwynn · 340 LF · 410 CF · 340 RF',
+        dimsLabel: 'SDSU Tony Gwynn · 340 LF · 412 CF · 340 RF',
         photo: '/assets/aistudio/IMG_0498_2fe12e03.jpeg',
         altPhoto: '/assets/aistudio/IMG_0499_47cd7efb.jpeg',
         defaultLighting: 'night',
-        landmarkNote: 'Scarlet #19 Gwynn banner, Mission-style dorms beyond RF, Cowles Mtn skyline.',
+        landmarkNote: 'Scarlet #19 / .394 Gwynn wall, RCF videoboard, 3B Mission dorms & palm ridge.',
         skyTop: '#071528',
         skyMid: '#132d50',
         skyLow: '#2b547e',
         wallColor: '#111827',
         wallCap: '#a6192e',
         subBanner: 'AZTEC STADIUM · #19',
-        subBanner2: 'SAN DIEGO STATE · 410 CF',
+        subBanner2: 'SAN DIEGO STATE · 412 CF',
         airDensity: 1.008,
         wallDist(phi) {
-          return 340 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+          return 340 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 72;
         },
         wallHeight() {
           return 9;
@@ -2173,7 +2470,7 @@
         name: 'Lupton Stadium (TCU)',
         dimsLabel: 'TCU Lupton Stadium · 330 LF · 400 CF · 330 RF',
         photo: '/assets/aistudio/IMG_0515_390807f5.jpeg',
-        defaultLighting: 'day',
+        defaultLighting: 'night',
         landmarkNote: 'Horned Frogs purple wall, cream brick grandstand & LF lawn berm, Fort Worth.',
         skyTop: '#120f24',
         skyMid: '#2c2252',
@@ -2360,20 +2657,200 @@
           return 7;
         }
       },
+      'hs-cchs': {
+        id: 'hs-cchs',
+        tier: 'hs',
+        shortName: 'Cathedral Catholic',
+        name: 'Cathedral Catholic HS (San Diego)',
+        dimsLabel: 'Lynch Allred Field (CCHS) · 318 LF · 385 CF · 315 RF',
+        photo: '',
+        defaultLighting: 'day',
+        landmarkNote: 'Dons crimson windscreen, turf "DONS" stencil, Spanish-tiled Carmel Valley complex.',
+        skyTop: '#081b33',
+        skyMid: '#183f69',
+        skyLow: '#366f94',
+        wallColor: '#8b0000',
+        wallCap: '#cfb87c',
+        subBanner: 'CCHS DONS · LYNCH ALLRED',
+        subBanner2: 'CARMEL VALLEY · 385 CF',
+        airDensity: 1.006,
+        wallDist(phi) {
+          return phi < 0
+            ? 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 67
+            : 315 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight() {
+          return 7.5;
+        }
+      },
+      'hs-tp': {
+        id: 'hs-tp',
+        tier: 'hs',
+        shortName: 'Torrey Pines',
+        name: 'Torrey Pines HS (San Diego)',
+        dimsLabel: 'Falcons Field (TP) · 320 LF · 390 CF · 318 RF',
+        photo: '',
+        defaultLighting: 'day',
+        landmarkNote: 'Burgundy Falcons windscreen, coastal Del Mar Torrey pines & ocean mesas.',
+        skyTop: '#071b30',
+        skyMid: '#164166',
+        skyLow: '#346d91',
+        wallColor: '#6b1d2f',
+        wallCap: '#f8fafc',
+        subBanner: 'TORREY PINES FALCONS · SD',
+        subBanner2: 'DEL MAR HEIGHTS · 390 CF',
+        airDensity: 1.01,
+        wallDist(phi) {
+          return phi < 0
+            ? 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70
+            : 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 72;
+        },
+        wallHeight() {
+          return 7.5;
+        }
+      },
+      'hs-poway': {
+        id: 'hs-poway',
+        tier: 'hs',
+        shortName: 'Poway Titans',
+        name: 'Poway HS — Titan Field (San Diego)',
+        dimsLabel: 'Poway Titan Field · 322 LF · 392 CF · 320 RF',
+        photo: '',
+        defaultLighting: 'day',
+        landmarkNote: 'Forest-green varsity fence, flanking batting barns & Twin Peaks inland foothills.',
+        skyTop: '#081b2e',
+        skyMid: '#173e61',
+        skyLow: '#386c8c',
+        wallColor: '#166534',
+        wallCap: '#e2e8f0',
+        subBanner: 'POWAY TITANS · NORTH COUNTY',
+        subBanner2: 'TITAN FIELD · 392 CF',
+        airDensity: 0.996,
+        wallDist(phi) {
+          return phi < 0
+            ? 322 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70
+            : 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 72;
+        },
+        wallHeight() {
+          return 7.5;
+        }
+      },
+      'hs-granite': {
+        id: 'hs-granite',
+        tier: 'hs',
+        shortName: 'Granite Hills',
+        name: 'Granite Hills HS — Eagles Field (El Cajon)',
+        dimsLabel: 'Granite Hills Eagles · 320 LF · 388 CF · 318 RF',
+        photo: '',
+        defaultLighting: 'day',
+        landmarkNote: 'Royal blue & silver Eagles fence, granite boulder crags & East County canyon ridge.',
+        skyTop: '#0a1c34',
+        skyMid: '#1b3f66',
+        skyLow: '#426b8c',
+        wallColor: '#1d4ed8',
+        wallCap: '#cbd5e1',
+        subBanner: 'GRANITE HILLS EAGLES · EC',
+        subBanner2: 'EAST COUNTY · 388 CF',
+        airDensity: 0.99,
+        wallDist(phi) {
+          return phi < 0
+            ? 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 68
+            : 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight() {
+          return 7.5;
+        }
+      },
+      'hs-santana': {
+        id: 'hs-santana',
+        tier: 'hs',
+        shortName: 'Santana Sultans',
+        name: 'Santana HS — Sultans Field (Santee)',
+        dimsLabel: 'Santana Sultans (Santee) · 318 LF · 385 CF · 315 RF',
+        photo: '',
+        defaultLighting: 'day',
+        landmarkNote: 'Purple Sultans windscreen, Santee Mission Trails ridges & Cowles Mtn skyline.',
+        skyTop: '#0c1830',
+        skyMid: '#213a61',
+        skyLow: '#4a6485',
+        wallColor: '#581c87',
+        wallCap: '#f8fafc',
+        subBanner: 'SANTANA SULTANS · SANTEE',
+        subBanner2: 'EAST COUNTY · 385 CF',
+        airDensity: 0.991,
+        wallDist(phi) {
+          return phi < 0
+            ? 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 67
+            : 315 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70;
+        },
+        wallHeight() {
+          return 7.5;
+        }
+      },
+      'hs-grossmont': {
+        id: 'hs-grossmont',
+        tier: 'hs',
+        shortName: 'Grossmont HS',
+        name: 'Grossmont HS — Foothillers Field (El Cajon)',
+        dimsLabel: 'Grossmont Foothillers · 320 LF · 390 CF · 318 RF',
+        photo: '',
+        defaultLighting: 'golden',
+        landmarkNote: 'Royal-blue windscreen, La Mesa hillside pines & iconic white Mt. Helix summit cross.',
+        skyTop: '#0a1c36',
+        skyMid: '#1e426d',
+        skyLow: '#456f91',
+        wallColor: '#1d4ed8',
+        wallCap: '#f8fafc',
+        subBanner: 'GROSSMONT FOOTHILLERS',
+        subBanner2: 'MT. HELIX BACKDROP · 390 CF',
+        airDensity: 0.992,
+        wallDist(phi) {
+          return phi < 0
+            ? 320 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 70
+            : 318 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 72;
+        },
+        wallHeight() {
+          return 7.5;
+        }
+      },
+      'hs-valhalla': {
+        id: 'hs-valhalla',
+        tier: 'hs',
+        shortName: 'Valhalla Norsemen',
+        name: 'Valhalla HS — Norsemen Field (El Cajon)',
+        dimsLabel: 'Valhalla Norsemen · 316 LF · 382 CF · 316 RF',
+        photo: '',
+        defaultLighting: 'day',
+        landmarkNote: 'Navy & orange fence, Rancho San Diego Hillsdale boulders & granite ridge.',
+        skyTop: '#091b33',
+        skyMid: '#1a3d63',
+        skyLow: '#446888',
+        wallColor: '#172554',
+        wallCap: '#f97316',
+        subBanner: 'VALHALLA NORSEMEN · EC',
+        subBanner2: 'HILLSDALE RIDGE · 382 CF',
+        airDensity: 0.989,
+        wallDist(phi) {
+          return 316 + Math.cos((phi / 0.785) * Math.PI * 0.5) * 66;
+        },
+        wallHeight() {
+          return 7.5;
+        }
+      },
       cage: {
         id: 'cage',
         tier: 'cage',
         shortName: 'D1 Rapsodo Lab',
         name: 'D1 Rapsodo Lab',
         dimsLabel: 'D1 Rapsodo Lab · 400 FT Simulated',
-        photo: '/src/assets/images/baseball_night_batter_swing_1794856804641.jpg',
+        photo: '/assets/hero/baseball_night_batter_swing_1794856804641.jpg',
         defaultLighting: 'night',
         landmarkNote: 'Indoor high-tunnel cage with Rapsodo optical sensors and netted 400-ft wall.',
         skyTop: '#070d18',
         skyMid: '#0e1b2f',
         skyLow: '#142742',
         wallColor: '#1e3a5f',
-        wallCap: '#D8C55C',
+        wallCap: '#00E5FF',
         airDensity: 1.0,
         wallDist() {
           return 400;
@@ -2501,12 +2978,23 @@
     const batZoneNote = document.getElementById('bat-zone-note');
 
     function renderBatSvg(bat) {
-      const isWood = bat.id === 'baum-gold';
+      const isBaum = bat.id === 'baum-gold';
+      const isVictus = bat.id === 'victus-v243';
+      const isLsC271 = bat.id === 'ls-c271';
+      const isOldHickory = bat.id === 'old-hickory-j143';
+      const isWood = isBaum || isVictus || isLsC271 || isOldHickory;
       const isGoods26 = bat.id === 'goods-2026';
       const isGoods22 = bat.id === 'goods-2022';
+      const isVoodoo = bat.id === 'voodoo-one';
+      const isAtlas = bat.id === 'ls-atlas';
       const isRodeo = bat.id === 'combat-rodeo';
       const isBlue = bat.id === 'combat-blue';
       const isCatx2 = bat.id === 'marucci-catx2';
+      const isIcon = bat.id === 'rawlings-icon';
+      const isHype = bat.id === 'easton-hype';
+      const isBonesaber = bat.id === 'warstic-bonesaber';
+      const isStringKing = bat.id === 'stringking-metal2';
+      const isVandal = bat.id === 'victus-vandal';
 
       const cuff =
         bat.construction === '2pc'
@@ -2514,12 +3002,22 @@
              <line x1="136" y1="13" x2="136" y2="31" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>`
           : '';
 
-      const woodCrest = isWood
+      const woodCrest = isBaum
         ? `<ellipse cx="164" cy="22" rx="26" ry="6.2" fill="url(#goldOval)" stroke="#ca8a04" stroke-width="0.9"/>
            <text x="164" y="24.8" text-anchor="middle" font-family="Georgia,serif" font-size="8.5" font-weight="800" fill="#111318">Baum</text>
            <rect x="218" y="19" width="14" height="6" rx="1" fill="none" stroke="#d4af37" stroke-width="0.9"/>
            <text x="225" y="23.8" text-anchor="middle" font-size="4.6" font-weight="700" fill="#eab308">.50</text>`
-        : '';
+        : isVictus
+          ? `<rect x="150" y="10" width="4" height="24" fill="#d4af37"/>
+             <text x="234" y="25" text-anchor="middle" font-family="Georgia,serif" font-size="8.8" font-weight="800" fill="#facc15">VICTUS V243</text>
+             <circle cx="176" cy="22" r="3" fill="#facc15"/>`
+          : isLsC271
+            ? `<ellipse cx="222" cy="22" rx="34" ry="7.2" fill="none" stroke="#eab308" stroke-width="1"/>
+               <text x="222" y="24.5" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="7.2" font-weight="700" fill="#fef08a">Louisville Slugger</text>`
+            : isOldHickory
+              ? `<ellipse cx="222" cy="22" rx="34" ry="7.2" fill="none" stroke="#facc15" stroke-width="1.1"/>
+                 <text x="222" y="24.6" text-anchor="middle" font-family="Georgia,serif" font-size="7.2" font-weight="800" fill="#fef08a">OLD HICKORY J143</text>`
+              : '';
 
       const gripWrap = isRodeo
         ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#991b1b"/>
@@ -2528,8 +3026,20 @@
         : isBlue
           ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#9be7fd"/>
              <path d="M 28 17 L 36 27 M 40 17 L 48 27 M 52 17 L 60 27 M 64 17 L 72 27 M 76 17 L 84 27 M 88 17 L 96 27" stroke="rgba(255,255,255,0.55)" stroke-width="1.3"/>`
-          : `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#111318"/>
-             <path d="M 28 17 L 35 27 M 40 17 L 47 27 M 52 17 L 59 27 M 64 17 L 71 27 M 76 17 L 83 27 M 88 17 L 95 27" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`;
+          : isAtlas || isStringKing
+            ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#0f172a"/>
+               <path d="M 28 17 L 35 27 M 40 17 L 47 27 M 52 17 L 59 27 M 64 17 L 71 27 M 76 17 L 83 27 M 88 17 L 95 27" stroke="rgba(6,182,212,0.55)" stroke-width="1.4"/>`
+            : isHype
+              ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#0b0d12"/>
+                 <path d="M 28 17 L 35 27 M 40 17 L 47 27 M 52 17 L 59 27 M 64 17 L 71 27 M 76 17 L 83 27 M 88 17 L 95 27" stroke="rgba(249,115,22,0.65)" stroke-width="1.4"/>`
+              : isBonesaber
+                ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#090a0e"/>
+                   <path d="M 28 17 L 35 27 M 40 17 L 47 27 M 52 17 L 59 27 M 64 17 L 71 27 M 76 17 L 83 27 M 88 17 L 95 27" stroke="rgba(220,38,38,0.65)" stroke-width="1.4"/>`
+                : isVandal
+                  ? `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#090a0f"/>
+                     <path d="M 28 17 L 35 27 M 40 17 L 47 27 M 52 17 L 59 27 M 64 17 L 71 27 M 76 17 L 83 27 M 88 17 L 95 27" stroke="rgba(250,204,21,0.55)" stroke-width="1.4"/>`
+                  : `<rect x="22" y="16.8" width="82" height="10.4" rx="2" fill="#111318"/>
+                     <path d="M 28 17 L 35 27 M 40 17 L 47 27 M 52 17 L 59 27 M 64 17 L 71 27 M 76 17 L 83 27 M 88 17 L 95 27" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`;
 
       const barrelDetails = isGoods26
         ? `<polygon points="222,10.5 236,10.5 242,14.5 236,18.5 222,18.5 228,14.5" fill="#ef4444"/>
@@ -2540,29 +3050,75 @@
           ? `<circle cx="290" cy="22" r="7.5" fill="#111827"/>
              <rect x="176" y="18.5" width="16" height="7" rx="1" fill="none" stroke="#111827" stroke-width="1.1"/>
              <text x="184" y="23.8" text-anchor="middle" font-size="5" font-weight="800" fill="#111827">.50</text>`
-          : isRodeo
-            ? `<rect x="158" y="18.5" width="12" height="6.5" rx="1" fill="none" stroke="#991b1b" stroke-width="0.9"/>
-               <circle cx="192" cy="22" r="4.5" fill="none" stroke="#b45309" stroke-width="1.1"/>`
-            : isBlue
-              ? `<rect x="160" y="9.8" width="2" height="24.4" fill="#d4af37"/>
-                 <rect x="163" y="9.8" width="1.8" height="24.4" fill="#1e3a8a"/>
-                 <rect x="316" y="9.8" width="2" height="24.4" fill="#d4af37"/>
-                 <rect x="319" y="9.8" width="2" height="24.4" fill="#1e3a8a"/>
-                 <polygon points="292,15 304,15 306,22 298,28 290,22" fill="#1e3a8a" stroke="#eab308" stroke-width="1.1"/>`
-              : isCatx2
-                ? `<rect x="162" y="9.8" width="4" height="24.4" fill="#dc2626"/>
-                   <rect x="168" y="9.8" width="3.5" height="24.4" fill="#111827"/>
-                   <rect x="313" y="9.8" width="3" height="24.4" fill="#dc2626"/>`
-                : '';
+          : isVoodoo
+            ? `<path d="M 168 11 L 176 33 M 184 11 L 192 33 M 302 11 L 310 33" stroke="rgba(15,23,42,0.5)" stroke-width="2.2"/>
+               <rect x="313" y="9.8" width="3" height="24.4" fill="#fef08a"/>`
+            : isAtlas || isStringKing
+              ? `<rect x="160" y="9.8" width="3.5" height="24.4" fill="#06b6d4"/>
+                 <rect x="165" y="9.8" width="2" height="24.4" fill="${isStringKing ? '#0f172a' : '#eab308'}"/>
+                 <rect x="312" y="9.8" width="3.5" height="24.4" fill="#06b6d4"/>`
+              : isBonesaber
+                ? `<rect x="160" y="9.8" width="4" height="24.4" fill="#dc2626"/>
+                   <rect x="166" y="9.8" width="2.5" height="24.4" fill="#14161b"/>
+                   <rect x="313" y="9.8" width="3.5" height="24.4" fill="#dc2626"/>`
+                : isVandal
+                  ? `<rect x="160" y="9.8" width="3.5" height="24.4" fill="#facc15"/>
+                     <rect x="165" y="9.8" width="2" height="24.4" fill="#e2e8f0"/>
+                     <rect x="313" y="9.8" width="3.5" height="24.4" fill="#facc15"/>`
+                  : isIcon
+                    ? `<rect x="160" y="9.8" width="3.5" height="24.4" fill="#b45309"/>
+                       <rect x="165" y="9.8" width="2.5" height="24.4" fill="#18181b"/>
+                       <rect x="313" y="9.8" width="3" height="24.4" fill="#b45309"/>`
+                    : isHype
+                      ? `<path d="M 176 32 L 196 12 M 204 32 L 224 12 M 292 32 L 312 12" stroke="rgba(255,255,255,0.28)" stroke-width="2.2"/>
+                         <rect x="313" y="9.8" width="3.5" height="24.4" fill="#00e5ff"/>`
+                      : isRodeo
+                        ? `<rect x="158" y="18.5" width="12" height="6.5" rx="1" fill="none" stroke="#991b1b" stroke-width="0.9"/>
+                           <circle cx="192" cy="22" r="4.5" fill="none" stroke="#b45309" stroke-width="1.1"/>`
+                        : isBlue
+                          ? `<rect x="160" y="9.8" width="2" height="24.4" fill="#d4af37"/>
+                             <rect x="163" y="9.8" width="1.8" height="24.4" fill="#1e3a8a"/>
+                             <rect x="316" y="9.8" width="2" height="24.4" fill="#d4af37"/>
+                             <rect x="319" y="9.8" width="2" height="24.4" fill="#1e3a8a"/>
+                             <polygon points="292,15 304,15 306,22 298,28 290,22" fill="#1e3a8a" stroke="#eab308" stroke-width="1.1"/>`
+                          : isCatx2
+                            ? `<rect x="162" y="9.8" width="4" height="24.4" fill="#dc2626"/>
+                               <rect x="168" y="9.8" width="3.5" height="24.4" fill="#111827"/>
+                               <rect x="313" y="9.8" width="3" height="24.4" fill="#dc2626"/>`
+                            : '';
 
       const capMarkup =
         bat.capStyle === 'tremor' || bat.capStyle === 'dish'
           ? `<path d="M 323 10 L 335 12.2 L 335 31.8 L 323 34 Z" fill="${bat.capColor}"/><line x1="330" y1="13" x2="330" y2="31" stroke="#334155" stroke-width="1.8" stroke-dasharray="2.5 2"/>`
-          : bat.capStyle === 'flared'
-            ? `<rect x="323" y="9.5" width="9.5" height="25" rx="3.5" fill="${bat.capColor}" stroke="${isBlue ? '#172554' : 'rgba(0,0,0,0.16)'}" stroke-width="1"/>`
-            : `<rect x="323" y="10" width="9" height="24" rx="3" fill="${bat.barrelColor}"/><ellipse cx="331" cy="22" rx="2.2" ry="8.5" fill="#1e1b18"/>`;
+          : bat.capStyle === 'carbon-cap'
+            ? `<path d="M 323 10 L 335 12.6 L 335 31.4 L 323 34 Z" fill="#181a20" stroke="#eab308" stroke-width="1"/>`
+            : bat.capStyle === 'flared' || bat.capStyle === 'tsuka'
+              ? `<rect x="323" y="9.5" width="9.5" height="25" rx="3.5" fill="${bat.capColor}" stroke="${isBlue ? '#172554' : 'rgba(0,0,0,0.16)'}" stroke-width="1"/>`
+              : `<rect x="323" y="10" width="9" height="24" rx="3" fill="${bat.barrelColor}"/><ellipse cx="331" cy="22" rx="2.2" ry="8.5" fill="#1e1b18"/>`;
 
-      const textFill = isWood ? 'transparent' : isGoods26 ? '#181a20' : isRodeo ? '#991b1b' : isBlue ? '#1e3a8a' : '#111827';
+      const textFill = isWood
+        ? 'transparent'
+        : isGoods26
+          ? '#181a20'
+          : isRodeo
+            ? '#991b1b'
+            : isBlue
+              ? '#1e3a8a'
+              : isVoodoo
+                ? '#f8fafc'
+                : isVandal
+                  ? '#facc15'
+                  : isAtlas
+                    ? '#38bdf8'
+                    : isStringKing
+                      ? '#0f172a'
+                      : isBonesaber
+                        ? '#111318'
+                        : isIcon
+                          ? '#111318'
+                          : isHype
+                            ? '#09090b'
+                            : '#111827';
       const knobFill = bat.knobColor || '#0f1218';
 
       return `
@@ -2592,7 +3148,7 @@
           ${woodCrest}
           ${cuff}
           ${capMarkup}
-          ${isWood ? '' : `<text x="242" y="25.2" text-anchor="middle" font-size="${isRodeo ? '7.2' : '8.8'}" font-weight="800" font-style="${isBlue ? 'italic' : 'normal'}" font-family="${isBlue ? 'Georgia,serif' : 'sans-serif'}" letter-spacing="${isRodeo ? '0.4' : '1.0'}" fill="${textFill}" opacity="0.95">${bat.shortLabel}</text>`}
+          ${isWood ? '' : `<text x="242" y="25.2" text-anchor="middle" font-size="${isRodeo ? '6.8' : isVoodoo || isHype || isBonesaber ? '7.8' : '8.8'}" font-weight="800" font-style="${isBlue ? 'italic' : 'normal'}" font-family="${isBlue ? 'Georgia,serif' : 'sans-serif'}" letter-spacing="${isRodeo ? '0.4' : '1.0'}" fill="${textFill}" opacity="0.95">${bat.shortLabel}</text>`}
         </svg>`;
     }
 
@@ -3208,7 +3764,7 @@
             sctx.lineTo(gx, padT + plotH);
             sctx.stroke();
             sctx.fillStyle = '#94a3b8';
-            sctx.font = '600 9px "IBM Plex Mono", monospace';
+            sctx.font = '600 9px "JetBrains Mono", monospace';
             sctx.textAlign = 'center';
             sctx.fillText(`${ft}`, gx, h - 8);
           });
@@ -3220,7 +3776,7 @@
             sctx.lineTo(padL + plotW, gy);
             sctx.stroke();
             sctx.fillStyle = '#94a3b8';
-            sctx.font = '600 9px "IBM Plex Mono", monospace';
+            sctx.font = '600 9px "JetBrains Mono", monospace';
             sctx.textAlign = 'right';
             sctx.fillText(`${ftZ}ft`, padL - 4, gy + 3);
           });
@@ -3239,8 +3795,8 @@
           const whPx = (wallH / maxZ) * plotH;
           sctx.fillStyle = st.wallCap;
           sctx.fillRect(wx - 2, padT + plotH - Math.max(8, whPx), 4, Math.max(8, whPx));
-          sctx.fillStyle = '#fde68a';
-          sctx.font = '600 8.5px "IBM Plex Mono", monospace';
+          sctx.fillStyle = '#7dd3fc';
+          sctx.font = '600 8.5px "JetBrains Mono", monospace';
           sctx.textAlign = 'center';
           sctx.fillText(`WALL ${Math.round(wallDist)}`, wx, padT + plotH - Math.max(12, whPx + 4));
 
@@ -3281,14 +3837,14 @@
               sctx.arc(ax, ay, 3.6, 0, Math.PI * 2);
               sctx.fill();
               if (!inFlight) {
-                sctx.font = '700 9.5px "IBM Plex Mono", monospace';
+                sctx.font = '700 9.5px "JetBrains Mono", monospace';
                 sctx.textAlign = 'left';
                 sctx.fillText(`APEX ${fl.apex}ft`, Math.min(w - 76, ax + 6), Math.max(padT + 10, ay - 4));
               }
             }
 
             sctx.fillStyle = '#e2e8f0';
-            sctx.font = '600 10px "IBM Plex Mono", monospace';
+            sctx.font = '600 10px "JetBrains Mono", monospace';
             sctx.textAlign = 'left';
             if (inFlight) {
               const cur = sim.flightCur || fl.points[0];
@@ -3329,7 +3885,7 @@
           }
 
           sctx.fillStyle = '#94a3b8';
-          sctx.font = '600 9.5px "IBM Plex Mono", monospace';
+          sctx.font = '600 9.5px "JetBrains Mono", monospace';
           sctx.textAlign = 'center';
           sctx.fillText(`STRIKE ZONE · ${pitcherHand}HP`, zx + zw / 2, 18);
 
@@ -3364,7 +3920,7 @@
           const cy = h / 2 + 8;
           const cr = 54;
           sctx.fillStyle = '#94a3b8';
-          sctx.font = '600 9.5px "IBM Plex Mono", monospace';
+          sctx.font = '600 9.5px "JetBrains Mono", monospace';
           sctx.textAlign = 'center';
           sctx.fillText('SPIN AXIS CLOCK', cx, 18);
 
@@ -3379,7 +3935,7 @@
           [12, 3, 6, 9].forEach((hr) => {
             const ang = (hr / 12) * Math.PI * 2 - Math.PI / 2;
             sctx.fillStyle = '#cbd5e1';
-            sctx.font = '700 9px "IBM Plex Mono", monospace';
+            sctx.font = '700 9px "JetBrains Mono", monospace';
             sctx.fillText(String(hr), cx + Math.cos(ang) * (cr - 10), cy + Math.sin(ang) * (cr - 10) + 3);
           });
 
@@ -3406,13 +3962,13 @@
             sctx.fill();
 
             sctx.fillStyle = '#f8fafc';
-            sctx.font = '700 10px "IBM Plex Mono", monospace';
+            sctx.font = '700 10px "JetBrains Mono", monospace';
             sctx.fillText(`${lp.pitchRpm} RPM · ${lp.spinAxisClock}`, cx, h - 10);
             sctx.textAlign = 'left';
             sctx.fillText(`IVB ${lp.ivbIn > 0 ? '+' : ''}${lp.ivbIn}" · HB ${lp.hbIn > 0 ? '+' : ''}${lp.hbIn}"`, zx, h - 10);
           } else {
             sctx.fillStyle = '#94a3b8';
-            sctx.font = '600 9.5px "IBM Plex Mono", monospace';
+            sctx.font = '600 9.5px "JetBrains Mono", monospace';
             sctx.fillText('Throw pitch for Spin', cx, h - 10);
           }
           return;
@@ -4220,7 +4776,7 @@
           hctx.fillStyle = bat.accentColor || '#38bdf8';
           hctx.fillRect(14, 12, 4, 28);
           hctx.fillStyle = '#f8fafc';
-          hctx.font = '700 11px "Outfit", sans-serif';
+          hctx.font = '700 12px "Barlow Condensed", sans-serif';
           hctx.textAlign = 'left';
           hctx.fillText(`${bat.name.toUpperCase()}`, 26, 30);
 
@@ -4229,8 +4785,8 @@
           hctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
           hctx.lineWidth = 1;
           hctx.strokeRect(LOG_W - 190, 12, 176, 28);
-          hctx.fillStyle = '#fde68a';
-          hctx.font = '700 10.5px "IBM Plex Mono", monospace';
+          hctx.fillStyle = '#7dd3fc';
+          hctx.font = '700 10.5px "JetBrains Mono", monospace';
           hctx.textAlign = 'right';
           hctx.fillText(`${st.name.toUpperCase()}`, LOG_W - 24, 30);
 
@@ -4281,7 +4837,7 @@
             }
 
             hctx.fillStyle = wMph > 0 ? '#7dd3fc' : '#cbd5e1';
-            hctx.font = '700 10px "IBM Plex Mono", monospace';
+            hctx.font = '700 10px "JetBrains Mono", monospace';
             hctx.textAlign = 'right';
             hctx.fillText(`WIND · ${wSpec.shortLabel || wSpec.label.toUpperCase()}`, LOG_W - 22, 61.5);
           }
@@ -4297,11 +4853,11 @@
             hctx.lineWidth = 1.6;
             hctx.strokeRect(LOG_W / 2 - 155, 48, 310, 44);
             hctx.fillStyle = sim.flashColor || '#38bdf8';
-            hctx.font = '700 14px "Outfit", sans-serif';
+            hctx.font = '700 15px "Barlow Condensed", sans-serif';
             hctx.textAlign = 'center';
             hctx.fillText(sim.calloutText, LOG_W / 2, 67);
             hctx.fillStyle = '#e2e8f0';
-            hctx.font = '600 10.5px "IBM Plex Mono", monospace';
+            hctx.font = '600 10.5px "JetBrains Mono", monospace';
             hctx.fillText(sim.calloutSub, LOG_W / 2, 83);
             hctx.restore();
           }
@@ -4362,11 +4918,40 @@
         };
       }
 
+      const venuePhotoFallback = document.getElementById('venue-photo-fallback');
+      const venueFallbackAbbr = document.getElementById('venue-fallback-abbr');
+      const venueFallbackName = document.getElementById('venue-fallback-name');
+
+      function showVenueFallback(stSpec) {
+        if (venuePhotoImg) venuePhotoImg.hidden = true;
+        if (venuePhotoFallback) {
+          venuePhotoFallback.hidden = false;
+          const abbr = (stSpec.shortName || stSpec.id || 'DIAMOND')
+            .split(/\s+/)
+            .map((w) => w[0])
+            .join('')
+            .slice(0, 4)
+            .toUpperCase();
+          if (venueFallbackAbbr) venueFallbackAbbr.textContent = abbr;
+          if (venueFallbackName) venueFallbackName.textContent = (stSpec.shortName || stSpec.name || '3D Ballpark').toUpperCase();
+        }
+      }
+
+      if (venuePhotoImg) {
+        venuePhotoImg.onerror = () => {
+          showVenueFallback(STADIUMS[activeStadiumId] || { shortName: 'FIELD', name: '3D Ballpark' });
+        };
+      }
+
       function syncVenuePhotoCard(stSpec) {
         if (!stSpec) return;
-        if (venuePhotoImg && stSpec.photo) {
+        if (stSpec.photo && venuePhotoImg) {
+          venuePhotoImg.hidden = false;
+          if (venuePhotoFallback) venuePhotoFallback.hidden = true;
           venuePhotoImg.src = stSpec.photo;
           venuePhotoImg.alt = `${stSpec.name} stadium reference photo`;
+        } else {
+          showVenueFallback(stSpec);
         }
         if (venuePhotoTitle) venuePhotoTitle.textContent = stSpec.name || stSpec.shortName;
         if (venuePhotoDims) venuePhotoDims.textContent = stSpec.dimsLabel || '';
@@ -5629,7 +6214,7 @@
           fenway: 'pro', petco: 'pro', coors: 'pro', oracle: 'pro', wrigley: 'pro', yankee: 'pro',
           sdsu: 'college', ucsb: 'college', 'cal-poly': 'college', 'pk-park': 'college', 'sc-founders': 'college',
           stanford: 'college', usd: 'college', tcu: 'college', byu: 'college', 'app-state': 'college', vandy: 'college', ucla: 'college',
-          'hs-corona': 'hs', 'hs-eastlake': 'hs', 'hs-rb': 'hs',
+          'hs-corona': 'hs', 'hs-eastlake': 'hs', 'hs-rb': 'hs', 'hs-cchs': 'hs', 'hs-tp': 'hs', 'hs-poway': 'hs', 'hs-granite': 'hs', 'hs-santana': 'hs', 'hs-grossmont': 'hs', 'hs-valhalla': 'hs',
           cage: 'cage'
         };
         const preferences = {
@@ -6282,6 +6867,20 @@
         }
       }
 
+      if (Array.isArray(msg.followUpPrompts) && msg.followUpPrompts.length) {
+        const fuRow = document.createElement('div');
+        fuRow.className = 'jax-followup-row';
+        msg.followUpPrompts.slice(0, 3).forEach((prompt) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'jax-followup-chip';
+          btn.textContent = prompt;
+          btn.addEventListener('click', () => sendJaxQuestion(prompt));
+          fuRow.appendChild(btn);
+        });
+        wrap.appendChild(fuRow);
+      }
+
       messagesEl.appendChild(wrap);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -6379,7 +6978,8 @@
           youtubeLinks: res.youtubeLinks || [],
           recommendedBatId: res.recommendedBatId || '',
           recommendedBatName: res.recommendedBatName || '',
-          webSources: res.webSources || []
+          webSources: res.webSources || [],
+          followUpPrompts: res.followUpPrompts || []
         };
         chatHistory.push({ role: 'jax', text: jaxMsg.text });
         appendMessageBubble(jaxMsg);

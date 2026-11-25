@@ -9,6 +9,14 @@
       name: 'Baum Bat Gold (-3 PermaWood)',
       reason: 'Gives immediate, honest wood sweet-spot feedback for building clean barrel connection.'
     },
+    'victus-v243': {
+      name: 'Victus V243 Pro Reserve Maple (-3)',
+      reason: 'Slightly end-loaded pro maple profile built for gap backspin and honest wood barrel feel.'
+    },
+    'ls-c271': {
+      name: 'Louisville Slugger Prime C271 Maple (-3)',
+      reason: 'Balanced pro wood turn ideal for repeatable hand path and sharp contact control.'
+    },
     'goods-2026': {
       name: '2026 DeMarini The Goods (-3 Hybrid)',
       reason: 'Slightly end-loaded alloy barrel rewards smooth hip-to-hand turns and high backspin.'
@@ -16,6 +24,14 @@
     'goods-2022': {
       name: '2022 DeMarini The Goods (-3 Chrome)',
       reason: 'Forgiving sweet spot with strong barrel presence for gap-to-gap hitters.'
+    },
+    'voodoo-one': {
+      name: '2026 DeMarini Voodoo One (-3 X14 1-Pc Alloy)',
+      reason: 'Light-swinging one-piece X14 alloy barrel built for elite whip and fast pitch adjustability.'
+    },
+    'ls-atlas': {
+      name: 'Louisville Slugger Atlas EVO-K (-3 Alloy)',
+      reason: 'One-piece balanced alloy build engineered for top-of-zone speed and barrel control.'
     },
     'combat-rodeo': {
       name: 'Combat Spec-A1 Rodeo (-3 1-Piece Alloy)',
@@ -27,7 +43,31 @@
     },
     'marucci-catx2': {
       name: 'Marucci CATX2 Alloy (-3)',
-      reason: 'Responsive 1-piece AZR alloy barrel with Liquid-Gel dampened knob and balanced swing speed.'
+      reason: 'Responsive 1-piece AZR alloy barrel with Liquid-Gel dampened knob and clean bell ring.'
+    },
+    'rawlings-icon': {
+      name: 'Rawlings Icon (-3 Carbon Composite)',
+      reason: 'Wide In/Tense carbon composite sweet spot with low vibration and smooth balanced carry.'
+    },
+    'easton-hype': {
+      name: 'Easton Hype Fire (-3 Thermo-Composite)',
+      reason: 'Lightweight thermo-composite trampoline barrel built for effortless bat speed and gap lift.'
+    },
+    'warstic-bonesaber': {
+      name: 'Warstic Bonesaber Hybrid (-3 Katana2X)',
+      reason: 'Speed-loaded 2-piece alloy with Tsuka pommel for quick whip and razor-sharp barrel feedback.'
+    },
+    'stringking-metal2': {
+      name: 'StringKing Metal 2 Pro (-3 1-Pc Alloy)',
+      reason: 'Ultra-light raw 1-piece alloy with low swing weight for catching up to top-of-zone velocity.'
+    },
+    'victus-vandal': {
+      name: 'Victus Vandal (-3 Carbon-Cap Alloy)',
+      reason: 'Hollow carbon-cap 1-piece alloy engineered for balanced speed and clean gap-to-gap carry.'
+    },
+    'old-hickory-j143': {
+      name: 'Old Hickory J143M Pro Maple (-3)',
+      reason: 'Dense end-loaded maple turn built for heavy barrel momentum and honest wood sweet-spot work.'
     }
   };
 

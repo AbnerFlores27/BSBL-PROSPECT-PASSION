@@ -107,48 +107,55 @@
     if (id === 'fenway') {
       tiers = [
         // Monster seats atop 37-ft wall (LF)
-        { startPhi: -0.78, endPhi: -0.25, dOff: 6, dSpan: 22, y0: 38.5, y1: 43.0, steps: 4, isSeat: true },
+        { startPhi: -0.78, endPhi: -0.25, dOff: 6, dSpan: 22, y0: 38.5, y1: 43.0, steps: 4, isSeat: true, isUpper: false, isSecondDeck: false },
         // Center/RF bleachers
-        { startPhi: -0.23, endPhi: 0.78, dOff: 12, dSpan: 56, y0: 9.0, y1: 32.0, steps: 8, isSeat: true }
+        { startPhi: -0.23, endPhi: 0.78, dOff: 12, dSpan: 56, y0: 9.0, y1: 32.0, steps: 8, isSeat: true, isUpper: false, isSecondDeck: false }
       ];
     } else if (id === 'petco') {
       tiers = [
-        // Western Metal Supply brick building in LF corner + LF/RF Petco seating sections; CF Park at the Park stays open lawn!
-        { startPhi: -0.78, endPhi: -0.58, dOff: 6, dSpan: 34, y0: 42.0, y1: 48.0, steps: 2, isSeat: false },
-        { startPhi: -0.56, endPhi: -0.22, dOff: 12, dSpan: 48, y0: 10.0, y1: 31.0, steps: 7, isSeat: true },
-        { startPhi: 0.22, endPhi: 0.78, dOff: 12, dSpan: 48, y0: 10.0, y1: 31.0, steps: 7, isSeat: true }
+        // Western Metal Supply brick building in LF corner + LF/RF Lower Bowl + RF/LF Upper Porch (CF Park at the Park stays open lawn!)
+        { startPhi: -0.78, endPhi: -0.58, dOff: 6, dSpan: 34, y0: 42.0, y1: 50.0, steps: 2, isSeat: false, isUpper: true, isSecondDeck: false },
+        { startPhi: -0.56, endPhi: -0.22, dOff: 12, dSpan: 38, y0: 10.0, y1: 27.0, steps: 6, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: -0.56, endPhi: -0.24, dOff: 52, dSpan: 34, y0: 32.0, y1: 50.0, steps: 5, isSeat: true, isUpper: true, isSecondDeck: true },
+        { startPhi: 0.22, endPhi: 0.78, dOff: 12, dSpan: 38, y0: 10.0, y1: 27.0, steps: 6, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: 0.24, endPhi: 0.78, dOff: 52, dSpan: 34, y0: 32.0, y1: 50.0, steps: 5, isSeat: true, isUpper: true, isSecondDeck: true }
       ];
     } else if (id === 'coors') {
       tiers = [
-        { startPhi: -0.78, endPhi: -0.21, dOff: 12, dSpan: 52, y0: 10.0, y1: 34.0, steps: 8, isSeat: true },
-        { startPhi: -0.17, endPhi: 0.17, dOff: 14, dSpan: 22, y0: 22.0, y1: 26.0, steps: 2, isSeat: false },
-        { startPhi: 0.21, endPhi: 0.78, dOff: 12, dSpan: 52, y0: 10.0, y1: 34.0, steps: 8, isSeat: true }
+        { startPhi: -0.78, endPhi: -0.21, dOff: 12, dSpan: 40, y0: 10.0, y1: 29.0, steps: 7, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: -0.76, endPhi: -0.22, dOff: 55, dSpan: 36, y0: 35.0, y1: 56.0, steps: 6, isSeat: true, isUpper: true, isSecondDeck: true },
+        { startPhi: -0.17, endPhi: 0.17, dOff: 14, dSpan: 22, y0: 22.0, y1: 26.0, steps: 2, isSeat: false, isUpper: false, isSecondDeck: false },
+        { startPhi: 0.21, endPhi: 0.78, dOff: 12, dSpan: 40, y0: 10.0, y1: 29.0, steps: 7, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: 0.22, endPhi: 0.76, dOff: 55, dSpan: 36, y0: 35.0, y1: 56.0, steps: 6, isSeat: true, isUpper: true, isSecondDeck: true }
       ];
     } else if (id === 'oracle') {
       tiers = [
-        { startPhi: -0.78, endPhi: -0.06, dOff: 12, dSpan: 54, y0: 10.0, y1: 33.0, steps: 8, isSeat: true },
-        { startPhi: -0.05, endPhi: 0.34, dOff: 10, dSpan: 20, y0: 20.0, y1: 24.0, steps: 2, isSeat: false }
+        { startPhi: -0.78, endPhi: -0.06, dOff: 12, dSpan: 40, y0: 10.0, y1: 28.0, steps: 7, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: -0.78, endPhi: -0.14, dOff: 54, dSpan: 32, y0: 34.0, y1: 52.0, steps: 5, isSeat: true, isUpper: true, isSecondDeck: true },
+        { startPhi: -0.05, endPhi: 0.34, dOff: 10, dSpan: 20, y0: 20.0, y1: 24.0, steps: 2, isSeat: false, isUpper: false, isSecondDeck: false }
         // phi > 0.34 is McCovey Cove water -> null!
       ];
     } else if (id === 'wrigley') {
       tiers = [
-        { startPhi: -0.78, endPhi: -0.14, dOff: 10, dSpan: 44, y0: 12.0, y1: 30.0, steps: 7, isSeat: true },
-        { startPhi: -0.13, endPhi: 0.13, dOff: 10, dSpan: 28, y0: 22.0, y1: 28.0, steps: 3, isSeat: false },
-        { startPhi: 0.14, endPhi: 0.78, dOff: 10, dSpan: 44, y0: 12.0, y1: 30.0, steps: 7, isSeat: true }
+        { startPhi: -0.78, endPhi: -0.14, dOff: 10, dSpan: 44, y0: 12.0, y1: 30.0, steps: 7, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: -0.13, endPhi: 0.13, dOff: 10, dSpan: 28, y0: 22.0, y1: 28.0, steps: 3, isSeat: false, isUpper: false, isSecondDeck: false },
+        { startPhi: 0.14, endPhi: 0.78, dOff: 10, dSpan: 44, y0: 12.0, y1: 30.0, steps: 7, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: -0.72, endPhi: 0.72, dOff: 62, dSpan: 28, y0: 38.0, y1: 46.0, steps: 3, isSeat: true, isUpper: true, isSecondDeck: false }
       ];
     } else if (id === 'yankee') {
       tiers = [
-        { startPhi: -0.78, endPhi: -0.19, dOff: 12, dSpan: 54, y0: 9.5, y1: 33.0, steps: 8, isSeat: true },
-        { startPhi: -0.18, endPhi: 0.18, dOff: 8, dSpan: 34, y0: 14.0, y1: 24.0, steps: 3, isSeat: false },
-        { startPhi: -0.16, endPhi: 0.16, dOff: 42, dSpan: 26, y0: 32.0, y1: 36.0, steps: 2, isSeat: false },
-        { startPhi: 0.19, endPhi: 0.78, dOff: 12, dSpan: 54, y0: 9.5, y1: 33.0, steps: 8, isSeat: true }
+        { startPhi: -0.78, endPhi: -0.19, dOff: 12, dSpan: 44, y0: 9.5, y1: 31.0, steps: 7, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: -0.78, endPhi: -0.22, dOff: 64, dSpan: 40, y0: 41.0, y1: 63.0, steps: 6, isSeat: true, isUpper: true, isSecondDeck: true },
+        { startPhi: -0.18, endPhi: 0.18, dOff: 8, dSpan: 34, y0: 14.0, y1: 24.0, steps: 3, isSeat: false, isUpper: false, isSecondDeck: false },
+        { startPhi: -0.16, endPhi: 0.16, dOff: 72, dSpan: 26, y0: 41.0, y1: 48.0, steps: 2, isSeat: false, isUpper: true, isSecondDeck: false },
+        { startPhi: 0.19, endPhi: 0.78, dOff: 12, dSpan: 44, y0: 9.5, y1: 31.0, steps: 7, isSeat: true, isUpper: false, isSecondDeck: false },
+        { startPhi: 0.22, endPhi: 0.78, dOff: 64, dSpan: 40, y0: 41.0, y1: 63.0, steps: 6, isSeat: true, isUpper: true, isSecondDeck: true }
       ];
     } else if (id === 'sdsu') {
-      // SDSU Tony Gwynn Stadium: LF Aztec Patio Terrace, CF Batter's Eye, RF Bullpen Bleachers
+      // SDSU Tony Gwynn Stadium: LF Aztec Patio Terrace, CF Batter's Eye (no towering RF deck blocking open horizon)
       tiers = [
-        { startPhi: -0.78, endPhi: -0.24, dOff: 10, dSpan: 38, y0: 9.0, y1: 23.0, steps: 6, isSeat: true },
-        { startPhi: -0.18, endPhi: 0.18, dOff: 12, dSpan: 22, y0: 24.0, y1: 28.0, steps: 2, isSeat: false },
-        { startPhi: 0.24, endPhi: 0.78, dOff: 10, dSpan: 38, y0: 9.0, y1: 21.0, steps: 5, isSeat: true }
+        { startPhi: -0.78, endPhi: -0.26, dOff: 8, dSpan: 38, y0: 9.0, y1: 22.0, steps: 6, isSeat: true },
+        { startPhi: -0.18, endPhi: 0.18, dOff: 12, dSpan: 22, y0: 24.0, y1: 28.0, steps: 2, isSeat: false }
       ];
     } else if (id === 'sc-founders') {
       // South Carolina Founders Park: LF Garnet Videoboard & Stands, CF Batter's Eye, RF Maroon Stands
@@ -201,8 +208,17 @@
       tiers = [
         { startPhi: -0.16, endPhi: 0.16, dOff: 12, dSpan: 16, y0: 20.0, y1: 24.0, steps: 2, isSeat: false }
       ];
-    } else if (st.tier === 'hs') {
-      // High School parks (Eastlake, Corona, Rancho Bernardo): open outfields + compact CF Batter's Eye screen
+    } else if (
+      st.tier === 'hs' ||
+      id === 'hs-cchs' ||
+      id === 'hs-tp' ||
+      id === 'hs-poway' ||
+      id === 'hs-granite' ||
+      id === 'hs-santana' ||
+      id === 'hs-grossmont' ||
+      id === 'hs-valhalla'
+    ) {
+      // High School parks (Corona, Eastlake, RB, CCHS, Torrey Pines, Poway, Granite Hills, Santana, Grossmont, Valhalla): open outfields + CF screen
       tiers = [
         { startPhi: -0.16, endPhi: 0.16, dOff: 10, dSpan: 10, y0: 16.0, y1: 18.0, steps: 1, isSeat: false }
       ];
@@ -217,7 +233,8 @@
         return {
           floorZ: tc.y0 + stepIdx * stepH + 1.25,
           isSeat: Boolean(tc.isSeat),
-          isUpper: tc.dOff > 45
+          isUpper: Boolean(tc.isUpper || tc.dOff > 45),
+          isSecondDeck: Boolean(tc.isSecondDeck)
         };
       }
     }
@@ -458,6 +475,8 @@
     let seatBounce2Time = null;
     let seatSoundType = 'seat';
     let seatBounces = 0;
+    let hitUpperDeck = false;
+    let hitSecondDeck = false;
     let groundBounces = 0;
     let hangTime = null;
     let carryDist = null;
@@ -617,6 +636,8 @@
           if (seatHitTime === null) {
             seatHitTime = t;
             seatSoundType = seatInfo.isSeat ? 'seat' : 'concrete';
+            if (seatInfo.isUpper) hitUpperDeck = true;
+            if (seatInfo.isSecondDeck) hitSecondDeck = true;
           } else if (seatBounce2Time === null && t - seatHitTime > 0.16) {
             seatBounce2Time = t;
           }
@@ -726,12 +747,28 @@
 
     let outcome = 'Out';
     let color = '#94a3b8';
+    const hasUpperDeck = ['fenway', 'petco', 'coors', 'oracle', 'wrigley', 'yankee'].includes(st.id);
+    const endPhi = Math.atan2(reportEndX, Math.max(1, reportEndY));
     if (!fair) {
       outcome = 'Foul Ball';
       color = '#fbbf24';
     } else if (reportIsHr) {
-      outcome = finalDist >= 425 ? 'UPPER DECK BOMB!' : 'HOME RUN!';
-      color = '#38bdf8';
+      if (st.id === 'oracle' && endPhi >= 0.35) {
+        outcome = 'SPLASH HIT!';
+        color = '#38bdf8';
+      } else if ((st.id === 'fenway' || st.id === 'vandy') && endPhi <= -0.25 && finalDist >= 340) {
+        outcome = 'MONSTER BOMB!';
+        color = '#38bdf8';
+      } else if (hitUpperDeck || (hasUpperDeck && finalCarry >= 435 && apex >= 72 && !reportWallHit)) {
+        outcome = 'UPPER DECK BOMB!';
+        color = '#38bdf8';
+      } else if (hitSecondDeck || (finalCarry >= 430 && !reportWallHit)) {
+        outcome = hasUpperDeck ? 'SECOND DECK!' : 'NO-DOUBT BOMB!';
+        color = '#38bdf8';
+      } else {
+        outcome = 'HOME RUN!';
+        color = '#38bdf8';
+      }
     } else if (reportWallHit) {
       outcome = 'DOUBLE OFF WALL!';
       color = '#22c55e';
@@ -939,134 +976,403 @@
     };
   }
 
-  // Authentic Physical Multi-Mode Bat Impact Acoustics (Baum Wood Crack + Barrel POP, X14/SFX/AZR Metallic Ping, Realistic Jam & Foul Glance):
+  // Authentic Physical Multi-Mode Bat Impact Acoustics (All 16 Wood, Composite & Alloy BBCOR Bats + 4 Contact Zones)
   function synthesizeBatImpactSamples(kind, contactZone, sr) {
     const zone = contactZone === 'jam' || contactZone === 'endcap' || contactZone === 'glance' ? contactZone : 'sweet';
     const isJam = zone === 'jam';
     const isEndcap = zone === 'endcap';
     const isGlance = zone === 'glance';
 
-    const isWood = kind === 'baum-gold' || kind === 'wood';
+    const isBaum = kind === 'baum-gold';
+    const isVictusWood = kind === 'victus-v243';
+    const isLsC271 = kind === 'ls-c271';
+    const isOldHickory = kind === 'old-hickory-j143';
+    const isWood = isBaum || isVictusWood || isLsC271 || isOldHickory || kind === 'wood';
+
     const isGoods22 = kind === 'goods-2022' || kind === 'hybrid';
     const isGoods26 = kind === 'goods-2026';
+    const isBonesaber = kind === 'warstic-bonesaber';
+    const isCombatRodeo = kind === 'combat-rodeo';
     const isCombatBlue = kind === 'combat-blue';
     const isCatx2 = kind === 'marucci-catx2';
+    const isVoodoo = kind === 'voodoo-one';
+    const isAtlas = kind === 'ls-atlas';
+    const isMetal2 = kind === 'stringking-metal2';
+    const isVandal = kind === 'victus-vandal';
+    const isRawlingsIcon = kind === 'rawlings-icon';
+    const isEastonHype = kind === 'easton-hype';
+    const isComposite = isRawlingsIcon || isEastonHype;
+    const isOnePc = !isWood && !isComposite && !isGoods26 && !isGoods22 && !isBonesaber;
 
-    const baseDur = isWood ? 0.068 : isGoods22 ? 0.27 : isGoods26 ? 0.22 : isCatx2 ? 0.21 : isCombatBlue ? 0.24 : 0.23;
-    const durSec = isGlance ? 0.026 : isJam ? (isWood ? 0.052 : 0.082) : baseDur;
+    const baseDur = isOldHickory
+      ? 0.062
+      : isWood
+        ? 0.068
+        : isRawlingsIcon
+          ? 0.088
+          : isEastonHype
+            ? 0.095
+            : isVandal
+              ? 0.165
+              : isGoods22
+                ? 0.27
+                : isMetal2
+                  ? 0.28
+                  : isVoodoo
+                    ? 0.25
+                    : isCatx2
+                      ? 0.25
+                      : isAtlas
+                        ? 0.24
+                        : isCombatBlue
+                          ? 0.23
+                          : isCombatRodeo
+                            ? 0.24
+                            : isBonesaber
+                              ? 0.25
+                              : isGoods26
+                                ? 0.22
+                                : 0.22;
+    const durSec = isGlance ? 0.032 : isJam ? (isWood ? 0.052 : isComposite ? 0.064 : 0.08) : baseDur;
     const len = Math.floor(sr * durSec);
     const ch = new Float32Array(len);
     const zoneSeed = isGlance ? 401 : isEndcap ? 271 : isJam ? 99 : 42;
-    const rnd = makeSeededRand(kind.length * 9137 + zoneSeed);
+    const rnd = makeSeededRand(kind.length * 9137 + zoneSeed + (kind.charCodeAt(0) || 1) * 17 + (kind.charCodeAt(kind.length - 1) || 3) * 31);
 
-    const fScale = isEndcap ? 1.18 : isJam ? 0.84 : 1.0;
+    const fScale = isEndcap ? 1.16 : isJam ? 0.82 : 1.0;
 
-    // Cascaded resonant filters sculpting authentic cowhide shock & barrel cavity noise
-    const bpPop = makeBiquadBP(isJam ? 165 : isEndcap ? 560 : isGlance ? 1480 : isWood ? 585 : 340, isWood ? 2.1 : 1.35, sr);
-    const bpWoodSnap = makeBiquadBP(isJam ? 540 : isEndcap ? 2050 : isGlance ? 4500 : isWood ? 1960 : 1580, 0.92, sr);
-    const bpCrackHi = makeBiquadBP(isJam ? 1240 : isEndcap ? 4300 : isGlance ? 6400 : isWood ? 3850 : 4000, 0.78, sr);
-    const bpAlloyTransient = makeBiquadBP(
-      isGoods26 ? 2860 * fScale : isGoods22 ? 2360 * fScale : isCatx2 ? 2680 * fScale : (isCombatBlue ? 2740 : 2560) * fScale,
-      4.4,
+    // Hoisted Cascaded Acoustic Filters (preserving full IIR delay memory across samples!)
+    const bpPop = makeBiquadBP(
+      isJam
+        ? 138
+        : isEndcap
+          ? 525
+          : isGlance
+            ? 2350
+            : isRawlingsIcon
+              ? 305
+              : isEastonHype
+                ? 545
+                : isVandal
+                  ? 685
+                  : isBaum
+                    ? 485
+                    : isOldHickory
+                      ? 345
+                      : isWood
+                        ? 405
+                        : 330,
+      isComposite ? 2.85 : isBaum ? 2.75 : isVandal ? 2.4 : isWood ? 1.95 : 1.38,
       sr
     );
-    const lpAir = makeBiquadLP(isJam ? 1750 : isGlance ? 8800 : isWood ? 6400 : 9000, 0.7, sr);
+    const bpWoodSnap = makeBiquadBP(
+      isJam
+        ? 435
+        : isEndcap
+          ? 2220
+          : isGlance
+            ? 4950
+            : isRawlingsIcon
+              ? 1360
+              : isEastonHype
+                ? 1980
+                : isVandal
+                  ? 1760
+                  : isBaum
+                    ? 1880
+                    : isOldHickory
+                      ? 2160
+                      : isVictusWood
+                        ? 1740
+                        : isLsC271
+                          ? 2020
+                          : 1620,
+      isComposite ? 1.15 : 0.96,
+      sr
+    );
+    const bpCrackHi = makeBiquadBP(
+      isJam
+        ? 980
+        : isEndcap
+          ? 4550
+          : isGlance
+            ? 7150
+            : isRawlingsIcon
+              ? 2900
+              : isEastonHype
+                ? 3920
+                : isBaum
+                  ? 3820
+                  : isOldHickory
+                    ? 4150
+                    : isWood
+                      ? 3550
+                      : 4180,
+      0.84,
+      sr
+    );
 
-    // Phase accumulators for subtle organic barrel frequency chirp in first 3ms
+    const bpBaumCavity = makeBiquadBP(485 * fScale, 3.2, sr);
+    const bpVandalCarbonCap = makeBiquadBP(720 * fScale, 3.0, sr);
+
+    const alloyCenterFreq = isMetal2
+      ? 3080
+      : isVoodoo
+        ? 2940
+        : isBonesaber
+          ? 2860
+          : isGoods26
+            ? 2820
+            : isAtlas
+              ? 2780
+              : isCombatBlue
+                ? 2720
+                : isCatx2
+                  ? 2660
+                  : isCombatRodeo
+                    ? 2560
+                    : isVandal
+                      ? 2410
+                      : isGoods22
+                        ? 2310
+                        : 2530;
+
+    const bpAlloyTransient = makeBiquadBP(alloyCenterFreq * fScale, isMetal2 ? 5.2 : 4.6, sr);
+    const bpAlloyBell = makeBiquadBP(alloyCenterFreq * (isMetal2 ? 1.392 : 1.42) * fScale, 3.8, sr);
+    const lpAir = makeBiquadLP(isJam ? 1480 : isGlance ? 9600 : isWood || isComposite ? 6700 : 9500, 0.72, sr);
+
     let p0 = 0;
     let p1 = 0;
     let p2 = 0;
     let p3 = 0;
-
     const twopiOverSr = (2 * Math.PI) / sr;
 
     for (let i = 0; i < len; i++) {
       const t = i / sr;
 
-      // 1. Sub-millisecond ball-on-barrel compression impulse (Zero square clipping)
+      // 1. Sub-millisecond ball-on-barrel compression impulse
       let impulse = 0;
-      const impAmp = isGlance ? 0.34 : isJam ? 0.6 : isEndcap ? 0.86 : isWood ? 1.62 : 0.96;
-      if (t < 0.00034) {
-        impulse = Math.sin((t / 0.00034) * Math.PI) * impAmp;
-      } else if (t < 0.00084) {
-        impulse = -Math.sin(((t - 0.00034) / 0.0005) * Math.PI) * (impAmp * 0.36);
+      const impAmp = isGlance
+        ? 0.36
+        : isJam
+          ? 0.56
+          : isEndcap
+            ? 0.88
+            : isBaum
+              ? 1.78
+              : isOldHickory
+                ? 1.66
+                : isWood
+                  ? 1.56
+                  : isComposite
+                    ? 1.48
+                    : 1.04;
+      if (t < 0.00032) {
+        impulse = Math.sin((t / 0.00032) * Math.PI) * impAmp;
+      } else if (t < 0.0008) {
+        impulse = -Math.sin(((t - 0.00032) / 0.00048) * Math.PI) * (impAmp * 0.38);
       }
 
-      // 2. Percussive broadband cowhide leather / maple crack transient
+      // 2. Percussive broadband cowhide leather & grain crack transient
       const raw = rnd();
-      const popBody = bpPop(raw) * Math.exp(-t * (isGlance ? 440 : isJam ? 130 : isWood ? 118 : 170));
-      const midCrack = bpWoodSnap(raw) * Math.exp(-t * (isGlance ? 360 : isJam ? 155 : isWood ? 210 : 230));
-      const hiCrack = bpCrackHi(raw) * Math.exp(-t * (isGlance ? 280 : isJam ? 200 : isWood ? 310 : 320));
-      const airTail = lpAir(raw) * Math.exp(-t * (isGlance ? 500 : isJam ? 170 : isWood ? 330 : 350)) * 0.28;
+      const raw2 = rnd();
+      const popBody =
+        bpPop(raw) *
+        Math.exp(
+          -t *
+            (isGlance
+              ? 390
+              : isJam
+                ? 122
+                : isRawlingsIcon
+                  ? 84
+                  : isEastonHype
+                    ? 92
+                    : isBaum
+                      ? 90
+                      : isOldHickory
+                        ? 122
+                        : isWood
+                          ? 112
+                          : 162)
+        );
+      const midCrack =
+        bpWoodSnap(raw) *
+        Math.exp(-t * (isGlance ? 345 : isJam ? 150 : isComposite ? 172 : isBaum ? 182 : isOldHickory ? 205 : isWood ? 195 : 225));
+      const hiCrack = bpCrackHi(raw2) * Math.exp(-t * (isGlance ? 265 : isJam ? 195 : isWood || isComposite ? 290 : 315));
+      const airTail = lpAir(raw) * Math.exp(-t * (isGlance ? 460 : isJam ? 165 : isWood || isComposite ? 305 : 340)) * 0.3;
 
-      const alloyNoiseExc = !isWood && !isGlance && !isJam ? bpAlloyTransient(raw) * Math.exp(-t * 46) * 0.78 : 0;
+      const alloyNoiseExc =
+        !isWood && !isComposite && !isGlance && !isJam
+          ? bpAlloyTransient(raw) * Math.exp(-t * (isCatx2 ? 31 : isMetal2 ? 29 : 39)) * 0.94 +
+            bpAlloyBell(raw2) * Math.exp(-t * (isCatx2 ? 46 : isMetal2 ? 42 : 60)) * 0.56
+          : 0;
 
       let sample = 0;
       if (isGlance) {
-        // FOUL GLANCE: Ultra-short dry cowhide seam skim + tiny wood/metal edge nick (<26ms, ZERO whistle!)
-        const seamTick = t >= 0.0012 && t < 0.0019 ? Math.sin(((t - 0.0012) / 0.0007) * Math.PI) * 0.42 : 0;
-        const rimNick = bpWoodSnap(raw) * Math.exp(-t * 400) * 1.45;
-        sample = impulse * 0.6 + hiCrack * 2.55 + midCrack * 0.85 + rimNick + airTail * 0.9 + seamTick;
+        // FOUL GLANCE: Crisp 2-stage razor edge nick + high-frequency cowhide seam zip (<32ms, zero whistle)
+        const seamCatch = t >= 0.0014 && t < 0.0022 ? Math.sin(((t - 0.0014) / 0.0008) * Math.PI) * 0.48 : 0;
+        const seamZip = bpCrackHi(raw) * Math.exp(-t * 210) * 2.25;
+        const edgeClick = bpWoodSnap(raw2) * Math.exp(-t * 360) * 1.48;
+        sample = impulse * 0.65 + edgeClick + seamZip + airTail * 0.95 + seamCatch;
       } else if (isJam) {
-        // INSIDE JAM: Heavy choked handle thump + short muted flex/rattle (NO musical sine hum!)
-        const handleDisp = Math.exp(-t * 290);
-        const fThump = 148 * (1 + 0.34 * handleDisp);
+        // INSIDE JAM: Heavy choked handle sting thud + broadband flex rattle
+        const handleDisp = Math.exp(-t * 260);
+        const fThump = 132 * (1 + 0.3 * handleDisp);
         p0 += fThump * twopiOverSr;
-        const chokedMode = Math.sin(p0) * Math.exp(-t * 86) * 0.5;
-        const taperClack = bpPop(raw) * Math.exp(-t * 92) * 2.1 + midCrack * 0.7 + hiCrack * 0.26;
-        const clunk = !isWood ? Math.sin(2 * Math.PI * 660 * t) * Math.exp(-t * 170) * 0.12 : 0;
-        sample = impulse * 0.65 + taperClack + chokedMode + clunk + airTail * 0.36;
+        const chokedBody = Math.sin(p0) * Math.exp(-t * 94) * 0.46;
+        const rattleNoise = bpPop(raw) * Math.exp(-t * 88) * 2.3 + bpWoodSnap(raw2) * Math.exp(-t * 145) * 0.85;
+        const stingPulse = t >= 0.0045 && t <= 0.011 ? bpWoodSnap(raw) * 0.68 : 0;
+        sample = impulse * 0.62 + rattleNoise + chokedBody + stingPulse + airTail * 0.35;
+      } else if (isComposite) {
+        // 2-PIECE CARBON COMPOSITE BBCOR: Zero metal ping! Rich carbon shell resonance + hot inner trampoline whack/thud
+        const shellFreq = isRawlingsIcon ? 310 : 540;
+        const chirpComp = 1 + 0.18 * Math.exp(-t * 360);
+        p0 += shellFreq * fScale * chirpComp * twopiOverSr;
+        p1 += shellFreq * 0.5 * fScale * twopiOverSr;
+        const decComp = isRawlingsIcon ? 92 : 104;
+        const shellRes =
+          Math.sin(p0) * Math.exp(-t * decComp) * (isRawlingsIcon ? 0.52 : 0.48) +
+          Math.sin(p1) * Math.exp(-t * (decComp * 0.88)) * (isRawlingsIcon ? 0.38 : 0.24);
+        const compBodyGain = isRawlingsIcon ? 2.65 : 2.35;
+        const compCrackGain = isEastonHype ? 3.15 : 2.45;
+        sample = impulse * 1.25 + popBody * compBodyGain + midCrack * compCrackGain + hiCrack * (isEastonHype ? 2.45 : 1.7) + airTail + shellRes;
       } else if (isWood) {
-        // BAUM BAT GOLD: Crisp pro maple crack + dense, tight PermaWood barrel "POP" (zero hollow pipe ring!)
-        const chirp = 1 + 0.18 * Math.exp(-t * 360);
         if (isEndcap) {
-          p0 += 790 * chirp * twopiOverSr;
-          p1 += 1540 * chirp * twopiOverSr;
-          const capKnock = Math.sin(p0) * Math.exp(-t * 155) * 0.36 + Math.sin(p1) * Math.exp(-t * 230) * 0.18;
-          sample = impulse + popBody * 1.3 + midCrack * 2.35 + hiCrack * 2.15 + airTail + capKnock;
-        } else {
-          // Punchy PermaWood Barrel POP (~585 Hz cavity pop + 1180 Hz maple grain crack + tight 265 Hz chest thump)
-          p0 += 585 * chirp * twopiOverSr;
-          p1 += 1180 * chirp * twopiOverSr;
-          p2 += 265 * chirp * twopiOverSr;
+          const capWoodPop = bpPop(raw2) * Math.exp(-t * 145) * 1.55;
+          sample = impulse + capWoodPop + midCrack * 2.45 + hiCrack * 2.25 + airTail;
+        } else if (isBaum) {
+          // BAUM BAT GOLD: Signature punchy PermaWood barrel "POP" + crisp maple crack (hoisted biquad!)
+          p0 += 485 * (1 + 0.22 * Math.exp(-t * 420)) * twopiOverSr;
+          p1 += 242 * twopiOverSr;
           const barrelPop =
-            Math.sin(p0) * Math.exp(-t * 108) * 0.58 +
-            Math.sin(p1) * Math.exp(-t * 172) * 0.25 +
-            Math.sin(p2) * Math.exp(-t * 92) * 0.32;
-          sample = impulse * 1.24 + popBody * 2.25 + midCrack * 2.85 + hiCrack * 2.45 + airTail + barrelPop;
+            Math.sin(p0) * Math.exp(-t * 132) * 0.54 +
+            Math.sin(p1) * Math.exp(-t * 106) * 0.36 +
+            bpBaumCavity(raw) * Math.exp(-t * 86) * 1.25;
+          sample = impulse * 1.32 + popBody * 2.65 + midCrack * 2.85 + hiCrack * 2.45 + airTail + barrelPop;
+        } else if (isOldHickory) {
+          // OLD HICKORY J143M: Dense heavy-wall hard-maple shotgun crack
+          p0 += 322 * (1 + 0.14 * Math.exp(-t * 390)) * twopiOverSr;
+          p1 += 645 * twopiOverSr;
+          const dryCrack = Math.sin(p0) * Math.exp(-t * 142) * 0.42 + Math.sin(p1) * Math.exp(-t * 185) * 0.22;
+          sample = impulse * 1.3 + popBody * 1.9 + midCrack * 3.35 + hiCrack * 2.85 + airTail + dryCrack;
+        } else {
+          // VICTUS V243 & LS PRIME C271: Dense solid pro maple shotgun crack
+          p0 += (isVictusWood ? 340 : 395) * (1 + 0.16 * Math.exp(-t * 380)) * twopiOverSr;
+          const mapleThud = Math.sin(p0) * Math.exp(-t * 135) * 0.38;
+          sample = impulse * 1.22 + popBody * 2.05 + midCrack * 3.1 + hiCrack * 2.65 + airTail + mapleThud;
         }
       } else {
-        // AUTHENTIC METALLIC ALLOY & HYBRID BATS (Real barrel ovaling split-modes + bright metallic BBCOR ping + air crack!)
-        const fBase = isGoods26 ? 2760 : isGoods22 ? 2320 : isCatx2 ? 2650 : isCombatBlue ? 2730 : 2530;
-        const splitHz = isGoods22 ? 30 : isGoods26 ? 36 : isCatx2 ? 28 : 33; // dual-axis wall ovaling shimmer!
-        const overRatio = isGoods26 ? 1.418 : isGoods22 ? 1.485 : isCatx2 ? 1.442 : 1.425;
-        const thirdRatio = isGoods26 ? 1.845 : isGoods22 ? 1.92 : 1.88;
-        const chirp = 1 + 0.048 * Math.exp(-t * 440);
+        // METALLIC BBCOR ALLOYS & HYBRIDS: Multi-mode barrel ovaling ping + crisp cowhide crack
+        const fBase = alloyCenterFreq;
+        const splitHz = isMetal2
+          ? 19
+          : isCatx2
+            ? 21
+            : isBonesaber
+              ? 26
+              : isGoods22
+                ? 29
+                : isCombatRodeo
+                  ? 33
+                  : isAtlas
+                    ? 35
+                    : isGoods26
+                      ? 37
+                      : isCombatBlue
+                        ? 38
+                        : isVoodoo
+                          ? 39
+                          : isVandal
+                            ? 44
+                            : 33;
+        const overRatio = isMetal2
+          ? 1.392
+          : isVoodoo
+            ? 1.408
+            : isGoods26
+              ? 1.418
+              : isAtlas
+                ? 1.422
+                : isCombatBlue
+                  ? 1.428
+                  : isBonesaber
+                    ? 1.435
+                    : isCatx2
+                      ? 1.442
+                      : isCombatRodeo
+                        ? 1.452
+                        : isVandal
+                          ? 1.468
+                          : isGoods22
+                            ? 1.485
+                            : 1.432;
+        const thirdRatio = isMetal2
+          ? 1.815
+          : isVoodoo
+            ? 1.835
+            : isGoods26
+              ? 1.845
+              : isAtlas
+                ? 1.855
+                : isBonesaber
+                  ? 1.868
+                  : isCatx2
+                    ? 1.88
+                    : isVandal
+                      ? 1.92
+                      : 1.91;
+        const chirp = 1 + (isMetal2 ? 0.058 : 0.05) * Math.exp(-t * 450);
 
         p0 += fBase * fScale * chirp * twopiOverSr;
         p1 += (fBase * fScale + splitHz) * chirp * twopiOverSr;
         p2 += fBase * overRatio * fScale * chirp * twopiOverSr;
         p3 += fBase * thirdRatio * fScale * chirp * twopiOverSr;
 
-        const envAttack = 1 - Math.exp(-t * 2900);
-        const decMain = isGoods22 ? 16.0 : isGoods26 ? 20.5 : isCatx2 ? 19.5 : 18.6;
-        const ampScale = isEndcap ? 1.15 : 1.06;
+        const envAttack = 1 - Math.exp(-t * 3100);
+        const decMain = isMetal2
+          ? 13.8
+          : isCatx2
+            ? 14.8
+            : isBonesaber
+              ? 16.4
+              : isGoods22
+                ? 15.8
+                : isVoodoo
+                  ? 17.4
+                  : isAtlas
+                    ? 18.2
+                    : isCombatRodeo
+                      ? 18.9
+                      : isCombatBlue
+                        ? 18.4
+                        : isGoods26
+                          ? 20.4
+                          : isVandal
+                            ? 24.5
+                            : 18.8;
+        const ampScale = isEndcap ? 1.12 : isMetal2 ? 1.1 : isCatx2 ? 1.09 : 1.05;
 
         const ovalPrimary =
-          Math.sin(p0) * Math.exp(-t * decMain) * 0.56 +
-          Math.sin(p1) * Math.exp(-t * (decMain * 1.06)) * 0.44;
+          Math.sin(p0) * Math.exp(-t * decMain) * (isVandal ? 0.36 : 0.46) +
+          Math.sin(p1) * Math.exp(-t * (decMain * 1.06)) * (isVandal ? 0.28 : 0.38);
         const hoopHarmonic =
-          Math.sin(p2) * Math.exp(-t * (decMain * 1.44)) * 0.34 +
-          Math.sin(p3) * Math.exp(-t * (decMain * 2.08)) * 0.18;
+          Math.sin(p2) * Math.exp(-t * (decMain * 1.45)) * 0.28 +
+          Math.sin(p3) * Math.exp(-t * (decMain * 2.1)) * 0.16;
 
-        const isOnePc = !isGoods26 && !isGoods22;
-        const shellSnap = isOnePc
-          ? Math.sin(2 * Math.PI * (isCatx2 ? 1760 : 1640) * fScale * t) * Math.exp(-t * 42) * 0.24
-          : Math.sin(2 * Math.PI * 1960 * fScale * t) * Math.exp(-t * 54) * 0.14;
-
-        const alloyPing = envAttack * ampScale * (ovalPrimary + hoopHarmonic + shellSnap + alloyNoiseExc);
-        const crackMix = impulse * 0.94 + popBody * (isOnePc ? 1.32 : 1.08) + midCrack * 1.65 + hiCrack * 1.78 + airTail;
-        sample = crackMix * 0.62 + alloyPing;
+        const shellThump =
+          Math.sin(2 * Math.PI * (isVandal ? 1180 : isOnePc ? 1680 : 1920) * fScale * t) *
+          Math.exp(-t * (isVandal ? 64 : 46)) *
+          (isVandal ? 0.34 : isOnePc ? 0.2 : 0.14);
+        const vandalCapKnock = isVandal ? bpVandalCarbonCap(raw) * Math.exp(-t * 105) * 1.35 : 0;
+        const alloyPing = envAttack * ampScale * (ovalPrimary + hoopHarmonic + shellThump + alloyNoiseExc + vandalCapKnock);
+        const crackMix =
+          impulse * 0.96 +
+          popBody * (isVandal ? 1.72 : isOnePc ? 1.38 : 1.12) +
+          midCrack * (isVandal ? 2.15 : 1.78) +
+          hiCrack * 1.85 +
+          airTail;
+        sample = crackMix * 0.64 + alloyPing;
       }
 
       ch[i] = sample;
@@ -1077,7 +1383,7 @@
       const a = Math.abs(ch[i]);
       if (a > peak) peak = a;
     }
-    const targetPeak = isGlance ? 0.62 : isJam ? 0.78 : isEndcap ? 0.88 : 0.95;
+    const targetPeak = isGlance ? 0.64 : isJam ? 0.78 : isEndcap ? 0.88 : 0.95;
     const norm = peak > 0 ? targetPeak / peak : 1;
     for (let i = 0; i < len; i++) {
       ch[i] *= norm;

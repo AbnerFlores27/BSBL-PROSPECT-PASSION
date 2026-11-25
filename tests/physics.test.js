@@ -252,5 +252,113 @@ test('Contact zone classifier and signature acoustics clearly distinguish wood, 
 
   assert.ok(effFreqHz(rodeoEndcap) > effFreqHz(rodeoJam) * 1.4, `Endcap (${Math.round(effFreqHz(rodeoEndcap))}Hz) must sound higher pitched than jam (${Math.round(effFreqHz(rodeoJam))}Hz)`);
   assert.ok(rodeoGlance.length < rodeoSweet.length * 0.4, 'Glance foul skim must be much shorter than squared alloy ping');
+
+  // Verify all 4 new wood & BBCOR bats synthesize clean transients + crisp wood vs metallic separation
+  for (const newBat of ['victus-v243', 'ls-c271', 'voodoo-one', 'ls-atlas']) {
+    const buf = Physics.synthesizeBatImpactSamples(newBat, 'sweet', sr);
+    assert.ok(buf.length > 1200, `Missing samples for ${newBat}`);
+  }
+  const victusSust = midPingEnergy(Physics.synthesizeBatImpactSamples('victus-v243', 'sweet', sr));
+  const voodooSust = midPingEnergy(Physics.synthesizeBatImpactSamples('voodoo-one', 'sweet', sr));
+  const atlasSust = midPingEnergy(Physics.synthesizeBatImpactSamples('ls-atlas', 'sweet', sr));
+  assert.ok(voodooSust > victusSust * 2.5, 'Voodoo One BBCOR ping should sustain much longer than Victus V243 maple crack');
+  assert.ok(atlasSust > victusSust * 2.5, 'LS Atlas BBCOR ping should sustain much longer than Victus V243 maple crack');
 });
 
+test('Upper-deck callouts, 469-ft carry parity, Splash Hit, and 4 new San Diego HS parks behave accurately', () => {
+  for (const sdHs of ['hs-cchs', 'hs-tp', 'hs-poway', 'hs-granite']) {
+    const st = makeStadium(sdHs, 'hs', 320, 388, 318, 8);
+    assert.equal(Physics.getParkStructureSurface(st, 0.45, 30), null);
+    const bomb = Physics.simulateBattedBallRK4({
+      stadium: st,
+      exitVelo: 109,
+      launchDeg: 27,
+      sprayDeg: -15,
+      backspinRpm: 2150
+    });
+    assert.equal(bomb.isHr, true);
+    assert.notEqual(bomb.outcome, 'UPPER DECK BOMB!', `${sdHs} has no upper deck — must never show UPPER DECK BOMB!`);
+  }
+
+  // Coors 465+ ft HR carries the full simulated distance in points array (never truncated)
+  const coors = makeStadium('coors', 'pro', 347, 415, 350, 8);
+  coors.airDensity = 0.84;
+  const coorsBomb = Physics.simulateBattedBallRK4({
+    stadium: coors,
+    wind: Physics.WIND_PRESETS.out10,
+    exitVelo: 111.5,
+    launchDeg: 27,
+    sprayDeg: -16,
+    backspinRpm: 2200
+  });
+  assert.equal(coorsBomb.isHr, true);
+  assert.ok(coorsBomb.carryDist >= 455, `Expected 455+ft Coors carry, got ${coorsBomb.carryDist}`);
+  const lastPt = coorsBomb.points[coorsBomb.points.length - 1];
+  assert.ok(Math.abs(Math.hypot(lastPt.x, lastPt.y) - coorsBomb.dist) <= 2, 'Last 3D trajectory point must match reported distance');
+
+  // Barely clearing 360-ft Yankee porch HR must say HOME RUN!, never UPPER DECK BOMB!
+  const yankee = makeStadium('yankee', 'pro', 318, 408, 314, 8);
+  const porchHr = Physics.simulateBattedBallRK4({
+    stadium: yankee,
+    exitVelo: 96,
+    launchDeg: 31,
+    sprayDeg: 28,
+    backspinRpm: 2100
+  });
+  assert.equal(porchHr.isHr, true);
+  assert.equal(porchHr.outcome, 'HOME RUN!');
+
+  // Oracle RF bomb lands in McCovey Cove -> SPLASH HIT!
+  const oracle = makeStadium('oracle', 'pro', 339, 399, 309, 24);
+  const splash = Physics.simulateBattedBallRK4({
+    stadium: oracle,
+    exitVelo: 106,
+    launchDeg: 30,
+    sprayDeg: 32,
+    backspinRpm: 2200
+  });
+  assert.equal(splash.isHr, true);
+  assert.equal(splash.outcome, 'SPLASH HIT!');
+});
+
+test('All 4 newest bats + Baum Gold PermaWood pop produce distinct non-copied waveforms and SDSU 412 CF surface opens to RF', () => {
+  const sr = 44100;
+  const sdsu = makeStadium('sdsu', 'college', 340, 412, 340, 10);
+  // SDSU open RF lawn past bleachers must return null
+  assert.equal(Physics.getParkStructureSurface(sdsu, 0.72, 24), null);
+
+  function waveformDiffRatio(a, b) {
+    const n = Math.min(a.length, b.length);
+    let diffSq = 0;
+    let normSq = 0;
+    for (let i = 0; i < n; i++) {
+      const d = a[i] - b[i];
+      diffSq += d * d;
+      normSq += a[i] * a[i] + b[i] * b[i];
+    }
+    return Math.sqrt(diffSq / Math.max(1e-9, normSq));
+  }
+
+  const baum = Physics.synthesizeBatImpactSamples('baum-gold', 'sweet', sr);
+  const oldHick = Physics.synthesizeBatImpactSamples('old-hickory-j143', 'sweet', sr);
+  const bonesaber = Physics.synthesizeBatImpactSamples('warstic-bonesaber', 'sweet', sr);
+  const metal2 = Physics.synthesizeBatImpactSamples('stringking-metal2', 'sweet', sr);
+  const vandal = Physics.synthesizeBatImpactSamples('victus-vandal', 'sweet', sr);
+  const goods26 = Physics.synthesizeBatImpactSamples('goods-2026', 'sweet', sr);
+  const catx2 = Physics.synthesizeBatImpactSamples('marucci-catx2', 'sweet', sr);
+
+  for (const [label, buf] of [
+    ['old-hickory-j143', oldHick],
+    ['warstic-bonesaber', bonesaber],
+    ['stringking-metal2', metal2],
+    ['victus-vandal', vandal]
+  ]) {
+    assert.ok(buf.length > 1500, `Expected full acoustic buffer for ${label}`);
+  }
+
+  // Verify none of the 4 new bats are copies of existing bats or each other
+  assert.ok(waveformDiffRatio(bonesaber, goods26) > 0.35, 'Bonesaber must differ sharply from 2026 Goods');
+  assert.ok(waveformDiffRatio(metal2, catx2) > 0.35, 'StringKing Metal 2 Pro must differ sharply from CATX2');
+  assert.ok(waveformDiffRatio(vandal, metal2) > 0.35, 'Victus Vandal must differ sharply from StringKing Metal 2 Pro');
+  assert.ok(waveformDiffRatio(oldHick, baum) > 0.35, 'Old Hickory J143M must differ sharply from Baum Bat Gold');
+});
