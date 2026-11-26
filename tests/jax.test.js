@@ -2,13 +2,13 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Jax = require('../jax-engine.js');
 
-test('VALID_STADIUMS contains all 29 ballparks including 10 San Diego & CA HS fields and excludes dodgers/lsu/omaha/usc', () => {
-  assert.equal(Object.keys(Jax.VALID_STADIUMS).length, 29);
+test('VALID_STADIUMS contains all 30 ballparks including 11 San Diego & CA HS fields and excludes dodgers/lsu/omaha/usc', () => {
+  assert.equal(Object.keys(Jax.VALID_STADIUMS).length, 30);
   for (const required of [
     'fenway', 'petco', 'coors', 'oracle', 'wrigley', 'yankee',
     'sdsu', 'ucsb', 'cal-poly', 'pk-park', 'sc-founders', 'stanford',
     'usd', 'tcu', 'byu', 'app-state', 'vandy', 'ucla',
-    'hs-corona', 'hs-eastlake', 'hs-rb', 'hs-cchs', 'hs-tp', 'hs-poway', 'hs-granite',
+    'hs-corona', 'hs-eastlake', 'hs-rb', 'hs-cchs', 'hs-tp', 'hs-monte-vista', 'hs-poway', 'hs-granite',
     'hs-santana', 'hs-grossmont', 'hs-valhalla', 'cage'
   ]) {
     assert.ok(Jax.VALID_STADIUMS[required], `Missing verified ballpark ${required}`);
@@ -88,9 +88,14 @@ test('buildLocalJaxResponse answers beginner, 16-bat locker, flaw, and stadium q
   assert.ok(/Old Hickory J143M/i.test(oldHick.reply));
 
   const grossmont = Jax.buildLocalJaxResponse({
-    message: 'How does Grossmont HS Foothillers Field play?'
+    message: 'How does Grossmont HS Gizoni Field play?'
   });
-  assert.ok(/Grossmont|Helix/i.test(grossmont.reply));
+  assert.ok(/Grossmont|Gizoni/i.test(grossmont.reply));
+
+  const monteVista = Jax.buildLocalJaxResponse({
+    message: 'Tell me about Monte Vista HS Monarchs Field.'
+  });
+  assert.ok(/Monte Vista|Monarchs/i.test(monteVista.reply));
 
   const repeatGuard = Jax.buildLocalJaxResponse({
     message: 'How does Grossmont HS Foothillers Field play?',

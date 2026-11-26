@@ -112,14 +112,15 @@
     'hs-rb': { name: 'Rancho Bernardo HS (San Diego)', tier: 'hs', dims: '315 LF · 385 CF · 315 RF', note: 'Classic San Diego varsity dimensions — clean gap shots carry past the CF batter’s eye.' },
     'hs-corona': { name: 'Corona High School (CA)', tier: 'hs', dims: '315 LF · 380 CF · 315 RF', note: 'Crisp Inland Empire warmth makes 90+ mph exit velos at 24°–30° fly past the red LF scoreboard.' },
     'hs-eastlake': { name: 'Eastlake High School (San Diego)', tier: 'hs', dims: '312 LF · 380 CF · 312 RF', note: 'Tight 312-ft corners in Chula Vista turn well-timed pull and opposite-field backspin into extra-base trouble.' },
-    'hs-cchs': { name: 'Cathedral Catholic HS — Lynch Allred Field (San Diego)', tier: 'hs', dims: '318 LF · 385 CF · 315 RF', note: 'Carmel Valley coastal breeze plays subtly cool in late afternoons; Dons crimson windscreen frames crisp varsity alleys.' },
-    'hs-tp': { name: 'Torrey Pines HS — Falcons Field (San Diego)', tier: 'hs', dims: '320 LF · 390 CF · 318 RF', note: 'Del Mar Heights marine air near Torrey Pines mesas rewards low-spin backspin lasers over high pop-ups.' },
-    'hs-poway': { name: 'Poway HS — Titan Field (San Diego)', tier: 'hs', dims: '322 LF · 392 CF · 320 RF', note: 'Inland North County afternoon sun warms the ball cleanly over the Titan forest-green sponsor wall.' },
-    'hs-granite': { name: 'Granite Hills HS — Eagles Field (El Cajon)', tier: 'hs', dims: '320 LF · 388 CF · 318 RF', note: 'East County canyon heat helps well-struck barrels carry cleanly against the rocky El Cajon granite backdrop.' },
-    'hs-santana': { name: 'Santana High School — Sultans Field (Santee)', tier: 'hs', dims: '318 LF · 385 CF · 315 RF', note: 'Santee East County thermal warmth lifts high-backspin drives nicely over the purple Sultans windscreen toward Mission Trails.' },
-    'hs-grossmont': { name: 'Grossmont High School — Foothillers Field (El Cajon)', tier: 'hs', dims: '320 LF · 390 CF · 318 RF', note: 'La Mesa / El Cajon hillside setting below Mt. Helix rewards clean gap-to-gap line drives over the royal-blue windscreen.' },
-    'hs-valhalla': { name: 'Valhalla High School — Norsemen Field (El Cajon)', tier: 'hs', dims: '316 LF · 382 CF · 316 RF', note: 'Rancho San Diego foothills push dry afternoon air across the navy-and-orange fence beneath the rocky Hillsdale ridge.' },
-    cage: { name: 'D1 Rapsodo Lab (Indoor)', tier: 'cage', dims: '400 FT Simulated Net', note: 'Focus purely on barrel contact zone, smash factor, attack angle (+6° to +12°), and spin efficiency.' }
+    'hs-cchs': { name: 'Cathedral Catholic HS — Lynch Allred Field (San Diego)', tier: 'hs', dims: '318 LF · 385 CF · 315 RF', note: 'Forest-green windscreen with yellow cap, crimson-gold CC halo behind plate, LF red scoreboard, and Spanish hillside dorms behind RF.' },
+    'hs-tp': { name: 'Torrey Pines HS — Falcons Field (San Diego)', tier: 'hs', dims: '320 LF · 390 CF · 318 RF', note: 'Burgundy outfield wall, concrete terraced bleachers rising behind the green CF batter’s eye, and coastal eucalyptus trees.' },
+    'hs-monte-vista': { name: 'Monte Vista HS — Monarchs Field (Spring Valley)', tier: 'hs', dims: '316 LF · 384 CF · 316 RF', note: 'Maroon Monarchs outfield fence, maroon MV foul turf aprons, and terraced hillside behind CF/RF.' },
+    'hs-poway': { name: 'Poway HS — Titan Field (San Diego)', tier: 'hs', dims: '322 LF · 392 CF · 320 RF', note: 'Navy windscreen fence, concentric mowed grass, blue CF scoreboard, and North County foothills.' },
+    'hs-granite': { name: 'Granite Hills HS — Eagles Field (El Cajon)', tier: 'hs', dims: '320 LF · 388 CF · 318 RF', note: 'Navy Granite Hills wall, RCF Sycuan scoreboard, red football track outside LF, and El Cajon granite peaks behind CF.' },
+    'hs-santana': { name: 'Santana High School — Sultans Field (Santee)', tier: 'hs', dims: '318 LF · 385 CF · 315 RF', note: 'Black windscreen with yellow top cap, bold white SANTANA wall lettering, purple halo behind plate, and Mission Trails ridge.' },
+    'hs-grossmont': { name: 'Grossmont High School — Gizoni Field (El Cajon)', tier: 'hs', dims: '320 LF · 390 CF · 318 RF', note: 'Royal-blue windscreen with yellow cap, Welcome to Gizoni Field sign, LF scoreboard, and solar parking canopies beyond RCF.' },
+    'hs-valhalla': { name: 'Valhalla High School — Norsemen Field (El Cajon)', tier: 'hs', dims: '316 LF · 382 CF · 316 RF', note: 'Blue VALHALLA BASEBALL LF fence, Norsemen RCF scoreboard, orange-and-blue turf letters, and steep chaparral hill behind CF/RCF.' },
+    cage: { name: 'D1 Rapsodo Lab (Indoor)', tier: 'cage', dims: '400 FT Simulated Net', note: 'Full indoor tunnel with cushioned hitting mat, L-screen, and optical Rapsodo tracking — focus on smash factor and attack angle.' }
   };
 
   function isValidGeminiKey(raw) {
@@ -211,10 +212,11 @@
       ['hs-eastlake', ['eastlake', 'chula vista', 'hs-eastlake']],
       ['hs-cchs', ['cathedral catholic', 'lynch allred', 'cchs', 'dons', 'hs-cchs']],
       ['hs-tp', ['torrey pines', 'falcons field', 'del mar heights', 'hs-tp']],
+      ['hs-monte-vista', ['monte vista', 'monarchs', 'spring valley', 'hs-monte-vista']],
       ['hs-poway', ['poway', 'titan field', 'hs-poway']],
       ['hs-granite', ['granite hills', 'el cajon', 'eagles field', 'hs-granite']],
       ['hs-santana', ['santana', 'sultans', 'santee', 'hs-santana']],
-      ['hs-grossmont', ['grossmont', 'foothillers', 'mt helix', 'la mesa', 'hs-grossmont']],
+      ['hs-grossmont', ['grossmont', 'gizoni', 'foothillers', 'mt helix', 'la mesa', 'hs-grossmont']],
       ['hs-valhalla', ['valhalla', 'norsemen', 'rancho san diego', 'hs-valhalla']]
     ];
     for (const [id, keys] of aliases) {

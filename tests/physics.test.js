@@ -265,8 +265,8 @@ test('Contact zone classifier and signature acoustics clearly distinguish wood, 
   assert.ok(atlasSust > victusSust * 2.5, 'LS Atlas BBCOR ping should sustain much longer than Victus V243 maple crack');
 });
 
-test('Upper-deck callouts, 469-ft carry parity, Splash Hit, and 4 new San Diego HS parks behave accurately', () => {
-  for (const sdHs of ['hs-cchs', 'hs-tp', 'hs-poway', 'hs-granite']) {
+test('Upper-deck callouts, 469-ft carry parity, Splash Hit, and all San Diego HS parks behave accurately', () => {
+  for (const sdHs of ['hs-cchs', 'hs-tp', 'hs-monte-vista', 'hs-poway', 'hs-granite']) {
     const st = makeStadium(sdHs, 'hs', 320, 388, 318, 8);
     assert.equal(Physics.getParkStructureSurface(st, 0.45, 30), null);
     const bomb = Physics.simulateBattedBallRK4({

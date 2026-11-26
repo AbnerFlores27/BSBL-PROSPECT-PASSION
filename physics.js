@@ -152,7 +152,7 @@
         { startPhi: 0.22, endPhi: 0.78, dOff: 64, dSpan: 40, y0: 41.0, y1: 63.0, steps: 6, isSeat: true, isUpper: true, isSecondDeck: true }
       ];
     } else if (id === 'sdsu') {
-      // SDSU Tony Gwynn Stadium: LF Aztec Patio Terrace, CF Batter's Eye (no towering RF deck blocking open horizon)
+      // SDSU Tony Gwynn Stadium: LF Aztec seating terrace, CF Batter's Eye (RF bullpen lawn behind wall stays open ground)
       tiers = [
         { startPhi: -0.78, endPhi: -0.26, dOff: 8, dSpan: 38, y0: 9.0, y1: 22.0, steps: 6, isSeat: true },
         { startPhi: -0.18, endPhi: 0.18, dOff: 12, dSpan: 22, y0: 24.0, y1: 28.0, steps: 2, isSeat: false }
@@ -212,13 +212,14 @@
       st.tier === 'hs' ||
       id === 'hs-cchs' ||
       id === 'hs-tp' ||
+      id === 'hs-monte-vista' ||
       id === 'hs-poway' ||
       id === 'hs-granite' ||
       id === 'hs-santana' ||
       id === 'hs-grossmont' ||
       id === 'hs-valhalla'
     ) {
-      // High School parks (Corona, Eastlake, RB, CCHS, Torrey Pines, Poway, Granite Hills, Santana, Grossmont, Valhalla): open outfields + CF screen
+      // High School parks (Corona, Eastlake, RB, CCHS, Torrey Pines, Monte Vista, Poway, Granite Hills, Santana, Grossmont, Valhalla): open outfields + CF screen
       tiers = [
         { startPhi: -0.16, endPhi: 0.16, dOff: 10, dSpan: 10, y0: 16.0, y1: 18.0, steps: 1, isSeat: false }
       ];
